@@ -8,12 +8,23 @@ const randtoken = require('rand-token');
 const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
 const app = express();
 
+const nodemailer = require("nodemailer");
+
 const uri = "mongodb+srv://ArjunDobaria:Pravin@143@switlover-bjxu8.mongodb.net/test?retryWrites=true"
 const client = new MongoClient(uri, {useNewUrlParser: true});
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
+
+var smtpTransport = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+        user: "arjun.dobaria12@gmail.com",
+        pass: "Krishna143"
+    }
+});
+var rand,mailOptions,host,link;
 
 //--------------------------------------------------------------------------------------------------------------
 //COLLECTIONS
@@ -276,6 +287,57 @@ client.connect((err, db) => {
             });
         })
         //--------------------------------------------------------------------------------------------------------------
+
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Send Email For Verification
+        app.post('/api/EmailVerification',(req,res) => {
+            rand=Math.floor((Math.random() * 1000) + 54);
+            host=req.get('host');
+            link="http://"+req.get('host')+"/verify?id="+rand;
+            mailOptions={
+                to : req.body.Email,
+                subject : "Please confirm your Email account",
+                html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"
+            }
+            console.log(mailOptions);
+            smtpTransport.sendMail(mailOptions, function(error, response){
+                if(error){
+                    console.log(error);
+                    res.end("error");
+                }else{
+                    console.log("Message sent: " + response);
+                    res.end("sent");
+                }
+            });
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Email Verification
+        app.get('/verify',function(req,res){
+            console.log(req.protocol+":/"+req.get('host'));
+            if((req.protocol+"://"+req.get('host'))==("http://"+host))
+            {
+                console.log("Domain is matched. Information is from Authentic email");
+                if(req.query.id==rand)
+                {
+                    console.log("email is verified");
+                    res.end("<h1>Email "+mailOptions.to+" is been Successfully verified");
+                }
+                else
+                {
+                    console.log("email is not verified");
+                    res.end("<h1>Bad Request</h1>");
+                }
+            }
+            else
+            {
+                res.end("<h1>Request is from unknown source");
+            }
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
 
     }
 });
