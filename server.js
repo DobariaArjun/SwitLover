@@ -139,7 +139,7 @@ client.connect((err, db) => {
             var dataArray = dbo.collection(switlover).find({
                 'Phone_Number.Number': req.body.Number,
                 'Phone_Number.Contry_Code': req.body.Contry_Code,
-                is_Block: {$ne: "1"}
+                is_Block: {$ne: 1}
             }).toArray();
             dataArray.then((data) => {
 
@@ -156,22 +156,22 @@ client.connect((err, db) => {
                                     Contry_Code: req.body.Contry_Code,
                                     Number: req.body.Number,
                                     Location: req.body.Location,
-                                    Verified: "false"
+                                    Verified: "false",
+                                    is_OverVerification: 0
                                 },
                                 Like: {Likes: []},
                                 Email: "",
                                 Contact_List: "",
-                                PowerID: {Power_Of_Match: "0", Power_Of_Time: "0", Golden_Power: "0"},
-                                is_Deleted: "0",
-                                is_Online: "0",
-                                is_Block: "0",
-                                is_OverVerification: "0",
+                                PowerID: {Power_Of_Match: 0, Power_Of_Time: 0, Golden_Power: 0},
+                                is_Deleted: 0,
+                                is_Online: 0,
+                                is_Block: 0,
                                 createdAt: new Date(),
                                 updatedAt: new Date(),
                                 deletedAt: "",
                                 Request_token: req.body.Request_token,
                                 Auth_Token: "",
-                                Device: "0",
+                                Device: 0,
                                 language: "en"
                             };
                             dbo.collection("switlover").insertOne(myObj, (err, result) => {
@@ -248,7 +248,7 @@ client.connect((err, db) => {
             var dataArray = dbo.collection(switlover).find({
                 'Phone_Number.Number': req.body.Number,
                 'Phone_Number.Contry_Code': req.body.Contry_Code,
-                isBlock: {$ne: "1"}
+                isBlock: {$ne: 1}
             }).toArray();
             dataArray.then((data) => {
                 if (isEmpty(data))
