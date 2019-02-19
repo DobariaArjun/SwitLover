@@ -242,6 +242,31 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
+        //OTP Verification
+        app.post('/api/OverVerification', (req, res) => {
+            // var token = randtoken.generate(64);
+            dbo.collection(switlover).updateOne(
+                {
+                    'Request_token': req.body.Request_token
+                },
+                {
+                    $set: {is_OverVerification: 1},
+                    $currentDate: {updatedAt: true}
+                }
+            ).then((result) => {
+                if (result['result']['n'] == 1) {
+                    res.json({status: "0", message: "Your phone number is cross the limit of verification"});
+                } else {
+                    res.json({status: "1", message: "Internal Server error"});
+                }
+
+            }).catch((err) => {
+                res.json({status: "1", message: "Internal Server error"});
+            })
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
         //Login API
         app.post('/api/Login', (req, res) => {
             var Phone_Number = req.body.Contry_Code + "" + req.body.Number;
