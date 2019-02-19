@@ -38,17 +38,17 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Generate Request Token
-        app.get('/api/GenerateRequestToken',(req,res) => {
+        app.get('/api/GenerateRequestToken', (req, res) => {
             var token = randtoken.generate(64);
-            res.json({status:"0",message : token.toString()});
+            res.json({status: "0", message: token.toString()});
         });
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
         //Generate Auth Token
-        app.get('/api/GenerateAuthToken',(req,res) => {
+        app.get('/api/GenerateAuthToken', (req, res) => {
             var token = randtoken.generate(64);
-            res.json({status:"0",message : token.toString()});
+            res.json({status: "0", message: token.toString()});
         });
         //--------------------------------------------------------------------------------------------------------------
 
@@ -140,7 +140,12 @@ client.connect((err, db) => {
                         else {
                             var myObj = {
                                 Username: "",
-                                Phone_Number: {Contry_Code:req.body.Contry_Code, Number:req.body.Number, Location: req.body.Location, Verified:"false"},
+                                Phone_Number: {
+                                    Contry_Code: req.body.Contry_Code,
+                                    Number: req.body.Number,
+                                    Location: req.body.Location,
+                                    Verified: "false"
+                                },
                                 Email: "",
                                 Contact_List: "",
                                 PowerID: {Power_Of_Match: "0", Power_Of_Time: "0", Golden_Power: "0"},
@@ -200,7 +205,7 @@ client.connect((err, db) => {
                     'Request_token': req.body.Request_token
                 },
                 {
-                    $set: {'Phone_Number.Verified': 'true', 'Auth_Token' : token.toString()},
+                    $set: {'Phone_Number.Verified': 'true', 'Auth_Token': token.toString()},
                     $currentDate: {updatedAt: true}
                 }
             ).then((result) => {
@@ -240,7 +245,7 @@ client.connect((err, db) => {
                         if (error)
                             console.error("Error in send sms : " + error);
                         else {
-                            res.json({status: "0", message: randomOTP.toString(), data:data[0]['Request_token']});
+                            res.json({status: "0", message: randomOTP.toString(), data: data[0]['Request_token']});
                         }
                     });
                 }
@@ -252,6 +257,24 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Get Contact List
+        app.post('/api/ContactList', (req, res) => {
+            dbo.collection('switlover').updateOne(
+                {
+                    Auth_Token: req.body.Auth_Token
+                },
+                {
+                    $set: {Contact_List: req.body.Contact_List},
+                    $currentDate: {updatedAt: true}
+                }).then((result) => {
+                if (result['result']['n'] == 1) {
+                    res.json({status: "0", message: "Contact list updated successfully"});
+                } else {
+                    res.json({status: "1", message: "Internal Server error"});
+                }
+            }).catch((err) => {
+                res.json({status: "1", message: "Internal Server error"});
+            });
+        })
         //--------------------------------------------------------------------------------------------------------------
 
     }
