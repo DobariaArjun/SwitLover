@@ -305,10 +305,10 @@ client.connect((err, db) => {
             smtpTransport.sendMail(mailOptions, function(error, response){
                 if(error){
                     console.log(error);
-                    res.end("error");
+                    res.end("error"+error);
                 }else{
                     console.log("Message sent: " + response);
-                    res.end("sent");
+                    res.end("sent"+response);
                 }
             });
         });
