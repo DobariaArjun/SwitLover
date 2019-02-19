@@ -194,12 +194,13 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //OTP Verification
         app.post('/api/Verified', (req, res) => {
+            var token = randtoken.generate(64);
             dbo.collection(switlover).updateOne(
                 {
                     'Request_token': req.body.Request_token
                 },
                 {
-                    $set: {'Phone_Number.Verified': 'true'},
+                    $set: {'Phone_Number.Verified': 'true', 'Auth_Token' : token.toString()},
                     $currentDate: {updatedAt: true}
                 }
             ).then((result) => {
@@ -247,6 +248,10 @@ client.connect((err, db) => {
                 res.json({status: "1", message: "Internal Server error"});
             })
         });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Get Contact List
         //--------------------------------------------------------------------------------------------------------------
 
     }
