@@ -272,8 +272,13 @@ client.connect((err, db) => {
                     }).toArray();
                     dataArray.then((result) => {
                         var UsernameArray = result[0]['Username'];
-                        UsernameArray.push(req.body.Username);
-
+                        console.log(UsernameArray.length)
+                        var existUser = UsernameArray[UsernameArray.length-1];
+                        var newUsername = req.body.Username;
+                        if(newUsername == existUser);
+                        {
+                            UsernameArray.push(req.body.Username);
+                        }
                         if (req.body.Email_Address != null || !req.body.Email_Address) {
                             dbo.collection('switlover').updateOne(
                                 {
