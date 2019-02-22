@@ -208,7 +208,7 @@ client.connect((err, db) => {
                             res.json({status: "1", message: "User is available", user_data: result});
                         } else {
                             var myObj = {
-                                Username: "",
+                                Username: [],
                                 Phone_Number: {
                                     Contry_Code: req.body.Contry_Code,
                                     Number: req.body.Number,
@@ -216,7 +216,7 @@ client.connect((err, db) => {
                                     Verified: "true",
                                     is_OverVerification: 0
                                 },
-                                Like: "",
+                                Like: [],
                                 Email: {EmailAddress: "", Verified: "false"},
                                 Contact_List: "",
                                 PowerID: {Power_Of_Match: 0, Power_Of_Time: 0, Golden_Power: 0},
@@ -268,10 +268,9 @@ client.connect((err, db) => {
                 } else {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: req.body.Auth_Token,
-                        isBlock: {$ne: 1}
+                        is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
-
                         var UsernameArray = result[0]['Username'];
                         UsernameArray.push(req.body.Username);
 
