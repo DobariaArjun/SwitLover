@@ -164,21 +164,15 @@ client.connect((err, db) => {
                         if (error)
                             res.json({status: "3", message: "Sms sending failed, Please resend the sms for OTP"});
                         else {
-                            if (!isEmpty(data)) {
-                                res.json({
-                                    status: "1",
-                                    message: "success",
-                                    data: {code: randomOTP.toString(), user_data: data}
-                                });
-                            } else {
-                                res.json({
-                                    status: "1",
-                                    message: "success",
-                                    data: {code: randomOTP.toString(), request_token : randtoken.generate(64).toString()}
-                                });
-                            }
 
+                            res.json({
+                                status: "1",
+                                message: "success",
+                                data: {code: randomOTP.toString(), request_token: randtoken.generate(64).toString()}
+                            });
                         }
+
+                        
                     });
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal Server error"});
@@ -258,7 +252,6 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Update Profile
-        //arr[arr.length-1]
         app.post('/api/UpdateProfile', (req, res) => {
             if (!req.body.Auth_Token || req.body.Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
@@ -272,11 +265,9 @@ client.connect((err, db) => {
                     }).toArray();
                     dataArray.then((result) => {
                         var UsernameArray = result[0]['Username'];
-                        console.log(UsernameArray.length)
-                        var existUser = UsernameArray[UsernameArray.length-1];
+                        var existUser = UsernameArray[UsernameArray.length - 1];
                         var newUsername = req.body.Username;
-                        if(newUsername == existUser);
-                        {
+                        if (newUsername != existUser) {
                             UsernameArray.push(req.body.Username);
                         }
                         if (req.body.Email_Address != null || !req.body.Email_Address) {
