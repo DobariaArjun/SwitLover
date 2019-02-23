@@ -295,84 +295,90 @@ client.connect((err, db) => {
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
-                        var UsernameArray = result[0]['Username'];
-                        if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "") {
-                            var existUser = UsernameArray[UsernameArray.length - 1];
-                            var newUsername = req.body.Username;
-                            if (newUsername != existUser) {
+                        if (isEmpty(result)) {
+                            res.json({status: "0", message: "User not found"});
+                        } else {
+                            var UsernameArray = result[0]['Username'];
+                            if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "") {
+                                var existUser = UsernameArray[UsernameArray.length - 1];
+                                var newUsername = req.body.Username;
+                                if (newUsername != existUser) {
+                                    UsernameArray.push(req.body.Username);
+                                }
+                            } else {
                                 UsernameArray.push(req.body.Username);
                             }
-                        } else {
-                            UsernameArray.push(req.body.Username);
-                        }
-                        if (req.body.Email_Address != null || !req.body.Email_Address) {
-                            dbo.collection(switlover).updateOne(
-                                {
-                                    Auth_Token: req.body.Auth_Token
-                                },
-                                {
-                                    $set: {
-                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                        Username: UsernameArray,
-                                        $currentDate: {updatedAt: true}
-                                    }
-                                }).then((data) => {
-                                if (data['result']['n'] == 1) {
-                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                        if (!apierr) {
-                                            res.json({
-                                                status: "7",
-                                                message: "Please check your inbox for the verification mail send from the SwitLover"
-                                            });
-                                        } else {
-                                            res.json({status: "3", message: "Mail sending faild"});
+                            if (req.body.Email_Address != null || !req.body.Email_Address) {
+                                dbo.collection(switlover).updateOne(
+                                    {
+                                        Auth_Token: req.body.Auth_Token
+                                    },
+                                    {
+                                        $set: {
+                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                            Username: UsernameArray,
+                                            $currentDate: {updatedAt: true}
                                         }
-                                    })
-                                } else {
-                                    res.json({status: "3", message: "Profile updation field"});
+                                    }).then((data) => {
+                                    if (data['result']['n'] == 1) {
+                                        request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                            if (!apierr) {
+                                                res.json({
+                                                    status: "7",
+                                                    message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                });
+                                            } else {
+                                                res.json({status: "3", message: "Mail sending faild"});
+                                            }
+                                        })
+                                    } else {
+                                        res.json({status: "3", message: "Profile updation field"});
 
-                                    var obj = {
-                                        "7567080717": {
-                                            "name": "Keyur Akbari",
-                                            "numberList":
-                                                [
-                                                    {
-                                                        "code": "+91",
-                                                        "number": "7567080717",
-                                                        "isRemovedByAdmin": 0,
-                                                        "isRemovedByUser": 0
-                                                    },
-                                                    {
-                                                        "code": "+91",
-                                                        "number": "7567656589",
-                                                        "isRemovedByAdmin": 0,
-                                                        "isRemovedByUser": 0
-                                                    }
-                                                ],
-                                            "image": "",
-                                            "isRemovedByAdmin": 0,
-                                            "isRemovedByUser": 0
+                                        var obj = {
+                                            "7567080717": {
+                                                "name": "Keyur Akbari",
+                                                "numberList":
+                                                    [
+                                                        {
+                                                            "code": "+91",
+                                                            "number": "7567080717",
+                                                            "isRemovedByAdmin": 0,
+                                                            "isRemovedByUser": 0
+                                                        },
+                                                        {
+                                                            "code": "+91",
+                                                            "number": "7567656589",
+                                                            "isRemovedByAdmin": 0,
+                                                            "isRemovedByUser": 0
+                                                        }
+                                                    ],
+                                                "image": "",
+                                                "isRemovedByAdmin": 0,
+                                                "isRemovedByUser": 0
+                                            }
                                         }
                                     }
-                                }
-                            });
-                        } else {
-                            dbo.collection(switlover).updateOne(
-                                {
-                                    Auth_Token: req.body.Auth_Token
-                                },
-                                {
-                                    $set: {Username: UsernameArray},
-                                    $currentDate: {updatedAt: true}
-                                }).then((data) => {
-                                if (data['result']['n'] == 1) {
-                                    res.json({status: "1", message: "Profile updated successfully"});
-                                } else {
-                                    res.json({status: "3", message: "Profile updation field"});
-                                }
-                            }).catch((error) => {
-                                res.json({status: "0", message: "Profile not found"});
-                            })
+                                });
+                            } else {
+                                console.log(UsernameArray);
+                                dbo.collection(switlover).updateOne(
+                                    {
+                                        Auth_Token: req.body.Auth_Token
+                                    },
+                                    {
+                                        $set: {Username: UsernameArray},
+                                        $currentDate: {updatedAt: true}
+                                    }).then((data) => {
+                                    console.log(data);
+                                    if (data['result']['n'] == 1) {
+                                        res.json({status: "1", message: "Profile updated successfully"});
+                                    } else {
+                                        res.json({status: "3", message: "Profile updation field"});
+                                    }
+                                }).catch((error) => {
+                                    res.json({status: "0", message: "Profile not found"});
+                                })
+                            }
                         }
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
