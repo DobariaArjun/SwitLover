@@ -198,8 +198,7 @@ client.connect((err, db) => {
                                 'Phone_Number.Location': req.body.Location,
                                 is_Block: {$ne: 1}
                             }, {
-                                $set: {Request_token: req.body.Request_token},
-                                $currentDate: {updatedAt: true}
+                                $set: {Request_token: req.body.Request_token, updatedAt : new Date()}
                             }).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     var dataArray = dbo.collection(switlover).find({
@@ -317,7 +316,7 @@ client.connect((err, db) => {
                                         $set: {
                                             Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
                                             Username: UsernameArray,
-                                            $currentDate: {updatedAt: true}
+                                            updatedAt : new Date()
                                         }
                                     }).then((data) => {
                                     if (data['result']['n'] == 1) {
@@ -366,8 +365,7 @@ client.connect((err, db) => {
                                         Auth_Token: req.body.Auth_Token
                                     },
                                     {
-                                        $set: {Username: UsernameArray},
-                                        $currentDate: {updatedAt: true}
+                                        $set: {Username: UsernameArray, updatedAt : new Date()}
                                     }).then((data) => {
                                     console.log(data);
                                     if (data['result']['n'] == 1) {
@@ -399,8 +397,7 @@ client.connect((err, db) => {
                         'Auth_Token': req.body.Auth_Token
                     },
                     {
-                        $set: {'Phone_Number.is_OverVerification': 1},
-                        $currentDate: {updatedAt: true}
+                        $set: {'Phone_Number.is_OverVerification': 1, updatedAt : new Date()}
                     }
                 ).then((result) => {
                     if (result['result']['n'] == 1) {
@@ -430,8 +427,7 @@ client.connect((err, db) => {
                             Auth_Token: req.body.Auth_Token
                         },
                         {
-                            $set: {Contact_List: req.body.Contact_List},
-                            $currentDate: {updatedAt: true}
+                            $set: {Contact_List: req.body.Contact_List, updatedAt : new Date()}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "Contact list updated successfully"});
@@ -486,8 +482,7 @@ client.connect((err, db) => {
                             'Email.EmailAddress': mailOptions.to
                         },
                         {
-                            $set: {'Email.Verified': 'true'},
-                            $currentDate: {updatedAt: true}
+                            $set: {'Email.Verified': 'true', updatedAt : new Date()}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "EmailAddress Verified successfully"});
