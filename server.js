@@ -191,7 +191,7 @@ client.connect((err, db) => {
                     dataArray.then((result) => {
                         if (!isEmpty(result)) {
                             //User Exist
-                            dbo.collection("switlover").updateOne({
+                            dbo.collection(switlover).updateOne({
                                 'Phone_Number.Contry_Code': req.body.Contry_Code,
                                 'Phone_Number.Number': req.body.Number,
                                 'Phone_Number.Location': req.body.Location,
