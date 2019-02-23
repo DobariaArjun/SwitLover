@@ -415,6 +415,33 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Get Contact List
+        app.post('/api/GetContactList',(req,res) => {
+            if (!req.body.Auth_Token || req.body.Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                var dataArray = dbo.collection(switlover).find({
+                    Auth_Token: req.body.Auth_Token,
+                    is_Block: {$ne: 1}
+                }).toArray();
+                dataArray.then((data) => {
+                    if(!isEmpty(data[0]['Contact_List']))
+                    {
+                        res.json({status: "1", message: "Contact List", user_data:data[0]['Contact_List']});
+                    }
+                    else
+                    {
+                        res.json({status: "3", message: "Contact_List is not available", user_data:data[0]['Contact_List']});
+                    }
+
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal Server error"});
+                })
+            }
+        })
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Set Contact List
         app.post('/api/ContactList', (req, res) => {
             if (!req.body.Auth_Token || req.body.Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
