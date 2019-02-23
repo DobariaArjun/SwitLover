@@ -519,7 +519,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Send Email For Verification
-        app.post('/api/EmailVerification', (req, res) => {
+        app.get('/api/EmailVerification', (req, res) => {
             rand = Math.floor((Math.random() * 1000) + 54);
             host = req.get('host');
             link = "http://" + req.get('host') + "/verify?id=" + rand;
