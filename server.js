@@ -199,7 +199,7 @@ client.connect((err, db) => {
                                 is_Block: {$ne: 1}
                             }, {
                                 $set: {Request_token: req.body.Request_token},
-                                $currentdate: {updatedAt: true}
+                                $currentDate: {updatedAt: true}
                             }).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     var dataArray = dbo.collection(switlover).find({
@@ -310,7 +310,7 @@ client.connect((err, db) => {
                                     $set: {
                                         Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
                                         Username: UsernameArray,
-                                        $currentdate: {updatedAt: true}
+                                        $currentDate: {updatedAt: true}
                                     }
                                 }).then((data) => {
                                 if (data['result']['n'] == 1) {
@@ -327,6 +327,19 @@ client.connect((err, db) => {
                                     })
                                 } else {
                                     res.json({status: "3", message: "Profile updation field"});
+
+                                    // var obj = {
+                                    //     "7567080717": {
+                                    //         "name": "Keyur Akbari",
+                                    //         "numberList": [{
+                                    //             "code": "+91",
+                                    //             "number": "7567080717",
+                                    //             "isRemovedByAdmin": 0
+                                    //         },
+                                    //             {"code": "+91", "number": "7567656589", "isRemovedByAdmin": 0}],
+                                    //         "image": ""
+                                    //     }
+                                    // }
                                 }
                             });
                         } else {
@@ -366,7 +379,7 @@ client.connect((err, db) => {
                     },
                     {
                         $set: {'Phone_Number.is_OverVerification': 1},
-                        $currentdate: {updatedAt: true}
+                        $currentDate: {updatedAt: true}
                     }
                 ).then((result) => {
                     if (result['result']['n'] == 1) {
@@ -397,7 +410,7 @@ client.connect((err, db) => {
                         },
                         {
                             $set: {Contact_List: req.body.Contact_List},
-                            $currentdate: {updatedAt: true}
+                            $currentDate: {updatedAt: true}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "Contact list updated successfully"});
@@ -453,7 +466,7 @@ client.connect((err, db) => {
                         },
                         {
                             $set: {'Email.Verified': 'true'},
-                            $currentdate: {updatedAt: true}
+                            $currentDate: {updatedAt: true}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "EmailAddress Verified successfully"});
