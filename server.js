@@ -21,7 +21,7 @@ var smtpTransport = nodemailer.createTransport({
     service: "Gmail",
     auth: {
         user: "arjun.dobaria12@gmail.com",
-        pass: "Krishna143"
+        pass: "Harshu2007"
     }
 });
 var rand, mailOptions, host, link;
@@ -67,7 +67,6 @@ client.connect((err, db) => {
                     var myObj = {
                         General: {
                             UserNotLogin: 1,
-                            CurrentlyLive: 0,
                             DownloadPerDay: 0,
                             DownloadPerHour: 0,
                             AccessPerDay: 0,
@@ -76,16 +75,6 @@ client.connect((err, db) => {
                         Location: {
                             TimeSpentOnApp: "00:00:00"
                         },
-                        User: {
-                            ContactNotRecognized: 0,
-                            AddNewNumberViaApp: 0,
-                            ContactRemoveRation: 0,
-                            TwoOut2Ratio: 0,
-                            OneOut1Ratio: 0,
-                            AnonymousChatRatio: 0,
-                            NotInAppPurchase: 0,
-                            TimeSpentOnApp: "00:00:00"
-                        }
                     };
 
                     dbo.collection(counter).insertOne(myObj, (err, result) => {
@@ -172,7 +161,7 @@ client.connect((err, db) => {
                             });
                         }
 
-                        
+
                     });
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal Server error"});
@@ -188,39 +177,67 @@ client.connect((err, db) => {
             if (!req.body.Request_token || req.body.Request_token == null) {
                 res.json({status: "5", message: "Request token missing"});
             } else {
-                if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null && !req.body.Location || req.body.Location == null) {
+                if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
+                    && !req.body.Location || req.body.Location == null && !req.body.Verified || req.body.Verified == null) {
                     res.json({status: "4", message: "Parameter missing or Invalid"});
                 } else {
                     var token = randtoken.generate(64);
                     var dataArray = dbo.collection(switlover).find({
-                        Request_token: req.body.Request_token,
+                        'Phone_Number.Contry_Code': req.body.Contry_Code,
+                        'Phone_Number.Number': req.body.Number,
+                        'Phone_Number.Location': req.body.Location,
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
                         if (!isEmpty(result)) {
                             //User Exist
-                            res.json({status: "1", message: "User is available", user_data: result});
+                            dbo.collection("switlover").updateOne({
+                                'Phone_Number.Contry_Code': req.body.Contry_Code,
+                                'Phone_Number.Number': req.body.Number,
+                                'Phone_Number.Location': req.body.Location,
+                                is_Block: {$ne: 1}
+                            }, {Request_token: req.body.Request_token}).then((dataresult) => {
+                                if (dataresult['result']['n'] == 1) {
+                                    res.json({status: "1", message: "User is available", user_data: result});
+                                } else {
+                                    res.json({status: "3", message: "Internal server error"});
+                                }
+                            }).catch((catcherr) => {
+                                res.json({status: "3", message: "Internal Server error"});
+                            })
                         } else {
                             var myObj = {
+                                Request_token: req.body.Request_token,
+                                Auth_Token: token.toString(),
                                 Username: [],
                                 Phone_Number: {
                                     Contry_Code: req.body.Contry_Code,
                                     Number: req.body.Number,
                                     Location: req.body.Location,
-                                    Verified: "true",
+                                    Verified: req.body.Verified,
                                     is_OverVerification: 0
                                 },
-                                Like: [],
                                 Email: {EmailAddress: "", Verified: "false"},
                                 Contact_List: "",
+                                Contact_Not_Recognized: 0,
+                                Add_New_Number_From_App: 0,
+                                Contact_Remove_Ratio: 0,
+                                Like: [],
+                                Match_Ratio: {
+                                    Two_Out_2_Ratio: 0,
+                                    One_Out_1_Ratio: 0,
+                                    Anonymous_Chat_Ratio: 0,
+                                },
+                                Not_In_App_Purchase: 0,
                                 PowerID: {Power_Of_Match: 0, Power_Of_Time: 0, Golden_Power: 0},
+                                language: "en",
+                                Device: 0,
                                 is_Deleted: 0,
                                 is_Online: 0,
                                 is_Block: 0,
-                                Request_token: req.body.Request_token,
-                                Auth_Token: token.toString(),
-                                Device: 0,
-                                language: "en"
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                                deletedAt: ""
                             };
                             dbo.collection("switlover").insertOne(myObj, (err, result) => {
                                 if (err)
@@ -251,7 +268,7 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
-        //Update Profile
+        //Update Profile - after login first time
         app.post('/api/UpdateProfile', (req, res) => {
             if (!req.body.Auth_Token || req.body.Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
@@ -320,7 +337,7 @@ client.connect((err, db) => {
             } else {
                 dbo.collection(switlover).updateOne(
                     {
-                        'Request_token': req.body.Request_token
+                        'Auth_Token': req.body.Auth_Token
                     },
                     {
                         $set: {'Phone_Number.is_OverVerification': 1}
