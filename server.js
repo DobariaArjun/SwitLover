@@ -198,7 +198,17 @@ client.connect((err, db) => {
                                 is_Block: {$ne: 1}
                             }, {$set: {Request_token: req.body.Request_token}}).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
-                                    res.json({status: "1", message: "User is available", user_data: result});
+                                    var dataArray = dbo.collection(switlover).find({
+                                        'Phone_Number.Contry_Code': req.body.Contry_Code,
+                                        'Phone_Number.Number': req.body.Number,
+                                        'Phone_Number.Location': req.body.Location,
+                                        is_Block: {$ne: 1}
+                                    }).toArray();
+                                    dataArray.then((finalresult) => {
+                                        res.json({status: "1", message: "User is available", user_data: finalresult});
+                                    }).catch((finalerr) => {
+                                        res.json({status: "3", message: "Internal server error"});
+                                    })
                                 } else {
                                     res.json({status: "3", message: "Internal server error"});
                                 }
