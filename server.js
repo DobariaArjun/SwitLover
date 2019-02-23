@@ -8,6 +8,7 @@ const randtoken = require('rand-token');
 const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
 const app = express();
 const request = require('request');
+const ObjectId = require('mongodb').ObjectID;
 
 const nodemailer = require("nodemailer");
 
@@ -223,7 +224,7 @@ client.connect((err, db) => {
                                 'Phone_Number.Location': req.body.Location,
                                 is_Block: {$ne: 1}
                             }, {
-                                $set: {Request_token: Request_token, updatedAt : new Date()}
+                                $set: {Request_token: Request_token, updatedAt: new Date()}
                             }).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     var dataArray = dbo.collection(switlover).find({
@@ -306,6 +307,45 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
+        //get Profile
+        /*
+        * Header : Auth_Token
+        * params: UserID : to send the particuler user profile
+        * if UserID not available then send the current login user profile
+        * */
+        app.post('/api/GetProfile', (req, res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                if (!req.body.userID || req.body.userID == null) {
+                    var dataArray = dbo.collection(switlover).find({
+                        Auth_Token: Auth_Token,
+                        is_Block: {$ne: 1}
+                    }).toArray();
+                    dataArray.then((result) => {
+                        res.json({status: "1", message: "success", user_data: result});
+                    }).catch((err) => {
+                        res.json({status: "3", message: "Internal server error"});
+                    })
+                }
+                else
+                {
+                    var dataArray = dbo.collection(switlover).find({
+                        _id: new ObjectId(req.body.userID),
+                        is_Block: {$ne: 1}
+                    }).toArray();
+                    dataArray.then((result) => {
+                        res.json({status: "1", message: "success", user_data: result});
+                    }).catch((err) => {
+                        res.json({status: "3", message: "Internal server error"});
+                    })
+                }
+            }
+        })
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
         //Update Profile - after login first time
         app.post('/api/UpdateProfile', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
@@ -342,7 +382,7 @@ client.connect((err, db) => {
                                         $set: {
                                             Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
                                             Username: UsernameArray,
-                                            updatedAt : new Date()
+                                            updatedAt: new Date()
                                         }
                                     }).then((data) => {
                                     if (data['result']['n'] == 1) {
@@ -367,7 +407,7 @@ client.connect((err, db) => {
                                         Auth_Token: Auth_Token
                                     },
                                     {
-                                        $set: {Username: UsernameArray, updatedAt : new Date()}
+                                        $set: {Username: UsernameArray, updatedAt: new Date()}
                                     }).then((data) => {
                                     console.log(data);
                                     if (data['result']['n'] == 1) {
@@ -400,7 +440,7 @@ client.connect((err, db) => {
                         Auth_Token: Auth_Token
                     },
                     {
-                        $set: {'Phone_Number.is_OverVerification': 1, updatedAt : new Date()}
+                        $set: {'Phone_Number.is_OverVerification': 1, updatedAt: new Date()}
                     }
                 ).then((result) => {
                     if (result['result']['n'] == 1) {
@@ -418,7 +458,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Get Contact List
-        app.post('/api/GetContactList',(req,res) => {
+        app.post('/api/GetContactList', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
             if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
@@ -428,13 +468,14 @@ client.connect((err, db) => {
                     is_Block: {$ne: 1}
                 }).toArray();
                 dataArray.then((data) => {
-                    if(!isEmpty(data[0]['Contact_List']))
-                    {
-                        res.json({status: "1", message: "Contact List", user_data:data[0]['Contact_List']});
-                    }
-                    else
-                    {
-                        res.json({status: "0", message: "Contact_List is not available", user_data:data[0]['Contact_List']});
+                    if (!isEmpty(data[0]['Contact_List'])) {
+                        res.json({status: "1", message: "Contact List", user_data: data[0]['Contact_List']});
+                    } else {
+                        res.json({
+                            status: "0",
+                            message: "Contact_List is not available",
+                            user_data: data[0]['Contact_List']
+                        });
                     }
 
                 }).catch((err) => {
@@ -459,7 +500,7 @@ client.connect((err, db) => {
                             Auth_Token: Auth_Token
                         },
                         {
-                            $set: {Contact_List: req.body.Contact_List, updatedAt : new Date()}
+                            $set: {Contact_List: req.body.Contact_List, updatedAt: new Date()}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "Contact list updated successfully"});
@@ -514,7 +555,7 @@ client.connect((err, db) => {
                             'Email.EmailAddress': mailOptions.to
                         },
                         {
-                            $set: {'Email.Verified': 'true', updatedAt : new Date()}
+                            $set: {'Email.Verified': 'true', updatedAt: new Date()}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "EmailAddress Verified successfully"});
