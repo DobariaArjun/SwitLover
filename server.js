@@ -430,7 +430,7 @@ client.connect((err, db) => {
                     }
                     else
                     {
-                        res.json({status: "3", message: "Contact_List is not available", user_data:data[0]['Contact_List']});
+                        res.json({status: "0", message: "Contact_List is not available", user_data:data[0]['Contact_List']});
                     }
 
                 }).catch((err) => {
