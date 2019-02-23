@@ -75,7 +75,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Generate Request Token
-        app.get('/api/GenerateRequestToken', (req, res) => {
+        app.post('/api/GenerateRequestToken', (req, res) => {
             var token = randtoken.generate(64);
             res.json({status: "1", message: token.toString()});
         });
@@ -83,7 +83,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Counter For Download but not Login
-        app.get('/api/NotLoginYet', (req, res) => {
+        app.post('/api/NotLoginYet', (req, res) => {
 
             var dataCounter = dbo.collection(counter).find({}).toArray();
             dataCounter.then((data) => {
@@ -519,7 +519,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Send Email For Verification
-        app.get('/api/EmailVerification', (req, res) => {
+        app.post('/api/EmailVerification', (req, res) => {
             rand = Math.floor((Math.random() * 1000) + 54);
             host = req.get('host');
             link = "http://" + req.get('host') + "/verify?id=" + rand;
@@ -543,7 +543,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Email Verification
-        app.get('/verify', function (req, res) {
+        app.post('/verify', function (req, res) {
             console.log(req.protocol + ":/" + req.get('host'));
             if ((req.protocol + "://" + req.get('host')) == ("http://" + host)) {
                 console.log("Domain is matched. Information is from Authentic email");
