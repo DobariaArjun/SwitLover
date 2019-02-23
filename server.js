@@ -324,6 +324,7 @@ client.connect((err, db) => {
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
+
                         res.json({status: "1", message: "success", user_data: result});
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
@@ -336,7 +337,10 @@ client.connect((err, db) => {
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
-                        res.json({status: "1", message: "success", user_data: result});
+                        var dataresult = result[0];
+                        delete  dataresult.Request_token;
+                        delete  dataresult.Auth_Token;
+                        res.json({status: "1", message: "success", user_data: dataresult});
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
