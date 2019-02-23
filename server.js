@@ -199,7 +199,8 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //OTP Verification
         app.post('/api/Verified', (req, res) => {
-            if (!req.body.Request_token || req.body.Request_token == null) {
+            var Request_token = req.header('Request_token');
+            if (!Request_token || Request_token == null) {
                 res.json({status: "5", message: "Request token missing"});
             } else {
                 if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
@@ -222,7 +223,7 @@ client.connect((err, db) => {
                                 'Phone_Number.Location': req.body.Location,
                                 is_Block: {$ne: 1}
                             }, {
-                                $set: {Request_token: req.body.Request_token, updatedAt : new Date()}
+                                $set: {Request_token: Request_token, updatedAt : new Date()}
                             }).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     var dataArray = dbo.collection(switlover).find({
@@ -244,7 +245,7 @@ client.connect((err, db) => {
                             })
                         } else {
                             var myObj = {
-                                Request_token: req.body.Request_token,
+                                Request_token: Request_token,
                                 Auth_Token: token.toString(),
                                 Username: [],
                                 Phone_Number: {
@@ -281,7 +282,7 @@ client.connect((err, db) => {
                                     res.json({status: "3", message: "Error while inserting records"});
                                 else {
                                     var dataArray = dbo.collection(switlover).find({
-                                        Request_token: req.body.Request_token,
+                                        Request_token: Request_token,
                                         is_Block: {$ne: 1}
                                     }).toArray();
                                     dataArray.then((result) => {
@@ -307,14 +308,15 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //Update Profile - after login first time
         app.post('/api/UpdateProfile', (req, res) => {
-            if (!req.body.Auth_Token || req.body.Auth_Token == null) {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
             } else {
                 if (!req.body.Username || req.body.Username == null) {
                     res.json({status: "4", message: "Parameter missing or Invalid"});
                 } else {
                     var dataArray = dbo.collection(switlover).find({
-                        Auth_Token: req.body.Auth_Token,
+                        Auth_Token: Auth_Token,
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
@@ -334,7 +336,7 @@ client.connect((err, db) => {
                             if (req.body.Email_Address != null && req.body.Email_Address) {
                                 dbo.collection(switlover).updateOne(
                                     {
-                                        Auth_Token: req.body.Auth_Token
+                                        Auth_Token: Auth_Token
                                     },
                                     {
                                         $set: {
@@ -362,7 +364,7 @@ client.connect((err, db) => {
                                 console.log(UsernameArray);
                                 dbo.collection(switlover).updateOne(
                                     {
-                                        Auth_Token: req.body.Auth_Token
+                                        Auth_Token: Auth_Token
                                     },
                                     {
                                         $set: {Username: UsernameArray, updatedAt : new Date()}
@@ -389,12 +391,13 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //OTP Verification
         app.post('/api/OverVerification', (req, res) => {
-            if (!req.body.Auth_Token || req.body.Auth_Token == null) {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
             } else {
                 dbo.collection(switlover).updateOne(
                     {
-                        'Auth_Token': req.body.Auth_Token
+                        Auth_Token: Auth_Token
                     },
                     {
                         $set: {'Phone_Number.is_OverVerification': 1, updatedAt : new Date()}
@@ -416,11 +419,12 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //Get Contact List
         app.post('/api/GetContactList',(req,res) => {
-            if (!req.body.Auth_Token || req.body.Auth_Token == null) {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
             } else {
                 var dataArray = dbo.collection(switlover).find({
-                    Auth_Token: req.body.Auth_Token,
+                    Auth_Token: Auth_Token,
                     is_Block: {$ne: 1}
                 }).toArray();
                 dataArray.then((data) => {
@@ -443,7 +447,8 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //Set Contact List
         app.post('/api/ContactList', (req, res) => {
-            if (!req.body.Auth_Token || req.body.Auth_Token == null) {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
             } else {
                 if (!req.body.Contact_List || req.body.Contact_List == null) {
@@ -451,7 +456,7 @@ client.connect((err, db) => {
                 } else {
                     dbo.collection(switlover).updateOne(
                         {
-                            Auth_Token: req.body.Auth_Token
+                            Auth_Token: Auth_Token
                         },
                         {
                             $set: {Contact_List: req.body.Contact_List, updatedAt : new Date()}
