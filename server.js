@@ -27,6 +27,30 @@ var smtpTransport = nodemailer.createTransport({
 });
 var rand, mailOptions, host, link;
 
+// var obj = {
+//     "7567080717": {
+//         "name": "Keyur Akbari",
+//         "numberList":
+//             [
+//                 {
+//                     "code": "+91",
+//                     "number": "7567080717",
+//                     "isRemovedByAdmin": 0,
+//                     "isRemovedByUser": 0
+//                 },
+//                 {
+//                     "code": "+91",
+//                     "number": "7567656589",
+//                     "isRemovedByAdmin": 0,
+//                     "isRemovedByUser": 0
+//                 }
+//             ],
+//         "image": "",
+//         "isRemovedByAdmin": 0,
+//         "isRemovedByUser": 0
+//     }
+// }
+
 //--------------------------------------------------------------------------------------------------------------
 //COLLECTIONS
 var counter = "counters";
@@ -307,7 +331,7 @@ client.connect((err, db) => {
                             } else {
                                 UsernameArray.push(req.body.Username);
                             }
-                            if (req.body.Email_Address != null || !req.body.Email_Address) {
+                            if (req.body.Email_Address != null && req.body.Email_Address) {
                                 dbo.collection(switlover).updateOne(
                                     {
                                         Auth_Token: req.body.Auth_Token
@@ -332,30 +356,6 @@ client.connect((err, db) => {
                                         })
                                     } else {
                                         res.json({status: "3", message: "Profile updation field"});
-
-                                        var obj = {
-                                            "7567080717": {
-                                                "name": "Keyur Akbari",
-                                                "numberList":
-                                                    [
-                                                        {
-                                                            "code": "+91",
-                                                            "number": "7567080717",
-                                                            "isRemovedByAdmin": 0,
-                                                            "isRemovedByUser": 0
-                                                        },
-                                                        {
-                                                            "code": "+91",
-                                                            "number": "7567656589",
-                                                            "isRemovedByAdmin": 0,
-                                                            "isRemovedByUser": 0
-                                                        }
-                                                    ],
-                                                "image": "",
-                                                "isRemovedByAdmin": 0,
-                                                "isRemovedByUser": 0
-                                            }
-                                        }
                                     }
                                 });
                             } else {
