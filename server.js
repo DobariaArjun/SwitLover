@@ -253,7 +253,7 @@ client.connect((err, db) => {
                                 updatedAt: new Date(),
                                 deletedAt: ""
                             };
-                            dbo.collection("switlover").insertOne(myObj, (err, result) => {
+                            dbo.collection(switlover).insertOne(myObj, (err, result) => {
                                 if (err)
                                     res.json({status: "3", message: "Error while inserting records"});
                                 else {
@@ -296,13 +296,17 @@ client.connect((err, db) => {
                     }).toArray();
                     dataArray.then((result) => {
                         var UsernameArray = result[0]['Username'];
-                        var existUser = UsernameArray[UsernameArray.length - 1];
-                        var newUsername = req.body.Username;
-                        if (newUsername != existUser) {
+                        if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "") {
+                            var existUser = UsernameArray[UsernameArray.length - 1];
+                            var newUsername = req.body.Username;
+                            if (newUsername != existUser) {
+                                UsernameArray.push(req.body.Username);
+                            }
+                        } else {
                             UsernameArray.push(req.body.Username);
                         }
                         if (req.body.Email_Address != null || !req.body.Email_Address) {
-                            dbo.collection('switlover').updateOne(
+                            dbo.collection(switlover).updateOne(
                                 {
                                     Auth_Token: req.body.Auth_Token
                                 },
@@ -320,35 +324,46 @@ client.connect((err, db) => {
                                                 status: "7",
                                                 message: "Please check your inbox for the verification mail send from the SwitLover"
                                             });
-                                        }
-                                        else{
+                                        } else {
                                             res.json({status: "3", message: "Mail sending faild"});
                                         }
                                     })
                                 } else {
                                     res.json({status: "3", message: "Profile updation field"});
 
-                                    // var obj = {
-                                    //     "7567080717": {
-                                    //         "name": "Keyur Akbari",
-                                    //         "numberList": [{
-                                    //             "code": "+91",
-                                    //             "number": "7567080717",
-                                    //             "isRemovedByAdmin": 0
-                                    //         },
-                                    //             {"code": "+91", "number": "7567656589", "isRemovedByAdmin": 0}],
-                                    //         "image": ""
-                                    //     }
-                                    // }
+                                    var obj = {
+                                        "7567080717": {
+                                            "name": "Keyur Akbari",
+                                            "numberList":
+                                                [
+                                                    {
+                                                        "code": "+91",
+                                                        "number": "7567080717",
+                                                        "isRemovedByAdmin": 0,
+                                                        "isRemovedByUser": 0
+                                                    },
+                                                    {
+                                                        "code": "+91",
+                                                        "number": "7567656589",
+                                                        "isRemovedByAdmin": 0,
+                                                        "isRemovedByUser": 0
+                                                    }
+                                                ],
+                                            "image": "",
+                                            "isRemovedByAdmin": 0,
+                                            "isRemovedByUser": 0
+                                        }
+                                    }
                                 }
                             });
                         } else {
-                            dbo.collection('switlover').updateOne(
+                            dbo.collection(switlover).updateOne(
                                 {
                                     Auth_Token: req.body.Auth_Token
                                 },
                                 {
-                                    $set: {Username: UsernameArray}
+                                    $set: {Username: UsernameArray},
+                                    $currentDate: {updatedAt: true}
                                 }).then((data) => {
                                 if (data['result']['n'] == 1) {
                                     res.json({status: "1", message: "Profile updated successfully"});
@@ -404,7 +419,7 @@ client.connect((err, db) => {
                 if (!req.body.Contact_List || req.body.Contact_List == null) {
                     res.json({status: "4", message: "Parameter missing or Invalid"});
                 } else {
-                    dbo.collection('switlover').updateOne(
+                    dbo.collection(switlover).updateOne(
                         {
                             Auth_Token: req.body.Auth_Token
                         },
@@ -460,7 +475,7 @@ client.connect((err, db) => {
                 if (req.query.id == rand) {
                     console.log("email is verified");
                     res.end("<h1>Email " + mailOptions.to + " is been Successfully verified");
-                    dbo.collection('switlover').updateOne(
+                    dbo.collection(switlover).updateOne(
                         {
                             'Email.EmailAddress': mailOptions.to
                         },
