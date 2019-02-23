@@ -7,6 +7,7 @@ const SendOtp = require('sendotp');
 const randtoken = require('rand-token');
 const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
 const app = express();
+const request = require('request');
 
 const nodemailer = require("nodemailer");
 
@@ -196,7 +197,10 @@ client.connect((err, db) => {
                                 'Phone_Number.Number': req.body.Number,
                                 'Phone_Number.Location': req.body.Location,
                                 is_Block: {$ne: 1}
-                            }, {$set: {Request_token: req.body.Request_token}}).then((dataresult) => {
+                            }, {
+                                $set: {Request_token: req.body.Request_token},
+                                $currentdate: {updatedAt: true}
+                            }).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     var dataArray = dbo.collection(switlover).find({
                                         'Phone_Number.Contry_Code': req.body.Contry_Code,
@@ -305,11 +309,22 @@ client.connect((err, db) => {
                                 {
                                     $set: {
                                         Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                        Username: UsernameArray
+                                        Username: UsernameArray,
+                                        $currentdate: {updatedAt: true}
                                     }
                                 }).then((data) => {
                                 if (data['result']['n'] == 1) {
-                                    res.json({status: "1", message: "Profile updated successfully"});
+                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                        if (!apierr) {
+                                            res.json({
+                                                status: "7",
+                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                            });
+                                        }
+                                        else{
+                                            res.json({status: "3", message: "Mail sending faild"});
+                                        }
+                                    })
                                 } else {
                                     res.json({status: "3", message: "Profile updation field"});
                                 }
@@ -350,7 +365,8 @@ client.connect((err, db) => {
                         'Auth_Token': req.body.Auth_Token
                     },
                     {
-                        $set: {'Phone_Number.is_OverVerification': 1}
+                        $set: {'Phone_Number.is_OverVerification': 1},
+                        $currentdate: {updatedAt: true}
                     }
                 ).then((result) => {
                     if (result['result']['n'] == 1) {
@@ -380,7 +396,8 @@ client.connect((err, db) => {
                             Auth_Token: req.body.Auth_Token
                         },
                         {
-                            $set: {Contact_List: req.body.Contact_List}
+                            $set: {Contact_List: req.body.Contact_List},
+                            $currentdate: {updatedAt: true}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "Contact list updated successfully"});
@@ -436,6 +453,7 @@ client.connect((err, db) => {
                         },
                         {
                             $set: {'Email.Verified': 'true'},
+                            $currentdate: {updatedAt: true}
                         }).then((result) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "EmailAddress Verified successfully"});
