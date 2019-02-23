@@ -196,7 +196,7 @@ client.connect((err, db) => {
                                 'Phone_Number.Number': req.body.Number,
                                 'Phone_Number.Location': req.body.Location,
                                 is_Block: {$ne: 1}
-                            }, {Request_token: req.body.Request_token}).then((dataresult) => {
+                            }, {$set: {Request_token: req.body.Request_token}}).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     res.json({status: "1", message: "User is available", user_data: result});
                                 } else {
