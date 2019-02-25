@@ -139,7 +139,59 @@ client.connect((err, db) => {
                     })
                 }
             }
-        })
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //My Like
+        app.post('/api/MyLikes', (req, res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                if (!req.body || isEmpty(req.body)) {
+                    res.json({status: "4", message: "Parameter missing or Invalid"});
+                } else {
+                    var number = [];
+                    number = req.body.Number;
+                    for (var i = 0; i < number.length; i++) {
+                        var dataArray = dbo.collection(switlover).find({
+                            'Phone_Number.Contry_Code': number[i]['code'],
+                            'Phone_Number.Number': number[i]['number']
+                        }).toArray();
+                        dataArray.then((result) => {
+                            if (!isEmpty(result)) {
+
+                                var userID = result[0]['_id'];
+                                console.log(userID);
+                                var likeArray = [];
+                                likeArray.push(userID);
+                                dbo.collection(switlover).updateOne({
+                                        Auth_Token: Auth_Token,
+                                    },
+                                    {
+                                        $set: {Like: likeArray}
+                                    }).then((resultdata) => {
+                                    if (resultdata['result']['n'] == 1) {
+                                        res.json({status:"1", message:"success"});
+                                    }
+                                    else
+                                    {
+                                        res.json({status: "3", message: "1Internal server error"})
+                                    }
+                                }).catch((errdata) => {
+                                    res.json({status: "3", message: "2Internal server error"})
+                                })
+                            } else {
+                                //No user found
+                            }
+                        }).catch((err) => {
+                            res.json({status: "3", message: "3Internal server error"})
+                        })
+                    }
+                }
+            }
+        });
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
@@ -246,11 +298,6 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //get Profile
-        /*
-        * Header : Auth_Token
-        * params: UserID : to send the particuler user profile
-        * if UserID not available then send the current login user profile
-        * */
         app.post('/api/GetProfile', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
             if (!Auth_Token || Auth_Token == null) {
@@ -282,7 +329,7 @@ client.connect((err, db) => {
                     })
                 }
             }
-        })
+        });
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
