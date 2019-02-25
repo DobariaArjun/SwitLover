@@ -3,9 +3,8 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const promise = require('promise');
 const isEmpty = require('is-empty');
-const SendOtp = require('sendotp');
 const randtoken = require('rand-token');
-const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
+// const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
 const app = express();
 const request = require('request');
 const ObjectId = require('mongodb').ObjectID;
@@ -15,10 +14,6 @@ const nodemailer = require("nodemailer");
 const uri = "mongodb+srv://ArjunDobaria:Pravin@143@switlover-bjxu8.mongodb.net/test?retryWrites=true"
 const client = new MongoClient(uri, {useNewUrlParser: true});
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
-}
-
 var smtpTransport = nodemailer.createTransport({
     service: "Gmail",
     auth: {
@@ -27,30 +22,6 @@ var smtpTransport = nodemailer.createTransport({
     }
 });
 var rand, mailOptions, host, link;
-
-// var obj = {
-//     "7567080717": {
-//         "name": "Keyur Akbari",
-//         "numberList":
-//             [
-//                 {
-//                     "code": "+91",
-//                     "number": "7567080717",
-//                     "isRemovedByAdmin": 0,
-//                     "isRemovedByUser": 0
-//                 },
-//                 {
-//                     "code": "+91",
-//                     "number": "7567656589",
-//                     "isRemovedByAdmin": 0,
-//                     "isRemovedByUser": 0
-//                 }
-//             ],
-//         "image": "",
-//         "isRemovedByAdmin": 0,
-//         "isRemovedByUser": 0
-//     }
-// }
 
 //--------------------------------------------------------------------------------------------------------------
 //COLLECTIONS
@@ -154,10 +125,12 @@ client.connect((err, db) => {
                         'Phone_Number.Contry_Code': req.body.Contry_Code,
                         'Phone_Number.Number': req.body.Number,
                         'Phone_Number.Location': req.body.Location,
+                        'Phone_Number.Verified': req.body.Verified,
+
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
-                        if(!isEmpty(result))
+                        if (!isEmpty(result))
                             res.json({status: "1", message: "User is available", user_data: result});
                         else
                             res.json({status: "0", message: "User is not available"});
@@ -313,6 +286,55 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
+        //Like contacts
+        app.post('/api/GetContactsForLike', (req, res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                var dataArray = dbo.collection(switlover).find({
+                    Auth_Token: Auth_Token,
+                    is_Block: {$ne: 1}
+                }).toArray();
+                var numberArray = [];
+                dataArray.then((data) => {
+                    if (!isEmpty(data[0]['Contact_List'])) {
+
+                        for (var i = 0; i < data[0]['Contact_List'].length; i++) {
+                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                var arrayNumber = [];
+                                for (var j = 0; j < data[0]['Contact_List'][i]['numberList'].length; j++) {
+                                    // var phoneNumber = data[0]['Contact_List'][i]['numberList'][j]['code'] + "" + data[0]['Contact_List'][i]['numberList'][j]['number'];
+                                    if (data[0]['Contact_List'][i]['numberList'][j]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['numberList'][j]['isRemovedByUser'] == 0) {
+                                        var numberCode = {
+                                            code: data[0]['Contact_List'][i]['numberList'][j]['code'],
+                                            number: data[0]['Contact_List'][i]['numberList'][j]['number']
+                                        }
+                                        arrayNumber.push(numberCode)
+                                    }
+                                }
+                                var myObj = {
+                                    Name: data[0]['Contact_List'][i]['name'],
+                                    Number: arrayNumber,
+                                    Image: data[0]['Contact_List'][i]['image']
+                                };
+                                numberArray.push(myObj);
+                            } else {
+                                if (isEmpty(numberArray)) {
+                                    res.json({status: "0", message: "Sorry there is no contact to display"});
+                                }
+                            }
+                        }
+                        res.json({status: "1", message: "Contact List", user_data: numberArray});
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal Server error" + err});
+                })
+            }
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
         //Update Profile - after login first time
         app.post('/api/UpdateProfile', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
@@ -449,7 +471,7 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal Server error"});
                 })
             }
-        })
+        });
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
