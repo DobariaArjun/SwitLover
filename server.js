@@ -140,66 +140,38 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
-        //ResendOTP API
-        app.post('/api/ResendOTP', (req, res) => {
-            if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null) {
-                res.json({status: "4", message: "Parameter missing or Invalid"});
+        //Check user is exist or not
+        app.post('/api/CheckUser', (req, res) => {
+            var Request_token = req.header('Request_token');
+            if (!Request_token || Request_token == null) {
+                res.json({status: "5", message: "Request token missing"});
             } else {
-                var Phone_Number = req.body.Contry_Code + "" + req.body.Number;
-
-                var randomOTP = getRandomInt(999999);
-                sendOtp.send(Phone_Number, "PRIIND", randomOTP, (error, smssent) => {
-                    if (error)
-                        res.json({status: "3", message: "Sms sending failed, Please resend the sms for OTP"});
-                    else {
-                        res.json({status: "1", message: randomOTP.toString()});
-                    }
-                });
+                if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
+                    && !req.body.Location || req.body.Location == null && !req.body.Verified || req.body.Verified == null) {
+                    res.json({status: "4", message: "Parameter missing or Invalid"});
+                } else {
+                    var dataArray = dbo.collection(switlover).find({
+                        'Phone_Number.Contry_Code': req.body.Contry_Code,
+                        'Phone_Number.Number': req.body.Number,
+                        'Phone_Number.Location': req.body.Location,
+                        is_Block: {$ne: 1}
+                    }).toArray();
+                    dataArray.then((result) => {
+                        if(!isEmpty(result))
+                            res.json({status: "1", message: "User is available", user_data: result});
+                        else
+                            res.json({status: "0", message: "User is not available"});
+                    }).catch((err) => {
+                        res.json({status: "3", message: "Internal server error"});
+                    })
+                }
             }
-
-
-        });
+        })
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
-        //Login API
-        app.post('/api/Login', (req, res) => {
-            if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null) {
-                res.json({status: "4", message: "Parameter missing or Invalid"});
-            } else {
-                var Phone_Number = req.body.Contry_Code + "" + req.body.Number;
-                var dataArray = dbo.collection(switlover).find({
-                    'Phone_Number.Number': req.body.Number,
-                    'Phone_Number.Contry_Code': req.body.Contry_Code,
-                    isBlock: {$ne: 1}
-                }).toArray();
-                dataArray.then((data) => {
-                    var randomOTP = getRandomInt(999999);
-                    sendOtp.send(Phone_Number, "PRIIND", randomOTP, (error, smssent) => {
-                        if (error)
-                            res.json({status: "3", message: "Sms sending failed, Please resend the sms for OTP"});
-                        else {
-
-                            res.json({
-                                status: "1",
-                                message: "success",
-                                data: {code: randomOTP.toString(), request_token: randtoken.generate(64).toString()}
-                            });
-                        }
-
-
-                    });
-                }).catch((err) => {
-                    res.json({status: "3", message: "Internal Server error"});
-                });
-            }
-
-        });
-        //--------------------------------------------------------------------------------------------------------------
-
-        //--------------------------------------------------------------------------------------------------------------
-        //OTP Verification
-        app.post('/api/Verified', (req, res) => {
+        //Login User
+        app.post('/api/CheckLogin', (req, res) => {
             var Request_token = req.header('Request_token');
             if (!Request_token || Request_token == null) {
                 res.json({status: "5", message: "Request token missing"});
@@ -228,9 +200,7 @@ client.connect((err, db) => {
                             }).then((dataresult) => {
                                 if (dataresult['result']['n'] == 1) {
                                     var dataArray = dbo.collection(switlover).find({
-                                        'Phone_Number.Contry_Code': req.body.Contry_Code,
-                                        'Phone_Number.Number': req.body.Number,
-                                        'Phone_Number.Location': req.body.Location,
+                                        Request_token: Request_token,
                                         is_Block: {$ne: 1}
                                     }).toArray();
                                     dataArray.then((finalresult) => {
@@ -249,15 +219,9 @@ client.connect((err, db) => {
                                 Request_token: Request_token,
                                 Auth_Token: token.toString(),
                                 Username: [],
-                                Phone_Number: [{
-                                    Contry_Code: req.body.Contry_Code,
-                                    Number: req.body.Number,
-                                    Location: req.body.Location,
-                                    Verified: req.body.Verified,
-                                    is_OverVerification: 0
-                                }],
+                                Phone_Number: [req.body],
                                 Email: {EmailAddress: "", Verified: "false"},
-                                Profile_Pic:"",
+                                Profile_Pic: "",
                                 Contact_List: "",
                                 Contact_Not_Recognized: 0,
                                 Add_New_Number_From_App: 0,
@@ -330,17 +294,15 @@ client.connect((err, db) => {
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
-                }
-                else
-                {
+                } else {
                     var dataArray = dbo.collection(switlover).find({
                         _id: new ObjectId(req.body.userID),
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
                         var dataresult = result[0];
-                        delete  dataresult.Request_token;
-                        delete  dataresult.Auth_Token;
+                        delete dataresult.Request_token;
+                        delete dataresult.Auth_Token;
                         res.json({status: "1", message: "success", user_data: dataresult});
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
