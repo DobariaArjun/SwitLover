@@ -249,14 +249,15 @@ client.connect((err, db) => {
                                 Request_token: Request_token,
                                 Auth_Token: token.toString(),
                                 Username: [],
-                                Phone_Number: {
+                                Phone_Number: [{
                                     Contry_Code: req.body.Contry_Code,
                                     Number: req.body.Number,
                                     Location: req.body.Location,
                                     Verified: req.body.Verified,
                                     is_OverVerification: 0
-                                },
+                                }],
                                 Email: {EmailAddress: "", Verified: "false"},
+                                Profile_Pic:"",
                                 Contact_List: "",
                                 Contact_Not_Recognized: 0,
                                 Add_New_Number_From_App: 0,
