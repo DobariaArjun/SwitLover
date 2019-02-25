@@ -286,7 +286,7 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
-        //Like contacts
+        //Get contacts for Like
         app.post('/api/GetContactsForLike', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
             if (!Auth_Token || Auth_Token == null) {
@@ -315,8 +315,8 @@ client.connect((err, db) => {
                                 }
                                 var myObj = {
                                     Name: data[0]['Contact_List'][i]['name'],
-                                    Number: arrayNumber,
-                                    Image: data[0]['Contact_List'][i]['image']
+                                    Image: data[0]['Contact_List'][i]['image'],
+                                    Number: arrayNumber
                                 };
                                 numberArray.push(myObj);
                             } else {
