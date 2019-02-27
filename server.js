@@ -118,7 +118,7 @@ client.connect((err, db) => {
                 res.json({status: "5", message: "Request token missing"});
             } else {
                 if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
-                    && !req.body.Location || req.body.Location == null && !req.body.Verified || req.body.Verified == null) {
+                    && !req.body.Location || req.body.Location == null) {
                     res.json({status: "4", message: "Parameter missing or Invalid"});
                 } else {
                     var dataArray = dbo.collection(switlover).find({
