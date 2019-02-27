@@ -124,15 +124,26 @@ client.connect((err, db) => {
                     var dataArray = dbo.collection(switlover).find({
                         'Phone_Number.Contry_Code': req.body.Contry_Code,
                         'Phone_Number.Number': req.body.Number,
-                        'Phone_Number.Location': req.body.Location,
-                        'Phone_Number.Verified': req.body.Verified,
-                        is_Block: {$ne: 1}
+                        'Phone_Number.Location': req.body.Location
                     }).toArray();
                     dataArray.then((result) => {
-                        if (!isEmpty(result))
-                            res.json({status: "1", message: "User is available", user_data: result});
-                        else
-                            res.json({status: "0", message: "User is not available"});
+                        if (!isEmpty(result)) {
+                            if (result[0]['is_Block'] == 1) {
+                                res.json({status: "7", type: "1", message: "Sorry you are block for this app. Contact to our support team.", user_data: result});
+                            }
+                            if (result[0]['is_Deleted'] == 1) {
+                                res.json({status: "7", type: "2", message: "Sorry you are deleted from this app. If you not do this then please contact to support team.", user_data: result});
+                            }
+                            for(var i = 0; i < result[0]['Phone_Number'].length; i++)
+                            {
+                                if (result[0]['Phone_Number'][i]['is_OverVerification'] == 1) {
+                                    res.json({status: "7", type: "3", message: "Sorry this number is block for over verification. Please contact to our support team", user_data: result});
+                                }
+                            }
+                        }
+                        res.json({status: "1", message: "User is available", user_data: result});
+                    else
+                        res.json({status: "0", message: "User is not available"});
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
@@ -628,9 +639,7 @@ client.connect((err, db) => {
                                 }).catch((catcherr) => {
                                     res.json({status: "3", message: "3Internal Server error"});
                                 });
-
                             }
-
                         }
                     }).catch((err) => {
                         res.json({status: "3", message: "4Internal server error" + err});
