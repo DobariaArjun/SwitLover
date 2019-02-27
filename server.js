@@ -246,7 +246,7 @@ client.connect((err, db) => {
                                 Phone_Number: [req.body],
                                 Email: {EmailAddress: "", Verified: "false"},
                                 Profile_Pic: "",
-                                Contact_List: "",
+                                Contact_List: [],
                                 Contact_Not_Recognized: 0,
                                 Add_New_Number_From_App: 0,
                                 Contact_Remove_Ratio: 0,
