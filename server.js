@@ -396,9 +396,14 @@ client.connect((err, db) => {
                         if (isEmpty(result)) {
                             res.json({status: "0", message: "User not found"});
                         } else {
+
+                            var currentEmail = result[0]['Email']['EmailAddress'];
+                            console.log(currentEmail);
+
+
                             var UsernameArray = [];
                             UsernameArray = result[0]['Username'];
-                            console.log(result);
+
                             if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "" || UsernameArray != "null") {
                                 var existUser = UsernameArray[UsernameArray.length - 1];
                                 var newUsername = req.body.Username;
@@ -408,36 +413,129 @@ client.connect((err, db) => {
                             } else {
                                 UsernameArray.push(req.body.Username);
                             }
-                            if(req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address)
-                            {
-                                dbo.collection(switlover).updateOne(
-                                    {
-                                        Auth_Token: Auth_Token
-                                    },
-                                    {
-                                        $set: {
-                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                            Username: UsernameArray,
-                                            updatedAt: new Date()
-                                        }
-                                    }).then((data) => {
-                                    if (data['result']['n'] == 1) {
-                                        request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                            if (!apierr) {
-                                                res.json({
-                                                    status: "7",
-                                                    message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                });
-                                            } else {
-                                                res.json({status: "3", message: "Mail sending faild"});
-                                            }
-                                        })
+
+                            var arrayContact = [];
+                            var isAvailable;
+                            arrayContact = result[0]['Phone_Number'];
+                            if (arrayContact != null || !isEmpty(arrayContact)) {
+                                for (var i = 0; i < arrayContact.length; i++) {
+                                    if (arrayContact[i]['Number'] == req.body.Number && arrayContact[i]['Contry_Code'] == req.body.Contry_Code
+                                        && arrayContact[i]['Location'] == req.body.Location) {
+                                        isAvailable = true;
+                                        break;
                                     } else {
-                                        res.json({status: "3", message: "Profile updation field"});
+                                        isAvailable = false;
                                     }
-                                });
+                                }
+                                if (!isAvailable) {
+                                    var myObj = {
+                                        Contry_Code: req.body.Contry_Code,
+                                        Number: req.body.Number,
+                                        Location: req.body.Location,
+                                        Verified: req.body.Verified,
+                                        is_OverVerification: 0
+                                    };
+                                    arrayContact.push(myObj);
+                                }
                             }
-                            else if (req.body.Username != null && req.body.Username) {
+
+                            if (req.body.Contry_Code && req.body.Contry_Code != null && req.body.Number && req.body.Number != null
+                                && req.body.Location && req.body.Location != null && req.body.Verified && req.body.Verified != null
+                                && req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
+                                if (currentEmail == req.body.Email_Address) {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Username: UsernameArray,
+                                                Phone_Number: arrayContact,
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            res.json({status: "1", message: "Profile updated successfully"});
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
+                                } else {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                Username: UsernameArray,
+                                                Phone_Number: arrayContact,
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                if (!apierr) {
+                                                    res.json({
+                                                        status: "7",
+                                                        message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                    });
+                                                } else {
+                                                    res.json({status: "3", message: "Mail sending faild"});
+                                                }
+                                            })
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
+                                }
+                            } else if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
+                                if (currentEmail == req.body.Email_Address) {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Username: UsernameArray,
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            res.json({status: "1", message: "Profile updated successfully"});
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
+                                } else {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                Username: UsernameArray,
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                if (!apierr) {
+                                                    res.json({
+                                                        status: "7",
+                                                        message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                    });
+                                                } else {
+                                                    res.json({status: "3", message: "Mail sending faild"});
+                                                }
+                                            })
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
+                                }
+                            } else if (req.body.Username != null && req.body.Username) {
 
                                 dbo.collection(switlover).updateOne(
                                     {
@@ -456,53 +554,56 @@ client.connect((err, db) => {
                                     res.json({status: "0", message: "Profile not found"});
                                 })
 
-                            }
-                            else if (req.body.Email_Address != null && req.body.Email_Address) {
-                                dbo.collection(switlover).updateOne(
-                                    {
-                                        Auth_Token: Auth_Token
-                                    },
-                                    {
-                                        $set: {
-                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                            updatedAt: new Date()
-                                        }
-                                    }).then((data) => {
-                                    if (data['result']['n'] == 1) {
-                                        request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                            if (!apierr) {
-                                                res.json({
-                                                    status: "7",
-                                                    message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                });
-                                            } else {
-                                                res.json({status: "3", message: "Mail sending faild"});
+                            } else if (req.body.Email_Address != null && req.body.Email_Address) {
+                                if (currentEmail == req.body.Email_Address) {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                updatedAt: new Date()
                                             }
-                                        })
-                                    } else {
-                                        res.json({status: "3", message: "Profile updation field"});
-                                    }
-                                });
-                            } else if (req.body.Contry_Code || req.body.Contry_Code != null && req.body.Number || req.body.Number != null
-                                && req.body.Location || req.body.Location != null && req.body.Verified || req.body.Verified != null) {
-
-                                var arrayContact = [];
-                                arrayContact = result[0]['Phone_Number'];
-                                if(arrayContact!=null || !isEmpty(arrayContact))
-                                {
-                                    var myObj = {
-                                        Contry_Code : req.body.Contry_Code,
-                                        Number: req.body.Number,
-                                        Location: req.body.Location,
-                                        Verified: req.body.Verified,
-                                        is_OverVerification: 0
-                                    }
-                                    arrayContact.push(myObj);
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            res.json({status: "1", message: "Profile updated successfully"});
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
+                                } else {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                if (!apierr) {
+                                                    res.json({
+                                                        status: "7",
+                                                        message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                    });
+                                                } else {
+                                                    res.json({status: "3", message: "Mail sending faild"});
+                                                }
+                                            })
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
                                 }
-                                console.log(arrayContact);
+
+                            } else if (req.body.Contry_Code && req.body.Contry_Code != null && req.body.Number && req.body.Number != null
+                                && req.body.Location && req.body.Location != null && req.body.Verified && req.body.Verified != null) {
 
                                 dbo.collection(switlover).updateOne({
-                                    Auth_Token:Auth_Token,
+                                    Auth_Token: Auth_Token,
                                     is_Block: {$ne: 1}
                                 }, {
                                     $set: {Phone_Number: arrayContact, updatedAt: new Date()}
@@ -513,7 +614,11 @@ client.connect((err, db) => {
                                             is_Block: {$ne: 1}
                                         }).toArray();
                                         dataArray.then((finalresult) => {
-                                            res.json({status: "1", message: "User is available", user_data: finalresult});
+                                            res.json({
+                                                status: "1",
+                                                message: "success",
+                                                user_data: finalresult
+                                            });
                                         }).catch((finalerr) => {
                                             res.json({status: "3", message: "1Internal server error"});
                                         })
