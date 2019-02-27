@@ -141,7 +141,6 @@ client.connect((err, db) => {
                                 }
                             }
                         }
-                        res.json({status: "1", message: "User is available", user_data: result});
                     else
                         res.json({status: "0", message: "User is not available"});
                     }).catch((err) => {
