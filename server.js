@@ -339,8 +339,26 @@ client.connect((err, db) => {
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
-
-                        res.json({status: "1", message: "success", user_data: result});
+                        var dataresult = result[0];
+                        delete dataresult.Request_token;
+                        delete dataresult.Auth_Token;
+                        delete dataresult.Contact_List;
+                        delete dataresult.is_Block;
+                        delete dataresult.is_Deleted;
+                        delete dataresult.Contact_Not_Recognized;
+                        delete dataresult.Add_New_Number_From_App;
+                        delete dataresult.Contact_Remove_Ratio;
+                        delete dataresult.Like;
+                        delete dataresult.Match_Ratio;
+                        delete dataresult.PowerID;
+                        delete dataresult.Not_In_App_Purchase;
+                        delete dataresult.language;
+                        delete dataresult.Device;
+                        delete dataresult.createdAt;
+                        delete dataresult.updatedAt;
+                        delete dataresult.deletedAt;
+                        delete dataresult.is_Online;
+                        res.json({status: "1", message: "success", user_data: dataresult});
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
@@ -353,6 +371,22 @@ client.connect((err, db) => {
                         var dataresult = result[0];
                         delete dataresult.Request_token;
                         delete dataresult.Auth_Token;
+                        delete dataresult.Contact_List;
+                        delete dataresult.is_Block;
+                        delete dataresult.is_Deleted;
+                        delete dataresult.Contact_Not_Recognized;
+                        delete dataresult.Add_New_Number_From_App;
+                        delete dataresult.Contact_Remove_Ratio;
+                        delete dataresult.Like;
+                        delete dataresult.Match_Ratio;
+                        delete dataresult.PowerID;
+                        delete dataresult.Not_In_App_Purchase;
+                        delete dataresult.language;
+                        delete dataresult.Device;
+                        delete dataresult.createdAt;
+                        delete dataresult.updatedAt;
+                        delete dataresult.deletedAt;
+                        delete dataresult.is_Online;
                         res.json({status: "1", message: "success", user_data: dataresult});
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
@@ -375,17 +409,17 @@ client.connect((err, db) => {
                 }).toArray();
                 var numberArray = [];
                 dataArray.then((data) => {
-                    if (!isEmpty(data[0]['Contact_List'])) {
 
-                        for (var i = 0; i < data[0]['Contact_List'].length; i++) {
+                    if (!isEmpty(data[0]['Contact_List'])) {
+                        for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
                             if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
                                 var arrayNumber = [];
-                                for (var j = 0; j < data[0]['Contact_List'][i]['numberList'].length; j++) {
+                                for (var j = 0; j < data[0]['Contact_List'][i]['mobileList'].length; j++) {
                                     // var phoneNumber = data[0]['Contact_List'][i]['numberList'][j]['code'] + "" + data[0]['Contact_List'][i]['numberList'][j]['number'];
-                                    if (data[0]['Contact_List'][i]['numberList'][j]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['numberList'][j]['isRemovedByUser'] == 0) {
+                                    if (data[0]['Contact_List'][i]['mobileList'][j]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['mobileList'][j]['isRemovedByUser'] == 0) {
                                         var numberCode = {
-                                            code: data[0]['Contact_List'][i]['numberList'][j]['code'],
-                                            number: data[0]['Contact_List'][i]['numberList'][j]['number']
+                                            code: data[0]['Contact_List'][i]['mobileList'][j]['code'],
+                                            number: data[0]['Contact_List'][i]['mobileList'][j]['number']
                                         }
                                         arrayNumber.push(numberCode)
                                     }
@@ -701,7 +735,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Get Contact List
-        app.post('/api/GetContactList', (req, res) => {
+         app.post('/api/GetContactList', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
             if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
