@@ -93,7 +93,7 @@ client.connect((err, db) => {
                             $set: {"General.UserNotLogin": UserNotLogin + 1},
                         }
                     ).then((result) => {
-                        console.log(result['result']['n']);
+
                         if (result['result']['n'] == 1)
                             res.json({status: "1", message: "counter updated successfully"});
                         else
@@ -163,7 +163,7 @@ client.connect((err, db) => {
                                 });
                                 return;
                             }
-                            res.json({status: "1", message: "User is available", user_data: result});
+                            res.json({status: "1", message: "User is available"});
                         } else
                             res.json({status: "0", message: "User is not register yet"});
                     }).catch((err) => {
