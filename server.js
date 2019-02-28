@@ -189,7 +189,8 @@ client.connect((err, db) => {
                     for (var i = 0; i < number.length; i++) {
                         var dataArray = dbo.collection(switlover).find({
                             'Phone_Number.Contry_Code': number[i]['code'],
-                            'Phone_Number.Number': number[i]['number']
+                            'Phone_Number.Number': number[i]['number'],
+                            is_Block: {$ne:1}
                         }).toArray();
                         dataArray.then((result) => {
                             if (!isEmpty(result)) {
@@ -201,7 +202,8 @@ client.connect((err, db) => {
                                 var existingLikes = [];
 
                                 var dataArray = dbo.collection(switlover).find({
-                                    Auth_Token: Auth_Token
+                                    Auth_Token: Auth_Token,
+                                    is_Block: {$ne:1}
                                 }).toArray();
                                 dataArray.then((dataresult) => {
                                     existingLikes = dataresult[0]['Like']
@@ -250,6 +252,50 @@ client.connect((err, db) => {
                 }
             }
         });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Contacts that like me
+        app.post('/api/LikeBy',(req,res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                var dataArray = dbo.collection(switlover).find({
+                    Auth_Token: Auth_Token,
+                    is_Block: {$ne:1}
+                }).toArray()
+                dataArray.then((result) => {
+                    var userId = result[0]['_id'];
+                    var idArray = dbo.collection(switlover).find({
+                        Like: userId,
+                        is_Block: {$ne:1}
+                    }).toArray()
+                    idArray.then((idresult) => {
+                        console.log(idresult);
+                        var myObj1 = [];
+
+                        for(var i = 0; i < idresult.length; i++)
+                        {
+                            var username = idresult[i]['Username'];
+                            var name = username[username.length-1]
+
+                            var myObj = {
+                                id: idresult[i]['_id'],
+                                name : name,
+                                image : idresult[i]['Profile_Pic']
+                            }
+                            myObj1.push(myObj);
+                        }
+                        res.json({status : "1", message:"success", user_data: myObj1});
+                    }).catch((iserr) => {
+                        res.json({status: "3", message: "Internal server error"});
+                    })
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            }
+        })
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
