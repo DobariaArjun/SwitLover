@@ -195,28 +195,56 @@ client.connect((err, db) => {
                             if (!isEmpty(result)) {
 
                                 var userID = result[0]['_id'];
-                                console.log(userID);
                                 var likeArray = [];
-                                likeArray.push(userID);
-                                dbo.collection(switlover).updateOne({
-                                        Auth_Token: Auth_Token,
-                                    },
-                                    {
-                                        $set: {Like: likeArray}
-                                    }).then((resultdata) => {
-                                    if (resultdata['result']['n'] == 1) {
-                                        res.json({status: "1", message: "success"});
+
+                                var isLiked = false;
+                                var existingLikes = [];
+
+                                var dataArray = dbo.collection(switlover).find({
+                                    Auth_Token: Auth_Token
+                                }).toArray();
+                                dataArray.then((dataresult) => {
+                                    existingLikes = dataresult[0]['Like']
+                                    console.log(existingLikes)
+                                    if (!isEmpty(existingLikes)) {
+                                        for (var j = 0; j < existingLikes.length; j++) {
+                                            if (existingLikes[j].equals(userID)) {
+                                                isLiked = true;
+                                            } else {
+                                                likeArray.push(existingLikes[j])
+                                                // isLiked = false;
+                                            }
+                                        }
+                                        if (!isLiked) {
+                                            likeArray.push(userID);
+                                        }
                                     } else {
-                                        res.json({status: "3", message: "1Internal server error"})
+                                        likeArray.push(userID)
                                     }
-                                }).catch((errdata) => {
-                                    res.json({status: "3", message: "2Internal server error"})
+                                    console.log(likeArray)
+                                    dbo.collection(switlover).updateOne({
+                                            Auth_Token: Auth_Token,
+                                        },
+                                        {
+                                            $set: {Like: likeArray}
+                                        }).then((resultdata) => {
+                                        if (resultdata['result']['n'] == 1) {
+                                            res.json({status: "1", message: "success"});
+                                        } else {
+                                            res.json({status: "3", message: "1Internal server error"})
+                                        }
+                                    }).catch((errdata) => {
+                                        res.json({status: "3", message: "2Internal server error"})
+                                    })
+                                }).catch((dataerror) => {
+
                                 })
+
                             } else {
                                 //No user found
                             }
                         }).catch((err) => {
-                            res.json({status: "3", message: "3Internal server error"})
+                            res.json({status: "3", message: "3Internal server error" + err})
                         })
                     }
                 }
@@ -735,7 +763,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Get Contact List
-         app.post('/api/GetContactList', (req, res) => {
+        app.post('/api/GetContactList', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
             if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
