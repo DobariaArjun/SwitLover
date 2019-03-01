@@ -17,8 +17,8 @@ const client = new MongoClient(uri, {useNewUrlParser: true});
 var smtpTransport = nodemailer.createTransport({
     service: "Gmail",
     auth: {
-        user: "arjun.dobaria12@gmail.com",
-        pass: "Harshu2007"
+        user: "switloverofficial@gmail.com",
+        pass: "Switlover123"
     }
 });
 var rand, mailOptions, host, link;
@@ -333,6 +333,22 @@ client.connect((err, db) => {
                                         is_Block: {$ne: 1}
                                     }).toArray();
                                     dataArray.then((finalresult) => {
+                                        delete finalresult[0].Contact_List;
+                                        delete finalresult[0].is_Block;
+                                        delete finalresult[0].is_Deleted;
+                                        delete finalresult[0].Contact_Not_Recognized;
+                                        delete finalresult[0].Add_New_Number_From_App;
+                                        delete finalresult[0].Contact_Remove_Ratio;
+                                        delete finalresult[0].Like;
+                                        delete finalresult[0].Match_Ratio;
+                                        delete finalresult[0].PowerID;
+                                        delete finalresult[0].Not_In_App_Purchase;
+                                        delete finalresult[0].language;
+                                        delete finalresult[0].Device;
+                                        delete finalresult[0].createdAt;
+                                        delete finalresult[0].updatedAt;
+                                        delete finalresult[0].deletedAt;
+                                        delete finalresult[0].is_Online;
                                         res.json({status: "1", message: "User is available", user_data: finalresult});
                                     }).catch((finalerr) => {
                                         res.json({status: "3", message: "Internal server error"});
@@ -894,7 +910,7 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Email Verification
-        app.get('/verify', function (req, res) {
+        app.get('/verify', (req, res) => {
             console.log(req.protocol + ":/" + req.get('host'));
             if ((req.protocol + "://" + req.get('host')) == ("http://" + host)) {
                 console.log("Domain is matched. Information is from Authentic email");
