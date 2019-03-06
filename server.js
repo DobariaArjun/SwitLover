@@ -27,6 +27,7 @@ var rand, mailOptions, host, link;
 //COLLECTIONS
 var counter = "counters";
 var switlover = "switlover";
+var notification = "notification"
 //--------------------------------------------------------------------------------------------------------------
 
 
@@ -190,7 +191,7 @@ client.connect((err, db) => {
                         var dataArray = dbo.collection(switlover).find({
                             'Phone_Number.Contry_Code': number[i]['code'],
                             'Phone_Number.Number': number[i]['number'],
-                            is_Block: {$ne:1}
+                            is_Block: {$ne: 1}
                         }).toArray();
                         dataArray.then((result) => {
                             if (!isEmpty(result)) {
@@ -203,7 +204,7 @@ client.connect((err, db) => {
 
                                 var dataArray = dbo.collection(switlover).find({
                                     Auth_Token: Auth_Token,
-                                    is_Block: {$ne:1}
+                                    is_Block: {$ne: 1}
                                 }).toArray();
                                 dataArray.then((dataresult) => {
                                     existingLikes = dataresult[0]['Like']
@@ -256,38 +257,37 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //Contacts that like me
-        app.post('/api/LikeBy',(req,res) => {
+        app.post('/api/LikeBy', (req, res) => {
             var Auth_Token = req.header('Auth_Token');
             if (!Auth_Token || Auth_Token == null) {
                 res.json({status: "6", message: "Auth token missing"});
             } else {
                 var dataArray = dbo.collection(switlover).find({
                     Auth_Token: Auth_Token,
-                    is_Block: {$ne:1}
+                    is_Block: {$ne: 1}
                 }).toArray()
                 dataArray.then((result) => {
                     var userId = result[0]['_id'];
                     var idArray = dbo.collection(switlover).find({
                         Like: userId,
-                        is_Block: {$ne:1}
+                        is_Block: {$ne: 1}
                     }).toArray()
                     idArray.then((idresult) => {
                         console.log(idresult);
                         var myObj1 = [];
 
-                        for(var i = 0; i < idresult.length; i++)
-                        {
+                        for (var i = 0; i < idresult.length; i++) {
                             var username = idresult[i]['Username'];
-                            var name = username[username.length-1]
+                            var name = username[username.length - 1]
 
                             var myObj = {
                                 id: idresult[i]['_id'],
-                                name : name,
-                                image : idresult[i]['Profile_Pic']
+                                name: name,
+                                image: idresult[i]['Profile_Pic']
                             }
                             myObj1.push(myObj);
                         }
-                        res.json({status : "1", message:"success", user_data: myObj1});
+                        res.json({status: "1", message: "success", user_data: myObj1});
                     }).catch((iserr) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
@@ -881,6 +881,139 @@ client.connect((err, db) => {
 
             }
 
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Get Notification Settings
+        app.post('/api/GetNotificationSettings', (req, res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
+                dataNotification.then((result) => {
+                    if(isEmpty(result))
+                        res.json({status: "0", message: "No notification settings found"});
+                    else
+                        res.json({status: "1", message: "success", user_data : result});
+                }).catch((err) => {
+                    res.json({status: "3 ", message: "notification updated failed"});
+                });
+            }
+        });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Set Notification Settings
+        app.post('/api/SetNotificationSettings', (req, res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
+                dataNotification.then((result) => {
+                    if (isEmpty(result)) {
+                        var myObj = {
+                            userID: req.body.userID,
+                            switlover: {
+                                play_sound_for_every_notification: 0,
+                                play_sound_for_every_message: 0,
+                                likes: 0,
+                                matches: 0,
+                                messages: 0,
+                                power_of_time: 0,
+                                promotions: 0,
+                            },
+                            phone: {
+                                play_sound_for_every_notification: 0,
+                                play_sound_for_every_message: 0,
+                                likes: 0,
+                                matches: 0,
+                                messages: 0,
+                                power_of_time: 0,
+                                promotions: 0,
+                            },
+                            email: {
+                                frequency: {
+                                    every_notification: 0,
+                                    twice_a_day: 0,
+                                    once_a_day: 0,
+                                    once_a_week: 0,
+                                    once_a_month: 0
+                                },
+                                newsletter: 0,
+                                promotions: 0,
+                                likes: 0,
+                                matches: 0,
+                                messages: 0,
+                                power_of_time: 0
+                            }
+                        }
+                        dbo.collection(notification).insertOne(myObj, (err, result) => {
+                            if (err)
+                                res.json({status: "3", message: "Inserting faild"});
+                            else {
+                                res.json({status: "1", message: "Notification set successfully"});
+                            }
+                        });
+                    } else {
+
+                        dbo.collection(notification).updateOne(
+                            {
+                                userID: req.body.userID,
+                            },
+                            {
+                                $set: {
+                                    switlover: {
+                                        play_sound_for_every_notification: req.body.play_sound_for_every_notification,
+                                        play_sound_for_every_message: req.body.play_sound_for_every_message,
+                                        likes: req.body.likes,
+                                        matches: req.body.matches,
+                                        messages: req.body.messages,
+                                        power_of_time: req.body.power_of_time,
+                                        promotions: req.body.promotions
+                                    },
+                                    phone: {
+                                        play_sound_for_every_notification: req.body.play_sound_for_every_notification,
+                                        play_sound_for_every_message: req.body.play_sound_for_every_message,
+                                        likes: req.body.likes,
+                                        matches: req.body.matches,
+                                        messages: req.body.messages,
+                                        power_of_time: req.body.power_of_time,
+                                        promotions: req.body.promotions
+                                    },
+                                    email: {
+                                        frequency: {
+                                            every_notification: req.body.every_notification,
+                                            twice_a_day: req.body.twice_a_day,
+                                            once_a_day: req.body.once_a_day,
+                                            once_a_week: req.body.once_a_week,
+                                            once_a_month: req.body.once_a_month
+                                        },
+                                        newsletter: req.body.newsletter,
+                                        promotions: req.body.promotions,
+                                        likes: req.body.likes,
+                                        matches: req.body.matches,
+                                        messages: req.body.messages,
+                                        power_of_time: req.body.power_of_time
+                                    }
+                                },
+                            }
+                        ).then((result) => {
+
+                            if (result['result']['n'] == 1)
+                                res.json({status: "1", message: "notification updated successfully"});
+                            else
+                                res.json({status: "3", message: "notification updated failed"});
+                        }).catch((err) => {
+                            res.json({status: "3 ", message: "notification updated failed"});
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3 ", message: "Internal server error"});
+                });
+            }
         });
         //--------------------------------------------------------------------------------------------------------------
 
