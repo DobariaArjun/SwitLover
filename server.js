@@ -966,37 +966,37 @@ client.connect((err, db) => {
                             {
                                 $set: {
                                     switlover: {
-                                        play_sound_for_every_notification: req.body.play_sound_for_every_notification,
-                                        play_sound_for_every_message: req.body.play_sound_for_every_message,
-                                        likes: req.body.likes,
-                                        matches: req.body.matches,
-                                        messages: req.body.messages,
-                                        power_of_time: req.body.power_of_time,
-                                        promotions: req.body.promotions
+                                        switlover_play_sound_for_every_notification: req.body.switlover_play_sound_for_every_notification,
+                                        switlover_play_sound_for_every_message: req.body.switlover_play_sound_for_every_message,
+                                        switlover_likes: req.body.switlover_likes,
+                                        switlover_matches: req.body.switlover_matches,
+                                        switlover_messages: req.body.switlover_messages,
+                                        switlover_power_of_time: req.body.switlover_power_of_time,
+                                        switlover_promotions: req.body.switlover_promotions
                                     },
                                     phone: {
-                                        play_sound_for_every_notification: req.body.play_sound_for_every_notification,
-                                        play_sound_for_every_message: req.body.play_sound_for_every_message,
-                                        likes: req.body.likes,
-                                        matches: req.body.matches,
-                                        messages: req.body.messages,
-                                        power_of_time: req.body.power_of_time,
-                                        promotions: req.body.promotions
+                                        phone_play_sound_for_every_notification: req.body.phone_play_sound_for_every_notification,
+                                        phone_play_sound_for_every_message: req.body.phone_play_sound_for_every_message,
+                                        phone_likes: req.body.phone_likes,
+                                        phone_matches: req.body.phone_matches,
+                                        phone_messages: req.body.phone_messages,
+                                        phone_power_of_time: req.body.phone_power_of_time,
+                                        phone_promotions: req.body.phone_promotions
                                     },
                                     email: {
                                         frequency: {
-                                            every_notification: req.body.every_notification,
-                                            twice_a_day: req.body.twice_a_day,
-                                            once_a_day: req.body.once_a_day,
-                                            once_a_week: req.body.once_a_week,
-                                            once_a_month: req.body.once_a_month
+                                            frequency_every_notification: req.body.frequency_every_notification,
+                                            frequency_twice_a_day: req.body.frequency_twice_a_day,
+                                            frequency_once_a_day: req.body.frequency_once_a_day,
+                                            frequency_once_a_week: req.body.frequency_once_a_week,
+                                            frequency_once_a_month: req.body.frequency_once_a_month
                                         },
-                                        newsletter: req.body.newsletter,
-                                        promotions: req.body.promotions,
-                                        likes: req.body.likes,
-                                        matches: req.body.matches,
-                                        messages: req.body.messages,
-                                        power_of_time: req.body.power_of_time
+                                        email_newsletter: req.body.email_newsletter,
+                                        email_promotions: req.body.email_promotions,
+                                        email_likes: req.body.email_likes,
+                                        email_matches: req.body.email_matches,
+                                        email_messages: req.body.email_messages,
+                                        email_power_of_time: req.body.email_power_of_time
                                     }
                                 },
                             }
