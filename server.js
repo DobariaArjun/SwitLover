@@ -185,71 +185,115 @@ client.connect((err, db) => {
                 if (!req.body || isEmpty(req.body)) {
                     res.json({status: "4", message: "Parameter missing or Invalid"});
                 } else {
-                    var number = [];
-                    number = req.body.Number;
-                    for (var i = 0; i < number.length; i++) {
-                        var dataArray = dbo.collection(switlover).find({
-                            'Phone_Number.Contry_Code': number[i]['code'],
-                            'Phone_Number.Number': number[i]['number'],
-                            is_Block: {$ne: 1}
-                        }).toArray();
-                        dataArray.then((result) => {
-                            if (!isEmpty(result)) {
+                    var number = req.body.code + "" + req.body.number;
+                    // number = req.body.number;
+                    // for (var i = 0; i < number.length; i++) {
+                    var dataArray = dbo.collection(switlover).find({
+                        'Phone_Number.Contry_Code': req.body.code,
+                        'Phone_Number.Number': req.body.number,
+                        is_Block: {$ne: 1}
+                    }).toArray();
+                    dataArray.then((result) => {
+                        if (!isEmpty(result)) {
 
-                                var userID = result[0]['_id'];
-                                var likeArray = [];
+                            var userID = result[0]['_id'];
+                            var likeArray = [];
 
-                                var isLiked = false;
-                                var existingLikes = [];
+                            var isLiked = false;
+                            var existingLikes = [];
 
-                                var dataArray = dbo.collection(switlover).find({
-                                    Auth_Token: Auth_Token,
-                                    is_Block: {$ne: 1}
-                                }).toArray();
-                                dataArray.then((dataresult) => {
-                                    existingLikes = dataresult[0]['Like']
-                                    console.log(existingLikes)
-                                    if (!isEmpty(existingLikes)) {
-                                        for (var j = 0; j < existingLikes.length; j++) {
-                                            if (existingLikes[j].equals(userID)) {
-                                                isLiked = true;
-                                            } else {
-                                                likeArray.push(existingLikes[j])
-                                                // isLiked = false;
-                                            }
-                                        }
-                                        if (!isLiked) {
-                                            likeArray.push(userID);
-                                        }
-                                    } else {
-                                        likeArray.push(userID)
-                                    }
-                                    console.log(likeArray)
-                                    dbo.collection(switlover).updateOne({
-                                            Auth_Token: Auth_Token,
-                                        },
-                                        {
-                                            $set: {Like: likeArray}
-                                        }).then((resultdata) => {
-                                        if (resultdata['result']['n'] == 1) {
-                                            res.json({status: "1", message: "success"});
+                            var dataArray = dbo.collection(switlover).find({
+                                Auth_Token: Auth_Token,
+                                is_Block: {$ne: 1}
+                            }).toArray();
+                            dataArray.then((dataresult) => {
+                                existingLikes = dataresult[0]['Like']
+
+                                if (!isEmpty(existingLikes)) {
+                                    for (var j = 0; j < existingLikes.length; j++) {
+                                        if (existingLikes[j].length < 15) {
+                                            likeArray.push(existingLikes[j]);
+                                        } else if (existingLikes[j].equals(userID)) {
+                                            isLiked = true;
                                         } else {
-                                            res.json({status: "3", message: "1Internal server error"})
+                                            likeArray.push(existingLikes[j])
+                                            // isLiked = false;
                                         }
-                                    }).catch((errdata) => {
-                                        res.json({status: "3", message: "2Internal server error"})
-                                    })
-                                }).catch((dataerror) => {
-
+                                    }
+                                    if (!isLiked) {
+                                        likeArray.push(userID);
+                                    }
+                                } else {
+                                    likeArray.push(userID)
+                                }
+                                dbo.collection(switlover).updateOne({
+                                        Auth_Token: Auth_Token,
+                                    },
+                                    {
+                                        $set: {Like: likeArray}
+                                    }).then((resultdata) => {
+                                    if (resultdata['result']['n'] == 1) {
+                                        res.json({status: "1", message: "success"});
+                                    } else {
+                                        res.json({status: "3", message: "1Internal server error"})
+                                    }
+                                }).catch((errdata) => {
+                                    res.json({status: "3", message: "2Internal server error"})
                                 })
+                            }).catch((dataerror) => {
 
-                            } else {
-                                //No user found
-                            }
-                        }).catch((err) => {
-                            res.json({status: "3", message: "3Internal server error" + err})
-                        })
-                    }
+                            })
+
+                        } else {
+                            //User is not using this app
+                            var isLiked1 = false;
+                            var numberArray = [];
+                            var dataArray = dbo.collection(switlover).find({
+                                Auth_Token: Auth_Token,
+                                is_Block: {$ne: 1}
+                            }).toArray();
+                            dataArray.then((dataresult) => {
+                                existingLikes = dataresult[0]['Like']
+                                if (!isEmpty(existingLikes)) {
+                                    for (var j = 0; j < existingLikes.length; j++) {
+                                        if (existingLikes[j].length < 15) {
+                                            if (existingLikes[j] == number) {
+                                                isLiked1 = true;
+                                            } else {
+                                                numberArray.push(existingLikes[j])
+                                            }
+                                        } else {
+                                            numberArray.push(existingLikes[j])
+                                        }
+                                    }
+                                    if (!isLiked1) {
+                                        numberArray.push(number);
+                                    }
+                                } else {
+                                    numberArray.push(number)
+                                }
+                                dbo.collection(switlover).updateOne({
+                                        Auth_Token: Auth_Token,
+                                    },
+                                    {
+                                        $set: {Like: numberArray}
+                                    }).then((resultdata) => {
+                                    if (resultdata['result']['n'] == 1) {
+                                        res.json({status: "1", message: "else success"});
+                                    } else {
+                                        res.json({status: "3", message: "else 1Internal server error"})
+                                    }
+                                }).catch((errdata) => {
+                                    res.json({status: "3", message: "else 2Internal server error"})
+                                })
+                            }).catch((dataerror) => {
+
+                            })
+                        }
+                    }).catch((err) => {
+                        res.json({status: "3", message: "else 3Internal server error" + err})
+                    })
+                    // }
                 }
             }
         });
@@ -275,19 +319,22 @@ client.connect((err, db) => {
                     idArray.then((idresult) => {
                         console.log(idresult);
                         var myObj1 = [];
+                        if (!isEmpty(idresult)) {
+                            for (var i = 0; i < idresult.length; i++) {
+                                var username = idresult[i]['Username'];
+                                var name = username[username.length - 1]
 
-                        for (var i = 0; i < idresult.length; i++) {
-                            var username = idresult[i]['Username'];
-                            var name = username[username.length - 1]
-
-                            var myObj = {
-                                id: idresult[i]['_id'],
-                                name: name,
-                                image: idresult[i]['Profile_Pic']
+                                var myObj = {
+                                    id: idresult[i]['_id'],
+                                    name: name,
+                                    image: idresult[i]['Profile_Pic']
+                                }
+                                myObj1.push(myObj);
                             }
-                            myObj1.push(myObj);
+                            res.json({status: "1", message: "success", user_data: myObj1});
+                        } else {
+                            res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                         }
-                        res.json({status: "1", message: "success", user_data: myObj1});
                     }).catch((iserr) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
@@ -295,7 +342,7 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             }
-        })
+        });
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
@@ -893,10 +940,10 @@ client.connect((err, db) => {
             } else {
                 var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
                 dataNotification.then((result) => {
-                    if(isEmpty(result))
+                    if (isEmpty(result))
                         res.json({status: "0", message: "No notification settings found"});
                     else
-                        res.json({status: "1", message: "success", user_data : result});
+                        res.json({status: "1", message: "success", user_data: result});
                 }).catch((err) => {
                     res.json({status: "3 ", message: "notification updated failed"});
                 });
