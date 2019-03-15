@@ -27,7 +27,8 @@ var rand, mailOptions, host, link;
 //COLLECTIONS
 var counter = "counters";
 var switlover = "switlover";
-var notification = "notification"
+var notification = "notification";
+var match = "match";
 //--------------------------------------------------------------------------------------------------------------
 
 
@@ -173,6 +174,79 @@ client.connect((err, db) => {
                 }
             }
         });
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
+        //Match Logic
+        app.post('/api/match', (req, res) => {
+            var Auth_Token = req.header('Auth_Token');
+            if (!Auth_Token || Auth_Token == null) {
+                res.json({status: "6", message: "Auth token missing"});
+            } else {
+                var dataArray = dbo.collection(switlover).find({
+                    Auth_Token: Auth_Token,
+                    is_Block: {$ne: 1}
+                }).toArray()
+                dataArray.then((result) => {
+                    var userId = result[0]['_id'];
+                    var likeArraybyMe = result[0]['Like'];
+                    console.log(likeArraybyMe);
+                    if (!isEmpty(likeArraybyMe)) {
+                        var idArray = dbo.collection(switlover).find({
+                            Like: userId,
+                            is_Block: {$ne: 1}
+                        }).toArray()
+                        idArray.then((idresult) => {
+                            console.log(idresult);
+                            var myObj1 = [];
+                            if (!isEmpty(idresult)) {
+                                for (var i = 0; i < idresult.length; i++) {
+                                    var username = idresult[i]['Username'];
+                                    var name = username[username.length - 1]
+
+                                    var myObj = {
+                                        id: idresult[i]['_id'],
+                                        name: name,
+                                        image: idresult[i]['Profile_Pic'],
+                                        is_used : "false"
+                                    }
+                                    myObj1.push(myObj);
+                                }
+                                var finalObj = {
+                                    currentUser : userId,
+                                    follobackUser : myObj1
+                                }
+                                dbo.collection(match).find({}).then((matchResult) => {
+                                    if (!isEmpty(matchResult)) {
+                                        res.json({status: "1", message: "success", user_data: matchResult});
+                                    } else {
+                                        dbo.collection(match).insertOne(finalObj,(err, result) => {
+                                            if (err)
+                                                res.json({status: "3", message: "Error while inserting records"});
+                                            else {
+                                                res.json({status: "1", message: "success"});
+                                            }
+                                        })
+                                    }
+                                }).catch((matchErr) => {
+                                    res.json({status: "3", message: "Internal server error"});
+                                });
+                                res.json({status: "1", message: "success", user_data: myObj1});
+                            } else {
+                                res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
+                            }
+                        }).catch((iserr) => {
+                            res.json({status: "3", message: "Internal server error"});
+                        })
+                    }
+                    else {
+                        res.json({status: "0", message: "Sorry, you need to like someone...!!!"})
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            }
+        })
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
