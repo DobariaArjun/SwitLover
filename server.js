@@ -34,7 +34,7 @@ var match = "match";
 
 client.connect((err, db) => {
     if (err)
-        console.log("Error while connecting to Mongo");
+        console.log("Error while connecting to Mongo" + err);
     else {
         console.log("Connected to Mongo");
         var dbo = db.db("SwitLover");
