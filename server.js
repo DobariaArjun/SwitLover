@@ -113,6 +113,23 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
+        //get count
+        app.post('/api/count',(req,res) => {
+            var dataArray = dbo.collection(switlover).find({});
+            dataArray.then((result) => {
+                if(!isEmpty(result))
+                {
+                    res.json({
+                        status: "1",
+                        message: "success",
+                        userdata : result.length
+                    });
+                }
+            })
+        })
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
         //Check user is exist or not
         app.post('/api/CheckUser', (req, res) => {
             var Request_token = req.header('Request_token');
@@ -983,21 +1000,25 @@ client.connect((err, db) => {
                 if (!req.body.Contact_List || req.body.Contact_List == null) {
                     res.json({status: "4", message: "Parameter missing or Invalid"});
                 } else {
-                    dbo.collection(switlover).updateOne(
-                        {
-                            Auth_Token: Auth_Token
-                        },
-                        {
-                            $set: {Contact_List: req.body.Contact_List, updatedAt: new Date()}
-                        }).then((result) => {
-                        if (result['result']['n'] == 1) {
-                            res.json({status: "1", message: "Contact list updated successfully"});
-                        } else {
-                            res.json({status: "3", message: "Internal Server error"});
-                        }
-                    }).catch((err) => {
-                        res.json({status: "3", message: "Internal Server error"});
-                    });
+
+                    var contactArray = [];
+                    contactArray = req.body.Contact_List;
+                    console.log(contactArray.toArray());
+                    // dbo.collection(switlover).updateOne(
+                    //     {
+                    //         Auth_Token: Auth_Token
+                    //     },
+                    //     {
+                    //         $set: {Contact_List: req.body.Contact_List, updatedAt: new Date()}
+                    //     }).then((result) => {
+                    //     if (result['result']['n'] == 1) {
+                    //         res.json({status: "1", message: "Contact list updated successfully"});
+                    //     } else {
+                    //         res.json({status: "3", message: "Internal Server error"});
+                    //     }
+                    // }).catch((err) => {
+                    //     res.json({status: "3", message: "Internal Server error"});
+                    // });
                 }
 
             }
