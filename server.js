@@ -115,7 +115,7 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
         //get count
         app.post('/api/count',(req,res) => {
-            var dataArray = dbo.collection(switlover).find({});
+            var dataArray = dbo.collection(switlover).find({}).toArray();
             dataArray.then((result) => {
                 if(!isEmpty(result))
                 {
@@ -125,6 +125,8 @@ client.connect((err, db) => {
                         userdata : result.length
                     });
                 }
+            }).catch((err) => {
+                res.json({status: "3", message: "Internal server error"});
             })
         })
         //--------------------------------------------------------------------------------------------------------------
