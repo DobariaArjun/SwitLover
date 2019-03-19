@@ -1077,20 +1077,26 @@ client.connect((err, db) => {
                         var contactArray = [];
                         var stringdata = req.body.Contact_List;
                         var jsonObj;
-                        var result = stringdata.substring(1, stringdata.length - 1);
-                        if (result == "") {
+                        // var result = stringdata.substring(1, stringdata.length - 1);
+
+                        console.log(stringdata);
+
+                        if (stringdata == "[]" || stringdata == "") {
 
                         } else {
-                            jsonObj = JSON.parse(result);
-                            contactArray.push(jsonObj);
+
+                            jsonObj = JSON.parse(stringdata);
+                            // contactArray.push(jsonObj);
                         }
+
+                        console.log(jsonObj);
 
                         dbo.collection(switlover).updateOne(
                             {
                                 Auth_Token: Auth_Token
                             },
                             {
-                                $set: {Contact_List: contactArray, updatedAt: new Date()}
+                                $set: {Contact_List: jsonObj, updatedAt: new Date()}
                             }).then((result) => {
                             if (result['result']['n'] == 1) {
                                 res.json({status: "1", message: "Contact list updated successfully"});
