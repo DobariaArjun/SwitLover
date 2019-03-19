@@ -113,6 +113,25 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
+        //get count for not login yet
+        app.post('/api/notloginyetcount',(req,res) => {
+            var dataArray = dbo.collection(counter).find({}).toArray();
+            dataArray.then((result) => {
+                if(!isEmpty(result))
+                {
+                    res.json({
+                        status: "1",
+                        message: "success",
+                        userdata : result[0]["General"]["UserNotLogin"]
+                    });
+                }
+            }).catch((err) => {
+                res.json({status: "3", message: "Internal server error"});
+            })
+        })
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
         //get count
         app.post('/api/count',(req,res) => {
             var dataArray = dbo.collection(switlover).find({}).toArray();
