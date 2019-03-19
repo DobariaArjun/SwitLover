@@ -1059,7 +1059,7 @@ client.connect((err, db) => {
                         if (result['result']['n'] == 1) {
                             res.json({status: "1", message: "Contact list updated successfully"});
                         } else {
-                            res.json({status: "3", message: "Internal Server error"});
+                            res.json({status: "3", message: "Contact list updation failed"});
                         }
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal Server error"});
