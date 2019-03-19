@@ -132,12 +132,54 @@ client.connect((err, db) => {
         //--------------------------------------------------------------------------------------------------------------
 
         //--------------------------------------------------------------------------------------------------------------
+        //get count for not login yet
+        app.post('/api/allUser',(req,res) => {
+            var dataArray = dbo.collection(switlover).find({}).toArray();
+            dataArray.then((result) => {
+                if(!isEmpty(result))
+                {
+                    // var myObj = [];
+                    // for(var i = 0; i < result.lenght; i++)
+                    // {
+                    //     delete result[i].Contact_List;
+                    //     delete result[i].is_Block;
+                    //     delete result[i].is_Deleted;
+                    //     delete result[i].Contact_Not_Recognized;
+                    //     delete result[i].Add_New_Number_From_App;
+                    //     delete result[i].Contact_Remove_Ratio;
+                    //     delete result[i].Like;
+                    //     delete result[i].Match_Ratio;
+                    //     delete result[i].PowerID;
+                    //     delete result[i].Not_In_App_Purchase;
+                    //     delete result[i].language;
+                    //     delete result[i].Device;
+                    //     delete result[i].createdAt;
+                    //     delete result[i].updatedAt;
+                    //     delete result[i].deletedAt;
+                    //     delete result[i].is_Online;
+                    //     myObj.push(result[i]);
+                    // }
+
+                    res.json({
+                        status: "1",
+                        message: "success",
+                        userdata : result
+                    });
+                }
+            }).catch((err) => {
+                res.json({status: "3", message: "Internal server error"});
+            })
+        })
+        //--------------------------------------------------------------------------------------------------------------
+
+        //--------------------------------------------------------------------------------------------------------------
         //get count
         app.post('/api/count',(req,res) => {
             var dataArray = dbo.collection(switlover).find({}).toArray();
             dataArray.then((result) => {
                 if(!isEmpty(result))
                 {
+
                     res.json({
                         status: "1",
                         message: "success",
