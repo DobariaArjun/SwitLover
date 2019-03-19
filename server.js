@@ -114,15 +114,14 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //get count for not login yet
-        app.post('/api/notloginyetcount',(req,res) => {
+        app.post('/api/notloginyetcount', (req, res) => {
             var dataArray = dbo.collection(counter).find({}).toArray();
             dataArray.then((result) => {
-                if(!isEmpty(result))
-                {
+                if (!isEmpty(result)) {
                     res.json({
                         status: "1",
                         message: "success",
-                        userdata : result[0]["General"]["UserNotLogin"]
+                        userdata: result[0]["General"]["UserNotLogin"]
                     });
                 }
             }).catch((err) => {
@@ -133,37 +132,14 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //get count for not login yet
-        app.post('/api/allUser',(req,res) => {
+        app.post('/api/allUser', (req, res) => {
             var dataArray = dbo.collection(switlover).find({}).toArray();
             dataArray.then((result) => {
-                if(!isEmpty(result))
-                {
-                    // var myObj = [];
-                    // for(var i = 0; i < result.lenght; i++)
-                    // {
-                    //     delete result[i].Contact_List;
-                    //     delete result[i].is_Block;
-                    //     delete result[i].is_Deleted;
-                    //     delete result[i].Contact_Not_Recognized;
-                    //     delete result[i].Add_New_Number_From_App;
-                    //     delete result[i].Contact_Remove_Ratio;
-                    //     delete result[i].Like;
-                    //     delete result[i].Match_Ratio;
-                    //     delete result[i].PowerID;
-                    //     delete result[i].Not_In_App_Purchase;
-                    //     delete result[i].language;
-                    //     delete result[i].Device;
-                    //     delete result[i].createdAt;
-                    //     delete result[i].updatedAt;
-                    //     delete result[i].deletedAt;
-                    //     delete result[i].is_Online;
-                    //     myObj.push(result[i]);
-                    // }
-
+                if (!isEmpty(result)) {
                     res.json({
                         status: "1",
                         message: "success",
-                        userdata : result
+                        userdata: result
                     });
                 }
             }).catch((err) => {
@@ -174,16 +150,15 @@ client.connect((err, db) => {
 
         //--------------------------------------------------------------------------------------------------------------
         //get count
-        app.post('/api/count',(req,res) => {
+        app.post('/api/count', (req, res) => {
             var dataArray = dbo.collection(switlover).find({}).toArray();
             dataArray.then((result) => {
-                if(!isEmpty(result))
-                {
+                if (!isEmpty(result)) {
 
                     res.json({
                         status: "1",
                         message: "success",
-                        userdata : result.length
+                        userdata: result.length
                     });
                 }
             }).catch((err) => {
@@ -288,19 +263,19 @@ client.connect((err, db) => {
                                         id: idresult[i]['_id'],
                                         name: name,
                                         image: idresult[i]['Profile_Pic'],
-                                        is_used : "false"
+                                        is_used: "false"
                                     }
                                     myObj1.push(myObj);
                                 }
                                 var finalObj = {
-                                    currentUser : userId,
-                                    follobackUser : myObj1
+                                    currentUser: userId,
+                                    follobackUser: myObj1
                                 }
                                 dbo.collection(match).find({}).then((matchResult) => {
                                     if (!isEmpty(matchResult)) {
                                         res.json({status: "1", message: "success", user_data: matchResult});
                                     } else {
-                                        dbo.collection(match).insertOne(finalObj,(err, result) => {
+                                        dbo.collection(match).insertOne(finalObj, (err, result) => {
                                             if (err)
                                                 res.json({status: "3", message: "Error while inserting records"});
                                             else {
@@ -318,8 +293,7 @@ client.connect((err, db) => {
                         }).catch((iserr) => {
                             res.json({status: "3", message: "Internal server error"});
                         })
-                    }
-                    else {
+                    } else {
                         res.json({status: "0", message: "Sorry, you need to like someone...!!!"})
                     }
                 }).catch((err) => {
@@ -1065,23 +1039,31 @@ client.connect((err, db) => {
                 } else {
 
                     var contactArray = [];
-                    contactArray = req.body.Contact_List;
-                    console.log(contactArray.toArray());
-                    // dbo.collection(switlover).updateOne(
-                    //     {
-                    //         Auth_Token: Auth_Token
-                    //     },
-                    //     {
-                    //         $set: {Contact_List: req.body.Contact_List, updatedAt: new Date()}
-                    //     }).then((result) => {
-                    //     if (result['result']['n'] == 1) {
-                    //         res.json({status: "1", message: "Contact list updated successfully"});
-                    //     } else {
-                    //         res.json({status: "3", message: "Internal Server error"});
-                    //     }
-                    // }).catch((err) => {
-                    //     res.json({status: "3", message: "Internal Server error"});
-                    // });
+                    var stringdata = req.body.Contact_List;
+                    var jsonObj;
+                    var result = stringdata.substring(1, stringdata.length - 1);
+                    if (result == "") {
+
+                    } else {
+                        jsonObj = JSON.parse(result);
+                        contactArray.push(jsonObj);
+                    }
+
+                    dbo.collection(switlover).updateOne(
+                        {
+                            Auth_Token: Auth_Token
+                        },
+                        {
+                            $set: {Contact_List: contactArray, updatedAt: new Date()}
+                        }).then((result) => {
+                        if (result['result']['n'] == 1) {
+                            res.json({status: "1", message: "Contact list updated successfully"});
+                        } else {
+                            res.json({status: "3", message: "Internal Server error"});
+                        }
+                    }).catch((err) => {
+                        res.json({status: "3", message: "Internal Server error"});
+                    });
                 }
 
             }
