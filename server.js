@@ -164,6 +164,27 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //get count for not login yet
+            app.post('/api/singleUser', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.id),
+                    is_Block: {$ne: 1}
+                }).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        res.json({
+                            status: "1",
+                            message: "success",
+                            userdata: result
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count for not login yet
             app.post('/api/allUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
@@ -277,48 +298,69 @@ client.connect((err, db) => {
                     dataArray.then((result) => {
                         var userId = result[0]['_id'];
                         var likeArraybyMe = result[0]['Like'];
-                        console.log(likeArraybyMe);
+
                         if (!isEmpty(likeArraybyMe)) {
                             var idArray = dbo.collection(switlover).find({
                                 Like: userId,
                                 is_Block: {$ne: 1}
                             }).toArray()
                             idArray.then((idresult) => {
-                                console.log(idresult);
+
                                 var myObj1 = [];
                                 if (!isEmpty(idresult)) {
                                     for (var i = 0; i < idresult.length; i++) {
                                         var username = idresult[i]['Username'];
                                         var name = username[username.length - 1]
+                                        var UserId = idresult[i]['_id'];
 
-                                        var myObj = {
-                                            id: idresult[i]['_id'],
-                                            name: name,
-                                            image: idresult[i]['Profile_Pic'],
-                                            is_used: "false"
-                                        }
-                                        myObj1.push(myObj);
-                                    }
-                                    var finalObj = {
-                                        currentUser: userId,
-                                        follobackUser: myObj1
-                                    }
-                                    dbo.collection(match).find({}).then((matchResult) => {
-                                        if (!isEmpty(matchResult)) {
-                                            res.json({status: "1", message: "success", user_data: matchResult});
-                                        } else {
-                                            dbo.collection(match).insertOne(finalObj, (err, result) => {
-                                                if (err)
-                                                    res.json({status: "3", message: "Error while inserting records"});
-                                                else {
-                                                    res.json({status: "1", message: "success"});
+
+                                        for (var j = 0; j < likeArraybyMe.length; j++) {
+                                            if (UserId.equals(likeArraybyMe[j])) {
+                                                var myObj = {
+                                                    id: idresult[i]['_id'],
+                                                    name: name,
+                                                    image: idresult[i]['Profile_Pic'],
+                                                    is_used: "false",
+                                                    createdAt: new Date()
                                                 }
-                                            })
+                                                myObj1.push(myObj);
+                                            }
                                         }
-                                    }).catch((matchErr) => {
-                                        res.json({status: "3", message: "Internal server error"});
-                                    });
-                                    res.json({status: "1", message: "success", user_data: myObj1});
+                                    }
+                                    if (!isEmpty(myObj1)) {
+                                        var finalObj = {
+                                            currentUser: userId,
+                                            follobackUser: myObj1
+                                        }
+                                        // console.log(finalObj)
+                                        dbo.collection(match).find({}).toArray().then((result) => {
+                                            if (!isEmpty(result)) {
+                                                for (var i = 0; i < result.length; i++) {
+                                                    if (result[i]["currentUser"].equals(userId)) {
+                                                        for (var j = 0; j < result[i]["follobackUser"].length; j++) {
+                                                            if ((result[i]["follobackUser"][i]["id"]).equals(finalObj["follobackUser"][0]["id"])) {
+                                                                res.json({status: "0", message: "Already matched user"});
+                                                            } else {
+                                                                dbo.collection(match).insertOne(finalObj, (err, result) => {
+                                                                    if (err)
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Error while inserting records"
+                                                                        });
+                                                                    else {
+                                                                        res.json({status: "1", message: "success"});
+                                                                    }
+                                                                })
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }).catch((err) => {
+                                            res.json({status: "3", message: "Internal server error"});
+                                        })
+
+                                    }
                                 } else {
                                     res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                 }
@@ -345,9 +387,13 @@ client.connect((err, db) => {
                     if (!req.body || isEmpty(req.body)) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-                        var number = req.body.code + "" + req.body.number;
-                        // number = req.body.number;
-                        // for (var i = 0; i < number.length; i++) {
+                        var number;
+                        if ((req.body.number).includes(req.body.code)) {
+                            number = req.body.number;
+                        } else {
+                            number = req.body.code + "" + req.body.number;
+                        }
+
                         var dataArray = dbo.collection(switlover).find({
                             'Phone_Number.Contry_Code': req.body.code,
                             'Phone_Number.Number': req.body.number,
@@ -356,7 +402,10 @@ client.connect((err, db) => {
                         dataArray.then((result) => {
                             if (!isEmpty(result)) {
 
+
                                 var userID = result[0]['_id'];
+
+
                                 var likeArray = [];
 
                                 var isLiked = false;
@@ -368,7 +417,7 @@ client.connect((err, db) => {
                                 }).toArray();
                                 dataArray.then((dataresult) => {
                                     existingLikes = dataresult[0]['Like']
-
+                                    console.log(existingLikes)
                                     if (!isEmpty(existingLikes)) {
                                         for (var j = 0; j < existingLikes.length; j++) {
                                             if (existingLikes[j].length < 15) {
@@ -386,6 +435,8 @@ client.connect((err, db) => {
                                     } else {
                                         likeArray.push(userID)
                                     }
+
+
                                     dbo.collection(switlover).updateOne({
                                             Auth_Token: Auth_Token,
                                         },
@@ -453,7 +504,6 @@ client.connect((err, db) => {
                         }).catch((err) => {
                             res.json({status: "3", message: "else 3Internal server error" + err})
                         })
-                        // }
                     }
                 }
             });
