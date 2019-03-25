@@ -145,82 +145,6 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
-            app.post('/api/notloginyetcount', (req, res) => {
-                var dataArray = dbo.collection(counter).find({}).toArray();
-                dataArray.then((result) => {
-                    if (!isEmpty(result)) {
-                        res.json({
-                            status: "1",
-                            message: "success",
-                            userdata: result[0]["General"]["UserNotLogin"]
-                        });
-                    }
-                }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"});
-                })
-            })
-            //--------------------------------------------------------------------------------------------------------------
-
-            //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
-            app.post('/api/singleUser', (req, res) => {
-                var dataArray = dbo.collection(switlover).find({
-                    _id: new ObjectId(req.body.id),
-                    is_Block: {$ne: 1}
-                }).toArray();
-                dataArray.then((result) => {
-                    if (!isEmpty(result)) {
-                        res.json({
-                            status: "1",
-                            message: "success",
-                            userdata: result
-                        });
-                    }
-                }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"});
-                })
-            })
-            //--------------------------------------------------------------------------------------------------------------
-
-            //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
-            app.post('/api/allUser', (req, res) => {
-                var dataArray = dbo.collection(switlover).find({}).toArray();
-                dataArray.then((result) => {
-                    if (!isEmpty(result)) {
-                        res.json({
-                            status: "1",
-                            message: "success",
-                            userdata: result
-                        });
-                    }
-                }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"});
-                })
-            })
-            //--------------------------------------------------------------------------------------------------------------
-
-            //--------------------------------------------------------------------------------------------------------------
-            //get count
-            app.post('/api/count', (req, res) => {
-                var dataArray = dbo.collection(switlover).find({}).toArray();
-                dataArray.then((result) => {
-                    if (!isEmpty(result)) {
-
-                        res.json({
-                            status: "1",
-                            message: "success",
-                            userdata: result.length
-                        });
-                    }
-                }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"});
-                })
-            })
-            //--------------------------------------------------------------------------------------------------------------
-
-            //--------------------------------------------------------------------------------------------------------------
             //Check user is exist or not
             app.post('/api/CheckUser', (req, res) => {
                 var Request_token = req.header('Request_token');
@@ -1351,6 +1275,141 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Request is from unknown source"});
                 }
             });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //**************************************************************************************************************
+            // Admin Panel API
+            //**************************************************************************************************************
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count for not login yet
+            app.post('/api/notloginyetcount', (req, res) => {
+                var dataArray = dbo.collection(counter).find({}).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        res.json({
+                            status: "1",
+                            message: "success",
+                            userdata: result[0]["General"]["UserNotLogin"]
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count for not login yet
+            app.post('/api/singleUser', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.id),
+                    is_Block: {$ne: 1}
+                }).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        res.json({
+                            status: "1",
+                            message: "success",
+                            userdata: result
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count for not login yet
+            app.post('/api/allUser', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({}).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        res.json({
+                            status: "1",
+                            message: "success",
+                            userdata: result
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count for not login yet
+            app.post('/api/block_unblock', (req, res) => {
+
+                var dataArray = dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.id)
+                }).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        if(result[0]["is_Block"] == 0)
+                        {
+                            dbo.collection(switlover).updateOne(
+                                {
+                                    _id: new ObjectId(req.body.id)
+                                },
+                                {
+                                    $set: {is_Block: 1, updatedAt: new Date()}
+                                }
+                            ).then((result) => {
+                                if (result['result']['n'] == 1) {
+                                    res.json({
+                                        status: "1",
+                                        message: "success"
+                                    });
+                                }
+                            }).catch((err) => {
+                                res.json({status: "3", message: "Internal server error"});
+                            })
+                        }
+                        else {
+                            dbo.collection(switlover).updateOne(
+                                {
+                                    _id: new ObjectId(req.body.id)
+                                },
+                                {
+                                    $set: {is_Block: 0, updatedAt: new Date()}
+                                }
+                            ).then((result) => {
+                                if (result['result']['n'] == 1) {
+                                    res.json({
+                                        status: "1",
+                                        message: "success"
+                                    });
+                                }
+                            }).catch((err) => {
+                                res.json({status: "3", message: "Internal server error"});
+                            })
+                        }
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count
+            app.post('/api/count', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({}).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+
+                        res.json({
+                            status: "1",
+                            message: "success",
+                            userdata: result.length
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
             //--------------------------------------------------------------------------------------------------------------
 
 
