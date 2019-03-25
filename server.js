@@ -689,9 +689,9 @@ client.connect((err, db) => {
                             for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
                                 if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
                                     var myObj = {
-                                        Name: data[0]['Contact_List'][i]['name'],
-                                        Image: data[0]['Contact_List'][i]['image'],
-                                        Number: data[0]['Contact_List'][i]['number']
+                                        name: data[0]['Contact_List'][i]['name'],
+                                        image: data[0]['Contact_List'][i]['image'],
+                                        number: data[0]['Contact_List'][i]['number']
                                     };
                                     numberArray.push(myObj);
                                 } else {
