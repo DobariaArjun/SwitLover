@@ -370,10 +370,10 @@ client.connect((err, db) => {
                                         if (resultdata['result']['n'] == 1) {
                                             res.json({status: "1", message: "success"});
                                         } else {
-                                            res.json({status: "3", message: "1Internal server error"})
+                                            res.json({status: "3", message: "Internal server error"})
                                         }
                                     }).catch((errdata) => {
-                                        res.json({status: "3", message: "2Internal server error"})
+                                        res.json({status: "3", message: "Internal server error"})
                                     })
                                 }).catch((dataerror) => {
 
@@ -414,19 +414,19 @@ client.connect((err, db) => {
                                             $set: {Like: numberArray}
                                         }).then((resultdata) => {
                                         if (resultdata['result']['n'] == 1) {
-                                            res.json({status: "1", message: "else success"});
+                                            res.json({status: "1", message: "success"});
                                         } else {
-                                            res.json({status: "3", message: "else 1Internal server error"})
+                                            res.json({status: "3", message: "Internal server error"})
                                         }
                                     }).catch((errdata) => {
-                                        res.json({status: "3", message: "else 2Internal server error"})
+                                        res.json({status: "3", message: "Internal server error"})
                                     })
                                 }).catch((dataerror) => {
 
                                 })
                             }
                         }).catch((err) => {
-                            res.json({status: "3", message: "else 3Internal server error" + err})
+                            res.json({status: "3", message: "Internal server error" + err})
                         })
                     }
                 }
