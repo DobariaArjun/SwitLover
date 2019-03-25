@@ -688,21 +688,10 @@ client.connect((err, db) => {
                         if (!isEmpty(data[0]['Contact_List'])) {
                             for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
                                 if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                    var arrayNumber = [];
-                                    for (var j = 0; j < data[0]['Contact_List'][i]['mobileList'].length; j++) {
-                                        // var phoneNumber = data[0]['Contact_List'][i]['numberList'][j]['code'] + "" + data[0]['Contact_List'][i]['numberList'][j]['number'];
-                                        if (data[0]['Contact_List'][i]['mobileList'][j]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['mobileList'][j]['isRemovedByUser'] == 0) {
-                                            var numberCode = {
-                                                code: data[0]['Contact_List'][i]['mobileList'][j]['code'],
-                                                number: data[0]['Contact_List'][i]['mobileList'][j]['number']
-                                            }
-                                            arrayNumber.push(numberCode)
-                                        }
-                                    }
                                     var myObj = {
                                         Name: data[0]['Contact_List'][i]['name'],
                                         Image: data[0]['Contact_List'][i]['image'],
-                                        Number: arrayNumber
+                                        Number: data[0]['Contact_List'][i]['number']
                                     };
                                     numberArray.push(myObj);
                                 } else {
