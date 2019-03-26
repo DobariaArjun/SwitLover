@@ -10,7 +10,8 @@ const request = require('request');
 const ObjectId = require('mongodb').ObjectID;
 
 const nodemailer = require("nodemailer");
-// app.use(express.bodyParser({limit: '500mb'}));
+app.use(bodyParser.json({limit: '50mb', extended: true}))
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
 
 const uri = "mongodb+srv://ArjunDobaria:Pravin@143@switlover-bjxu8.mongodb.net/test?retryWrites=true"
 const client = new MongoClient(uri, {useNewUrlParser: true});
