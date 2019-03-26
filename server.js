@@ -10,6 +10,7 @@ const request = require('request');
 const ObjectId = require('mongodb').ObjectID;
 
 const nodemailer = require("nodemailer");
+app.use(express.bodyParser({limit: '500mb'}));
 
 const uri = "mongodb+srv://ArjunDobaria:Pravin@143@switlover-bjxu8.mongodb.net/test?retryWrites=true"
 const client = new MongoClient(uri, {useNewUrlParser: true});
@@ -713,7 +714,7 @@ client.connect((err, db) => {
                                                 };
 
                                             } else {
-                                                
+
                                                 myObj = {
                                                     name: data[0]['Contact_List'][i]['name'],
                                                     image: data[0]['Contact_List'][i]['image'],
@@ -729,11 +730,9 @@ client.connect((err, db) => {
                                             dataArray.then((result) => {
                                                 if (!isEmpty(result)) {
                                                     var likeContactNumber;
-                                                    for(var k = 0; k < result[0]['Phone_Number'].length; k++)
-                                                    {
+                                                    for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
                                                         likeContactNumber = result[0]['Phone_Number'][k]['Contry_Code'] + "" + result[0]['Phone_Number'][k]['Number'];
-                                                        if(likeContactNumber == number)
-                                                        {
+                                                        if (likeContactNumber == number) {
                                                             myObj = {
                                                                 name: data[0]['Contact_List'][i]['name'],
                                                                 image: data[0]['Contact_List'][i]['image'],
@@ -750,8 +749,7 @@ client.connect((err, db) => {
                                                         }
                                                         numberArray.push(myObj);
                                                     }
-                                                }
-                                                else{
+                                                } else {
                                                     res.json({status: "3", message: "No data"});
                                                 }
                                             }).catch((err) => {
@@ -768,7 +766,7 @@ client.connect((err, db) => {
                             res.json({status: "1", message: "Contact List", user_data: numberArray});
                         }
                     }).catch((err) => {
-                        res.json({status: "3", message: "2Internal Server error" + err});
+                        res.json({status: "3", message: "Internal Server error" + err});
                     })
                 }
             });
@@ -1101,23 +1099,14 @@ client.connect((err, db) => {
                     if (!req.body.Contact_List || req.body.Contact_List == null) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-
-                        var contactArray = [];
                         var stringdata = req.body.Contact_List;
                         var jsonObj;
-                        // var result = stringdata.substring(1, stringdata.length - 1);
-
-                        console.log(stringdata);
 
                         if (stringdata == "[]" || stringdata == "") {
 
                         } else {
-
                             jsonObj = JSON.parse(stringdata);
-                            // contactArray.push(jsonObj);
                         }
-
-                        console.log(jsonObj);
 
                         dbo.collection(switlover).updateOne(
                             {
