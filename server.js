@@ -1490,7 +1490,9 @@ client.connect((err, db) => {
                                                 image: data[0]['Contact_List'][i]['image'],
                                                 code: data[0]['Contact_List'][i]['code'],
                                                 number: number,
-                                                isLiked: 1
+                                                isLiked: 1,
+                                                isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
                                             };
 
                                         } else {
@@ -1500,7 +1502,9 @@ client.connect((err, db) => {
                                                 image: data[0]['Contact_List'][i]['image'],
                                                 code: data[0]['Contact_List'][i]['code'],
                                                 number: number,
-                                                isLiked: 0
+                                                isLiked: 0,
+                                                isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
                                             };
                                         }
                                         numberArray.push(myObj);
@@ -1519,7 +1523,9 @@ client.connect((err, db) => {
                                                             image: data[0]['Contact_List'][i]['image'],
                                                             code: data[0]['Contact_List'][i]['code'],
                                                             number: number,
-                                                            isLiked: 1
+                                                            isLiked: 1,
+                                                            isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                            isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
                                                         };
                                                     } else {
                                                         myObj = {
@@ -1527,7 +1533,9 @@ client.connect((err, db) => {
                                                             image: data[0]['Contact_List'][i]['image'],
                                                             code: data[0]['Contact_List'][i]['code'],
                                                             number: number,
-                                                            isLiked: 0
+                                                            isLiked: 0,
+                                                            isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                            isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
                                                         };
                                                     }
                                                     numberArray.push(myObj);
