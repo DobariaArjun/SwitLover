@@ -328,9 +328,7 @@ client.connect((err, db) => {
                         dataArray.then((result) => {
                             if (!isEmpty(result)) {
 
-
                                 var userID = result[0]['_id'];
-
 
                                 var likeArray = [];
 
@@ -710,6 +708,7 @@ client.connect((err, db) => {
                                                 myObj = {
                                                     name: data[0]['Contact_List'][i]['name'],
                                                     image: data[0]['Contact_List'][i]['image'],
+                                                    code: data[0]['Contact_List'][i]['code'],
                                                     number: number,
                                                     isLiked: 1
                                                 };
@@ -719,8 +718,9 @@ client.connect((err, db) => {
                                                 myObj = {
                                                     name: data[0]['Contact_List'][i]['name'],
                                                     image: data[0]['Contact_List'][i]['image'],
+                                                    code: data[0]['Contact_List'][i]['code'],
                                                     number: number,
-                                                    isLiked: 0
+                                                    isLiked: 1
                                                 };
                                             }
                                             numberArray.push(myObj);
@@ -737,6 +737,7 @@ client.connect((err, db) => {
                                                             myObj = {
                                                                 name: data[0]['Contact_List'][i]['name'],
                                                                 image: data[0]['Contact_List'][i]['image'],
+                                                                code: data[0]['Contact_List'][i]['code'],
                                                                 number: number,
                                                                 isLiked: 1
                                                             };
@@ -744,8 +745,9 @@ client.connect((err, db) => {
                                                             myObj = {
                                                                 name: data[0]['Contact_List'][i]['name'],
                                                                 image: data[0]['Contact_List'][i]['image'],
+                                                                code: data[0]['Contact_List'][i]['code'],
                                                                 number: number,
-                                                                isLiked: 0
+                                                                isLiked: 1
                                                             };
                                                         }
                                                         numberArray.push(myObj);
