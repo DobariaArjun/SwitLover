@@ -720,7 +720,7 @@ client.connect((err, db) => {
                                                     image: data[0]['Contact_List'][i]['image'],
                                                     code: data[0]['Contact_List'][i]['code'],
                                                     number: number,
-                                                    isLiked: 1
+                                                    isLiked: 0
                                                 };
                                             }
                                             numberArray.push(myObj);
@@ -747,7 +747,7 @@ client.connect((err, db) => {
                                                                 image: data[0]['Contact_List'][i]['image'],
                                                                 code: data[0]['Contact_List'][i]['code'],
                                                                 number: number,
-                                                                isLiked: 1
+                                                                isLiked: 0
                                                             };
                                                         }
                                                         numberArray.push(myObj);
