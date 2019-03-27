@@ -1456,6 +1456,104 @@ client.connect((err, db) => {
             })
             //--------------------------------------------------------------------------------------------------------------
 
+            //--------------------------------------------------------------------------------------------------------------
+            //Get Like Contact
+            app.post('/api/GetLikeContact', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.id),
+                    is_Block: {$ne: 1}
+                }).toArray();
+
+                dataArray.then((data) => {
+                    if (!isEmpty(data[0]['Contact_List'])) {
+                        var numberArray = [];
+                        for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
+                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                var number;
+                                var myObj;
+                                if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
+                                    number = data[0]['Contact_List'][i]['number'];
+                                } else {
+                                    number = data[0]['Contact_List'][i]['number'] + "" + data[0]['Contact_List'][i]['code'];
+                                }
+
+                                var myLikesArray = data[0]['Like'];
+
+                                for (var j = 0; j < myLikesArray.length; j++) {
+
+                                    if (myLikesArray[j].length < 15) {
+
+                                        if (myLikesArray[j] == number) {
+
+                                            myObj = {
+                                                name: data[0]['Contact_List'][i]['name'],
+                                                image: data[0]['Contact_List'][i]['image'],
+                                                code: data[0]['Contact_List'][i]['code'],
+                                                number: number,
+                                                isLiked: 1
+                                            };
+
+                                        } else {
+
+                                            myObj = {
+                                                name: data[0]['Contact_List'][i]['name'],
+                                                image: data[0]['Contact_List'][i]['image'],
+                                                code: data[0]['Contact_List'][i]['code'],
+                                                number: number,
+                                                isLiked: 0
+                                            };
+                                        }
+                                        numberArray.push(myObj);
+                                    } else {
+                                        var dataArray = dbo.collection(switlover).find({
+                                            _id: myLikesArray[j]
+                                        }).toArray();
+                                        dataArray.then((result) => {
+                                            if (!isEmpty(result)) {
+                                                var likeContactNumber;
+                                                for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
+                                                    likeContactNumber = result[0]['Phone_Number'][k]['Contry_Code'] + "" + result[0]['Phone_Number'][k]['Number'];
+                                                    if (likeContactNumber == number) {
+                                                        myObj = {
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            code: data[0]['Contact_List'][i]['code'],
+                                                            number: number,
+                                                            isLiked: 1
+                                                        };
+                                                    } else {
+                                                        myObj = {
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            code: data[0]['Contact_List'][i]['code'],
+                                                            number: number,
+                                                            isLiked: 0
+                                                        };
+                                                    }
+                                                    numberArray.push(myObj);
+                                                }
+                                            } else {
+                                                res.json({status: "3", message: "No data"});
+                                            }
+                                        }).catch((err) => {
+                                            // res.json({status: "3", message: "1Internal Server error" + err});
+                                        })
+                                    }
+                                }
+                            } else {
+                                if (isEmpty(numberArray)) {
+                                    res.json({status: "0", message: "Sorry there is no contact to display"});
+                                }
+                            }
+                        }
+                        res.json({status: "1", message: "Contact List", user_data: numberArray});
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal Server error" + err});
+                })
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
 
         }
     }
