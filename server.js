@@ -1546,7 +1546,7 @@ client.connect((err, db) => {
                                 }
                             }
                         }
-                        res.json({status: "1", message: "Contact List", user_data: numberArray});
+                        res.json({status: "1", message: "Contact List", userdata: numberArray});
                     }
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal Server error" + err});
