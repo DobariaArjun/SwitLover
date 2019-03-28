@@ -221,83 +221,74 @@ client.connect((err, db) => {
                         Auth_Token: Auth_Token,
                         is_Block: {$ne: 1}
                     }).toArray()
+
                     dataArray.then((result) => {
-                        var userId = result[0]['_id'];
                         var likeArraybyMe = result[0]['Like'];
 
-                        if (!isEmpty(likeArraybyMe)) {
-                            var idArray = dbo.collection(switlover).find({
-                                Like: userId,
-                                is_Block: {$ne: 1}
-                            }).toArray()
-                            idArray.then((idresult) => {
+                        for (var i = 0; i < likeArraybyMe.length; i++) {
 
+                            var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': '9714470952'}).toArray()
+                            numberArray.then((idresult) => {
                                 var myObj1 = [];
+                                var myObj;
                                 if (!isEmpty(idresult)) {
-                                    for (var i = 0; i < idresult.length; i++) {
-                                        var username = idresult[i]['Username'];
-                                        var name = username[username.length - 1]
-                                        var UserId = idresult[i]['_id'];
 
-
-                                        for (var j = 0; j < likeArraybyMe.length; j++) {
-                                            if (UserId.equals(likeArraybyMe[j])) {
-                                                var myObj = {
-                                                    id: idresult[i]['_id'],
-                                                    name: name,
-                                                    image: idresult[i]['Profile_Pic'],
-                                                    is_used: "false",
-                                                    createdAt: new Date()
-                                                }
-                                                myObj1.push(myObj);
-                                            }
-                                        }
+                                    var username = idresult[0]['Username'];
+                                    var name = username[username.length - 1];
+                                    myObj = {
+                                        id: idresult[0]['_id'],
+                                        name: name,
+                                        image: idresult[0]['Profile_Pic'],
+                                        is_used: "false",
+                                        createdAt: new Date()
                                     }
+
+                                    myObj1.push(myObj);
                                     if (!isEmpty(myObj1)) {
                                         var finalObj = {
-                                            currentUser: userId,
+                                            currentUser: idresult[0]['_id'],
                                             follobackUser: myObj1
                                         }
-                                        // console.log(finalObj)
-                                        dbo.collection(match).find({}).toArray().then((result) => {
+
+                                        var dataArray = dbo.collection(match).find({}).toArray()
+                                        dataArray.then((result) => {
                                             if (!isEmpty(result)) {
-                                                for (var i = 0; i < result.length; i++) {
-                                                    if (result[i]["currentUser"].equals(userId)) {
-                                                        for (var j = 0; j < result[i]["follobackUser"].length; j++) {
-                                                            if ((result[i]["follobackUser"][i]["id"]).equals(finalObj["follobackUser"][0]["id"])) {
-                                                                res.json({status: "0", message: "Already matched user"});
-                                                            } else {
-                                                                dbo.collection(match).insertOne(finalObj, (err, result) => {
-                                                                    if (err)
-                                                                        res.json({
-                                                                            status: "3",
-                                                                            message: "Error while inserting records"
-                                                                        });
-                                                                    else {
-                                                                        res.json({status: "1", message: "success"});
-                                                                    }
-                                                                })
-                                                            }
+
+                                                for (var j = 0; j < result.length; j++) {
+
+                                                    for(var k = 0; k < result[j]["follobackUser"].length; k++)
+                                                    {
+                                                        if (result[j]["follobackUser"][k]["name"] == name) {
+                                                            res.json({status: "0", message: "Already matched user"});
+                                                        }else {
+                                                            dbo.collection(match).insertOne(finalObj, (err, result) => {
+                                                                if (err)
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Error while inserting records"
+                                                                    });
+                                                                else {
+                                                                    res.json({status: "1", message: "success"});
+                                                                }
+                                                            })
                                                         }
                                                     }
                                                 }
                                             }
                                         }).catch((err) => {
-                                            res.json({status: "3", message: "Internal server error"});
+                                            // res.json({status: "3", message: "1Internal server error"});
                                         })
 
                                     }
                                 } else {
                                     res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                 }
-                            }).catch((iserr) => {
-                                res.json({status: "3", message: "Internal server error"});
+                            }).catch((error) => {
+                                res.json({status: "3", message: "2Internal server error"});
                             })
-                        } else {
-                            res.json({status: "0", message: "Sorry, you need to like someone...!!!"})
                         }
                     }).catch((err) => {
-                        res.json({status: "3", message: "Internal server error"});
+                        res.json({status: "3", message: "3Internal server error"});
                     })
                 }
             })
@@ -1511,7 +1502,6 @@ client.connect((err, db) => {
                 dataArray.then((data) => {
 
 
-
                     if (!isEmpty(data[0]['Contact_List'])) {
                         var numberArray = [];
                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
@@ -1617,7 +1607,7 @@ client.connect((err, db) => {
                                     //             console.log(error);
                                     //         }
                                     //     }
-                                        // var UserID = myLikesArray[j];
+                                    // var UserID = myLikesArray[j];
                                     //     // console.log(UserID)
                                     //     dbo.collection(switlover).find({
                                     //         _id: new ObjectId(UserID)
