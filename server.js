@@ -320,114 +320,158 @@ client.connect((err, db) => {
                             number = req.body.code + "" + req.body.number;
                         }
 
+                        var isLiked1 = false;
+                        var numberArray = [];
                         var dataArray = dbo.collection(switlover).find({
-                            'Phone_Number.Contry_Code': req.body.code,
-                            'Phone_Number.Number': req.body.number,
+                            Auth_Token: Auth_Token,
                             is_Block: {$ne: 1}
                         }).toArray();
-                        dataArray.then((result) => {
-                            if (!isEmpty(result)) {
-
-                                var userID = result[0]['_id'];
-
-                                var likeArray = [];
-
-                                var isLiked = false;
-                                var existingLikes = [];
-
-                                var dataArray = dbo.collection(switlover).find({
-                                    Auth_Token: Auth_Token,
-                                    is_Block: {$ne: 1}
-                                }).toArray();
-                                dataArray.then((dataresult) => {
-                                    existingLikes = dataresult[0]['Like']
-                                    console.log(existingLikes)
-                                    if (!isEmpty(existingLikes)) {
-                                        for (var j = 0; j < existingLikes.length; j++) {
-                                            if (existingLikes[j].length < 15) {
-                                                likeArray.push(existingLikes[j]);
-                                            } else if (existingLikes[j].equals(userID)) {
-                                                isLiked = true;
-                                            } else {
-                                                likeArray.push(existingLikes[j])
-                                                // isLiked = false;
-                                            }
-                                        }
-                                        if (!isLiked) {
-                                            likeArray.push(userID);
+                        dataArray.then((dataresult) => {
+                            existingLikes = dataresult[0]['Like']
+                            if (!isEmpty(existingLikes)) {
+                                for (var j = 0; j < existingLikes.length; j++) {
+                                    if (existingLikes[j].length < 15) {
+                                        if (existingLikes[j] == number) {
+                                            isLiked1 = true;
+                                        } else {
+                                            numberArray.push(existingLikes[j])
                                         }
                                     } else {
-                                        likeArray.push(userID)
+                                        numberArray.push(existingLikes[j])
                                     }
-
-
-                                    dbo.collection(switlover).updateOne({
-                                            Auth_Token: Auth_Token,
-                                        },
-                                        {
-                                            $set: {Like: likeArray}
-                                        }).then((resultdata) => {
-                                        if (resultdata['result']['n'] == 1) {
-                                            res.json({status: "1", message: "success"});
-                                        } else {
-                                            res.json({status: "3", message: "Internal server error"})
-                                        }
-                                    }).catch((errdata) => {
-                                        res.json({status: "3", message: "Internal server error"})
-                                    })
-                                }).catch((dataerror) => {
-
-                                })
-
+                                }
+                                if (!isLiked1) {
+                                    numberArray.push(number);
+                                }
                             } else {
-                                //User is not using this app
-                                var isLiked1 = false;
-                                var numberArray = [];
-                                var dataArray = dbo.collection(switlover).find({
-                                    Auth_Token: Auth_Token,
-                                    is_Block: {$ne: 1}
-                                }).toArray();
-                                dataArray.then((dataresult) => {
-                                    existingLikes = dataresult[0]['Like']
-                                    if (!isEmpty(existingLikes)) {
-                                        for (var j = 0; j < existingLikes.length; j++) {
-                                            if (existingLikes[j].length < 15) {
-                                                if (existingLikes[j] == number) {
-                                                    isLiked1 = true;
-                                                } else {
-                                                    numberArray.push(existingLikes[j])
-                                                }
-                                            } else {
-                                                numberArray.push(existingLikes[j])
-                                            }
-                                        }
-                                        if (!isLiked1) {
-                                            numberArray.push(number);
-                                        }
-                                    } else {
-                                        numberArray.push(number)
-                                    }
-                                    dbo.collection(switlover).updateOne({
-                                            Auth_Token: Auth_Token,
-                                        },
-                                        {
-                                            $set: {Like: numberArray}
-                                        }).then((resultdata) => {
-                                        if (resultdata['result']['n'] == 1) {
-                                            res.json({status: "1", message: "success"});
-                                        } else {
-                                            res.json({status: "3", message: "Internal server error"})
-                                        }
-                                    }).catch((errdata) => {
-                                        res.json({status: "3", message: "Internal server error"})
-                                    })
-                                }).catch((dataerror) => {
-
-                                })
+                                numberArray.push(number)
                             }
-                        }).catch((err) => {
-                            res.json({status: "3", message: "Internal server error" + err})
+                            dbo.collection(switlover).updateOne({
+                                    Auth_Token: Auth_Token,
+                                },
+                                {
+                                    $set: {Like: numberArray}
+                                }).then((resultdata) => {
+                                if (resultdata['result']['n'] == 1) {
+                                    res.json({status: "1", message: "success"});
+                                } else {
+                                    res.json({status: "3", message: "Internal server error"})
+                                }
+                            }).catch((errdata) => {
+                                res.json({status: "3", message: "Internal server error"})
+                            })
+                        }).catch((dataerror) => {
+
                         })
+
+                        // var dataArray = dbo.collection(switlover).find({
+                        //     'Phone_Number.Contry_Code': req.body.code,
+                        //     'Phone_Number.Number': req.body.number,
+                        //     is_Block: {$ne: 1}
+                        // }).toArray();
+                        // dataArray.then((result) => {
+                        //     if (!isEmpty(result)) {
+                        //
+                        //         var userID = result[0]['_id'];
+                        //
+                        //         var likeArray = [];
+                        //
+                        //         var isLiked = false;
+                        //         var existingLikes = [];
+                        //
+                        //         var dataArray = dbo.collection(switlover).find({
+                        //             Auth_Token: Auth_Token,
+                        //             is_Block: {$ne: 1}
+                        //         }).toArray();
+                        //         dataArray.then((dataresult) => {
+                        //             existingLikes = dataresult[0]['Like']
+                        //             console.log(existingLikes)
+                        //             if (!isEmpty(existingLikes)) {
+                        //                 for (var j = 0; j < existingLikes.length; j++) {
+                        //                     if (existingLikes[j].length < 15) {
+                        //                         likeArray.push(existingLikes[j]);
+                        //                     } else if (existingLikes[j].equals(userID)) {
+                        //                         isLiked = true;
+                        //                     } else {
+                        //                         likeArray.push(existingLikes[j])
+                        //                         // isLiked = false;
+                        //                     }
+                        //                 }
+                        //                 if (!isLiked) {
+                        //                     likeArray.push(userID);
+                        //                 }
+                        //             } else {
+                        //                 likeArray.push(userID)
+                        //             }
+                        //
+                        //
+                        //             dbo.collection(switlover).updateOne({
+                        //                     Auth_Token: Auth_Token,
+                        //                 },
+                        //                 {
+                        //                     $set: {Like: likeArray}
+                        //                 }).then((resultdata) => {
+                        //                 if (resultdata['result']['n'] == 1) {
+                        //                     res.json({status: "1", message: "success"});
+                        //                 } else {
+                        //                     res.json({status: "3", message: "Internal server error"})
+                        //                 }
+                        //             }).catch((errdata) => {
+                        //                 res.json({status: "3", message: "Internal server error"})
+                        //             })
+                        //         }).catch((dataerror) => {
+                        //
+                        //         })
+                        //
+                        //     } else {
+                        //         //User is not using this app
+                        //         var isLiked1 = false;
+                        //         var numberArray = [];
+                        //         var dataArray = dbo.collection(switlover).find({
+                        //             Auth_Token: Auth_Token,
+                        //             is_Block: {$ne: 1}
+                        //         }).toArray();
+                        //         dataArray.then((dataresult) => {
+                        //             existingLikes = dataresult[0]['Like']
+                        //             if (!isEmpty(existingLikes)) {
+                        //                 for (var j = 0; j < existingLikes.length; j++) {
+                        //                     if (existingLikes[j].length < 15) {
+                        //                         if (existingLikes[j] == number) {
+                        //                             isLiked1 = true;
+                        //                         } else {
+                        //                             numberArray.push(existingLikes[j])
+                        //                         }
+                        //                     } else {
+                        //                         numberArray.push(existingLikes[j])
+                        //                     }
+                        //                 }
+                        //                 if (!isLiked1) {
+                        //                     numberArray.push(number);
+                        //                 }
+                        //             } else {
+                        //                 numberArray.push(number)
+                        //             }
+                        //             dbo.collection(switlover).updateOne({
+                        //                     Auth_Token: Auth_Token,
+                        //                 },
+                        //                 {
+                        //                     $set: {Like: numberArray}
+                        //                 }).then((resultdata) => {
+                        //                 if (resultdata['result']['n'] == 1) {
+                        //                     res.json({status: "1", message: "success"});
+                        //                 } else {
+                        //                     res.json({status: "3", message: "Internal server error"})
+                        //                 }
+                        //             }).catch((errdata) => {
+                        //                 res.json({status: "3", message: "Internal server error"})
+                        //             })
+                        //         }).catch((dataerror) => {
+                        //
+                        //         })
+                        //     }
+                        // }).catch((err) => {
+                        //     res.json({status: "3", message: "Internal server error" + err})
+                        // })
                     }
                 }
             });
@@ -1465,10 +1509,13 @@ client.connect((err, db) => {
                 }).toArray();
 
                 dataArray.then((data) => {
+
+
+
                     if (!isEmpty(data[0]['Contact_List'])) {
                         var numberArray = [];
                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 || data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
                                 var number;
                                 var myObj;
                                 if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
@@ -1477,12 +1524,18 @@ client.connect((err, db) => {
                                     number = data[0]['Contact_List'][i]['number'] + "" + data[0]['Contact_List'][i]['code'];
                                 }
 
+                                var name = data[0]['Contact_List'][i]['name'];
+                                var image = data[0]['Contact_List'][i]['image'];
+                                var code = data[0]['Contact_List'][i]['code'];
+                                var isRemovedByUser = data[0]['Contact_List'][i]['isRemovedByUser'];
+                                ;
+                                var isRemovedByAdmin = data[0]['Contact_List'][i]['isRemovedByAdmin'];
+                                ;
+
                                 var myLikesArray = data[0]['Like'];
 
                                 for (var j = 0; j < myLikesArray.length; j++) {
-
                                     if (myLikesArray[j].length < 15) {
-
                                         if (myLikesArray[j] == number) {
 
                                             myObj = {
@@ -1491,9 +1544,10 @@ client.connect((err, db) => {
                                                 code: data[0]['Contact_List'][i]['code'],
                                                 number: number,
                                                 isLiked: 1,
-                                                isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
+                                                isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
                                             };
+                                            break;
 
                                         } else {
 
@@ -1503,51 +1557,115 @@ client.connect((err, db) => {
                                                 code: data[0]['Contact_List'][i]['code'],
                                                 number: number,
                                                 isLiked: 0,
-                                                isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
+                                                isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
                                             };
                                         }
-                                        numberArray.push(myObj);
-                                    } else {
-                                        var dataArray = dbo.collection(switlover).find({
-                                            _id: myLikesArray[j]
-                                        }).toArray();
-                                        dataArray.then((result) => {
-                                            if (!isEmpty(result)) {
-                                                var likeContactNumber;
-                                                for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
-                                                    likeContactNumber = result[0]['Phone_Number'][k]['Contry_Code'] + "" + result[0]['Phone_Number'][k]['Number'];
-                                                    if (likeContactNumber == number) {
-                                                        myObj = {
-                                                            name: data[0]['Contact_List'][i]['name'],
-                                                            image: data[0]['Contact_List'][i]['image'],
-                                                            code: data[0]['Contact_List'][i]['code'],
-                                                            number: number,
-                                                            isLiked: 1,
-                                                            isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                            isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                                        };
-                                                    } else {
-                                                        myObj = {
-                                                            name: data[0]['Contact_List'][i]['name'],
-                                                            image: data[0]['Contact_List'][i]['image'],
-                                                            code: data[0]['Contact_List'][i]['code'],
-                                                            number: number,
-                                                            isLiked: 0,
-                                                            isRemovedByUser : data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                            isRemovedByAdmin : data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                                        };
-                                                    }
-                                                    numberArray.push(myObj);
-                                                }
-                                            } else {
-                                                res.json({status: "3", message: "No data"});
-                                            }
-                                        }).catch((err) => {
-                                            // res.json({status: "3", message: "1Internal Server error" + err});
-                                        })
+
                                     }
+                                    // else {
+                                    //
+                                    //     init()
+                                    //     var UserID = myLikesArray[j];
+                                    //
+                                    //     async function dbQueryName() {
+                                    //         const user = await dbo.collection(switlover).findOne({
+                                    //             _id: new ObjectId(UserID)
+                                    //         })
+                                    //         return user
+                                    //     }
+                                    //     async function init() {
+                                    //         try {
+                                    //             const userdata = await dbQueryName()
+                                    //             if (!isEmpty(userdata)) {
+                                    //                 // for (var k = 0; k < result.length; k++) {
+                                    //                 // var likeID = result[0]["_id"];
+                                    //
+                                    //                 // if (likeID.equals(UserID)) {
+                                    //                 // console.log(likeID + " = and = " + UserID)
+                                    //                 // var finalnumber = result[k]["Phone_Number"][0]["Contry_Code"] + "" + result[k]["Phone_Number"][0]["Number"];
+                                    //                 // console.log(finalnumber);
+                                    //                 var number2;
+                                    //                 var code2;
+                                    //                 var isremovedByAdmin2;
+                                    //                 var isremovedByUser2;
+                                    //                 for(var k = 0; k < userdata.Phone_Number.length; k++)
+                                    //                 {
+                                    //                     number2 = userdata.Phone_Number[k]["Number"];
+                                    //                     code2 = userdata.Phone_Number[k]["Contry_Cdde"];
+                                    //                     if(number2 == number)
+                                    //                     {
+                                    //                         break;
+                                    //                     }
+                                    //                 }
+                                    //
+                                    //                 myObj = {
+                                    //                     name: userdata.Username[(userdata.Username.length) - 1],
+                                    //                     image: userdata.Profile_Pic,
+                                    //                     code: code2,
+                                    //                     number: number2,
+                                    //                     isLiked: 1,
+                                    //                     isRemovedByUser: isRemovedByUser,
+                                    //                     isRemovedByAdmin: isRemovedByAdmin
+                                    //                 };
+                                    //
+                                    //                 // }
+                                    //                 // break;
+                                    //                 // }
+                                    //             }
+                                    //         } catch (error) {
+                                    //             console.log(error);
+                                    //         }
+                                    //     }
+                                        // var UserID = myLikesArray[j];
+                                    //     // console.log(UserID)
+                                    //     dbo.collection(switlover).find({
+                                    //         _id: new ObjectId(UserID)
+                                    //     }).toArray((errm, result) => {
+                                    //
+                                    //         if (!isEmpty(result)) {
+                                    //             // for (var k = 0; k < result.length; k++) {
+                                    //             // var likeID = result[0]["_id"];
+                                    //
+                                    //             // if (likeID.equals(UserID)) {
+                                    //             // console.log(likeID + " = and = " + UserID)
+                                    //             // var finalnumber = result[k]["Phone_Number"][0]["Contry_Code"] + "" + result[k]["Phone_Number"][0]["Number"];
+                                    //             // console.log(finalnumber);
+                                    //             var number2;
+                                    //             var code2;
+                                    //             var isremovedByAdmin2;
+                                    //             var isremovedByUser2;
+                                    //             for(var k = 0; k < result[0]["Phone_Number"].length; k++)
+                                    //             {
+                                    //                 number2 = result[0]["Phone_Number"][k]["Number"];
+                                    //                 code2 = result[0]["Phone_Number"][k]["Contry_Code"];
+                                    //                 if(number2.equals(number))
+                                    //                 {
+                                    //                     break;
+                                    //                 }
+                                    //             }
+                                    //
+                                    //
+                                    //             myObj = {
+                                    //                 name: result[0]["Username"][(result[0]["Username"].length) - 1],
+                                    //                 image: result[0]["Profile_Pic"],
+                                    //                 code: code2,
+                                    //                 number: number2,
+                                    //                 isLiked: 1,
+                                    //                 isRemovedByUser: isRemovedByUser,
+                                    //                 isRemovedByAdmin: isRemovedByAdmin
+                                    //             };
+                                    //
+                                    //             // }
+                                    //             // break;
+                                    //             // }
+                                    //         }
+                                    //
+                                    //     });
+                                    // }
+                                    // break;
                                 }
+                                numberArray.push(myObj);
                             } else {
                                 if (isEmpty(numberArray)) {
                                     res.json({status: "0", message: "Sorry there is no contact to display"});
