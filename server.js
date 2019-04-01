@@ -1175,6 +1175,7 @@ client.connect((err, db) => {
                                 }
 
                                 var arrayContact = req.body.number;
+                                var jsonObject = JSON.parse(arrayContact)
 
                                 if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(arrayContact)) {
                                     if (currentEmail == req.body.Email_Address) {
@@ -1185,7 +1186,7 @@ client.connect((err, db) => {
                                             {
                                                 $set: {
                                                     Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
+                                                    Phone_Number: jsonObject,
                                                     updatedAt: new Date()
                                                 }
                                             }).then((data) => {
@@ -1204,7 +1205,7 @@ client.connect((err, db) => {
                                                 $set: {
                                                     Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
                                                     Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
+                                                    Phone_Number: jsonObject,
                                                     updatedAt: new Date()
                                                 }
                                             }).then((data) => {
