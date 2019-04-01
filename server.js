@@ -1583,36 +1583,50 @@ client.connect((err, db) => {
                                 }
 
                                 var myLikesArray = data[0]['Like'];
+                                if(!isEmpty(myLikesArray))
+                                {
+                                    for (var j = 0; j < myLikesArray.length; j++) {
+                                        if (myLikesArray[j].length < 15) {
+                                            if (myLikesArray[j] == number) {
 
-                                for (var j = 0; j < myLikesArray.length; j++) {
-                                    if (myLikesArray[j].length < 15) {
-                                        if (myLikesArray[j] == number) {
+                                                myObj = {
+                                                    name: data[0]['Contact_List'][i]['name'],
+                                                    image: data[0]['Contact_List'][i]['image'],
+                                                    code: data[0]['Contact_List'][i]['code'],
+                                                    number: number,
+                                                    isLiked: 1,
+                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
+                                                };
+                                                break;
 
-                                            myObj = {
-                                                name: data[0]['Contact_List'][i]['name'],
-                                                image: data[0]['Contact_List'][i]['image'],
-                                                code: data[0]['Contact_List'][i]['code'],
-                                                number: number,
-                                                isLiked: 1,
-                                                isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                            };
-                                            break;
+                                            } else {
 
-                                        } else {
+                                                myObj = {
+                                                    name: data[0]['Contact_List'][i]['name'],
+                                                    image: data[0]['Contact_List'][i]['image'],
+                                                    code: data[0]['Contact_List'][i]['code'],
+                                                    number: number,
+                                                    isLiked: 0,
+                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
+                                                };
+                                            }
 
-                                            myObj = {
-                                                name: data[0]['Contact_List'][i]['name'],
-                                                image: data[0]['Contact_List'][i]['image'],
-                                                code: data[0]['Contact_List'][i]['code'],
-                                                number: number,
-                                                isLiked: 0,
-                                                isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                            };
                                         }
-
                                     }
+                                }
+                                else
+                                {
+                                    myObj = {
+                                        name: data[0]['Contact_List'][i]['name'],
+                                        image: data[0]['Contact_List'][i]['image'],
+                                        code: data[0]['Contact_List'][i]['code'],
+                                        number: number,
+                                        isLiked: 0,
+                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
+                                    };
                                 }
                                 numberArray.push(myObj);
                             } else {
