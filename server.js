@@ -1449,7 +1449,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
+            //get single user based on ID
             app.post('/api/singleUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id),
@@ -1470,7 +1470,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
+            //get all user list
             app.post('/api/allUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
@@ -1488,7 +1488,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
+            //Block Full User
             app.post('/api/block_unblock', (req, res) => {
 
                 var dataArray = dbo.collection(switlover).find({
@@ -1541,7 +1541,27 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //get count
+            // Block particuler number from the contact list
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Delete User from the database
+            app.post('/api/deleteUser',(req,res) => {
+                dbo.collection(switlover).deleteOne({
+                    _id: new ObjectId(req.body.id)
+                }).then((result) => {
+                    if(result['result']['n'] == 1)
+                    {
+                        res.json({status: "1", message: "success"});
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //get count of total user
             app.post('/api/count', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
