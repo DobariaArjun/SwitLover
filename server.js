@@ -812,7 +812,7 @@ client.connect((err, db) => {
                                     if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
                                         number = data[0]['Contact_List'][i]['number'];
                                     } else {
-                                        number = data[0]['Contact_List'][i]['number'] + "" + data[0]['Contact_List'][i]['code'];
+                                        number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
                                     }
 
                                     var myLikesArray = data[0]['Like'];
