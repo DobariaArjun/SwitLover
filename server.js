@@ -1335,13 +1335,13 @@ client.connect((err, db) => {
                                         });
                                     }
 
-                                } else if (!isEmpty(arrayContact)) {
+                                } else if (!isEmpty(jsonObject)) {
 
                                     dbo.collection(switlover).updateOne({
                                         Auth_Token: Auth_Token,
                                         is_Block: {$ne: 1}
                                     }, {
-                                        $set: {Phone_Number: arrayContact, updatedAt: new Date()}
+                                        $set: {Phone_Number: jsonObject, updatedAt: new Date()}
                                     }).then((dataresult) => {
                                         if (dataresult['result']['n'] == 1) {
                                             var dataArray = dbo.collection(switlover).find({
