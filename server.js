@@ -1690,13 +1690,13 @@ client.connect((err, db) => {
                         if (!isEmpty(result)) {
                             for (var i = 0; i < result[0]["Contact_List"].length; i++) {
                                 if (result[0]["Contact_List"][i]["number"] == req.body.number) {
-                                    if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1 || result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
+                                    if (result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
                                         dbo.collection(switlover).updateOne(
                                             {
                                                 Auth_Token: Auth_Token,
                                             },
                                             {
-                                                $set: {'Contact_List.$.isRemovedByAdmin': 0, updatedAt: new Date()}
+                                                $set: {'Contact_List.$.isRemovedByUser': 0, updatedAt: new Date()}
                                             }
                                         ).then((result) => {
                                             if (result['result']['n'] == 1) {
@@ -1715,7 +1715,7 @@ client.connect((err, db) => {
                                                 Auth_Token: Auth_Token
                                             },
                                             {
-                                                $set: {'Contact_List.$.isRemovedByAdmin': 1, updatedAt: new Date()}
+                                                $set: {'Contact_List.$.isRemovedByUser': 1, updatedAt: new Date()}
                                             }
                                         ).then((result) => {
                                             if (result['result']['n'] == 1) {
@@ -1862,7 +1862,7 @@ client.connect((err, db) => {
                     if (!isEmpty(result)) {
                         for (var i = 0; i < result[0]["Contact_List"].length; i++) {
                             if (result[0]["Contact_List"][i]["number"] == req.body.number) {
-                                if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1 || result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
+                                if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1) {
 
 
                                     dbo.collection(switlover).updateOne(
