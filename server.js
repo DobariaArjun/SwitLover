@@ -256,11 +256,10 @@ client.connect((err, db) => {
 
                                                 for (var j = 0; j < result.length; j++) {
 
-                                                    for(var k = 0; k < result[j]["follobackUser"].length; k++)
-                                                    {
+                                                    for (var k = 0; k < result[j]["follobackUser"].length; k++) {
                                                         if (result[j]["follobackUser"][k]["name"] == name) {
                                                             res.json({status: "0", message: "Already matched user"});
-                                                        }else {
+                                                        } else {
                                                             dbo.collection(match).insertOne(finalObj, (err, result) => {
                                                                 if (err)
                                                                     res.json({
@@ -817,8 +816,7 @@ client.connect((err, db) => {
 
                                     var myLikesArray = data[0]['Like'];
 
-                                    if(!isEmpty(myLikesArray))
-                                    {
+                                    if (!isEmpty(myLikesArray)) {
                                         for (var j = 0; j < myLikesArray.length; j++) {
                                             if (myLikesArray[j].length < 15) {
                                                 if (myLikesArray[j] == number) {
@@ -849,9 +847,7 @@ client.connect((err, db) => {
 
                                             }
                                         }
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         myObj = {
                                             name: data[0]['Contact_List'][i]['name'],
                                             image: data[0]['Contact_List'][i]['image'],
@@ -1140,7 +1136,7 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //EditProfile
-            app.post('/api/EditProfile',(req,res) => {
+            app.post('/api/EditProfile', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -1176,7 +1172,6 @@ client.connect((err, db) => {
 
                                 var arrayContact = req.body.number;
                                 // var jsonObject = JSON.parse(arrayContact);
-
 
 
                                 if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(arrayContact)) {
@@ -1273,7 +1268,27 @@ client.connect((err, db) => {
                                             }
                                         });
                                     }
-                                } else if (req.body.Username != null && req.body.Username) {
+                                }else if(req.body.Username != null && req.body.Username && !isEmpty(arrayContact))
+                                {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Username: UsernameArray,
+                                                Phone_Number: arrayContact,
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((data) => {
+                                        if (data['result']['n'] == 1) {
+                                            res.json({status: "1", message: "Profile updated successfully"});
+                                        } else {
+                                            res.json({status: "3", message: "Profile updation field"});
+                                        }
+                                    });
+                                }
+                                else if (req.body.Username != null && req.body.Username) {
 
                                     dbo.collection(switlover).updateOne(
                                         {
@@ -1779,16 +1794,71 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             // Block particuler number from the contact list
+            app.post('/api/blockNumber', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.id)
+                    // 'Contact_List.number': req.body.number
+                }).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        for (var i = 0; i < result[0]["Contact_List"].length; i++) {
+                            if (result[0]["Contact_List"][i]["number"] == req.body.number) {
+                                if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1 || result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            _id: new ObjectId(req.body.id),
+                                            'Contact_List.number': req.body.number
+                                        },
+                                        {
+                                            $set: {'Contact_List.isRemovedByAdmin': 0, updatedAt: new Date()}
+                                        }
+                                    ).then((result) => {
+                                        if (result['result']['n'] == 1) {
+                                            res.json({
+                                                status: "1",
+                                                message: "success"
+                                            });
+                                        }
+                                    }).catch((err) => {
+                                        res.json({status: "3", message: "1Internal server error"});
+                                    })
+                                } else {
+
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            _id: new ObjectId(req.body.id),
+                                            'Contact_List.number': req.body.number
+                                        },
+                                        {
+                                            $set: {'Contact_List.isRemovedByAdmin': 1, updatedAt: new Date()}
+                                        }
+                                    ).then((result) => {
+                                        if (result['result']['n'] == 1) {
+                                            res.json({
+                                                status: "1",
+                                                message: "success"
+                                            });
+                                        }
+                                    }).catch((err) => {
+                                        res.json({status: "3", message: "2Internal server error"+ err});
+                                    })
+                                }
+                            }
+                        }
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "3Internal server error"});
+                })
+            })
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
             //Delete User from the database
-            app.post('/api/deleteUser',(req,res) => {
+            app.post('/api/deleteUser', (req, res) => {
                 dbo.collection(switlover).deleteOne({
                     _id: new ObjectId(req.body.id)
                 }).then((result) => {
-                    if(result['result']['n'] == 1)
-                    {
+                    if (result['result']['n'] == 1) {
                         res.json({status: "1", message: "success"});
                     }
                 }).catch((err) => {
@@ -1840,8 +1910,7 @@ client.connect((err, db) => {
                                 }
 
                                 var myLikesArray = data[0]['Like'];
-                                if(!isEmpty(myLikesArray))
-                                {
+                                if (!isEmpty(myLikesArray)) {
                                     for (var j = 0; j < myLikesArray.length; j++) {
                                         if (myLikesArray[j].length < 15) {
                                             if (myLikesArray[j] == number) {
@@ -1872,9 +1941,7 @@ client.connect((err, db) => {
 
                                         }
                                     }
-                                }
-                                else
-                                {
+                                } else {
                                     myObj = {
                                         name: data[0]['Contact_List'][i]['name'],
                                         image: data[0]['Contact_List'][i]['image'],
