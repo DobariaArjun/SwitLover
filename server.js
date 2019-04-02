@@ -1268,8 +1268,7 @@ client.connect((err, db) => {
                                             }
                                         });
                                     }
-                                }else if(req.body.Username != null && req.body.Username && !isEmpty(jsonObject))
-                                {
+                                } else if (req.body.Username != null && req.body.Username && !isEmpty(jsonObject)) {
                                     dbo.collection(switlover).updateOne(
                                         {
                                             Auth_Token: Auth_Token
@@ -1287,8 +1286,7 @@ client.connect((err, db) => {
                                             res.json({status: "3", message: "Profile updation field"});
                                         }
                                     });
-                                }
-                                else if (req.body.Username != null && req.body.Username) {
+                                } else if (req.body.Username != null && req.body.Username) {
 
                                     dbo.collection(switlover).updateOne(
                                         {
@@ -1797,32 +1795,13 @@ client.connect((err, db) => {
             app.post('/api/blockNumber', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
-                    // 'Contact_List.number': req.body.number
                 }).toArray();
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
                         for (var i = 0; i < result[0]["Contact_List"].length; i++) {
                             if (result[0]["Contact_List"][i]["number"] == req.body.number) {
                                 if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1 || result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
-                                    dbo.collection(switlover).updateOne(
-                                        {
-                                            _id: new ObjectId(req.body.id),
-                                            'Contact_List.number': req.body.number
-                                        },
-                                        {
-                                            $set: {'Contact_List.isRemovedByAdmin': 0, updatedAt: new Date()}
-                                        }
-                                    ).then((result) => {
-                                        if (result['result']['n'] == 1) {
-                                            res.json({
-                                                status: "1",
-                                                message: "success"
-                                            });
-                                        }
-                                    }).catch((err) => {
-                                        res.json({status: "3", message: "1Internal server error"});
-                                    })
-                                } else {
+
 
                                     dbo.collection(switlover).updateOne(
                                         {
@@ -1830,7 +1809,7 @@ client.connect((err, db) => {
                                             'Contact_List.number': req.body.number
                                         },
                                         {
-                                            $set: {'Contact_List.isRemovedByAdmin': 1, updatedAt: new Date()}
+                                            $set: {'Contact_List.$.isRemovedByAdmin': 0, updatedAt: new Date()}
                                         }
                                     ).then((result) => {
                                         if (result['result']['n'] == 1) {
@@ -1840,14 +1819,33 @@ client.connect((err, db) => {
                                             });
                                         }
                                     }).catch((err) => {
-                                        res.json({status: "3", message: "2Internal server error"+ err});
+                                        res.json({status: "3", message: "Internal server error"});
+                                    })
+                                } else {
+
+                                    dbo.collection(switlover).updateOne(
+                                        {
+                                            'Contact_List.number': req.body.number
+                                        },
+                                        {
+                                            $set: {'Contact_List.$.isRemovedByAdmin': 1, updatedAt: new Date()}
+                                        }
+                                    ).then((result) => {
+                                        if (result['result']['n'] == 1) {
+                                            res.json({
+                                                status: "1",
+                                                message: "success"
+                                            });
+                                        }
+                                    }).catch((err) => {
+                                        res.json({status: "3", message: "Internal server error" + err});
                                     })
                                 }
                             }
                         }
                     }
                 }).catch((err) => {
-                    res.json({status: "3", message: "3Internal server error"});
+                    res.json({status: "3", message: "Internal server error"});
                 })
             })
             //--------------------------------------------------------------------------------------------------------------
