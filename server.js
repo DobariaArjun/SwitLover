@@ -1171,10 +1171,10 @@ client.connect((err, db) => {
                                 }
 
                                 var arrayContact = req.body.number;
-                                // var jsonObject = JSON.parse(arrayContact);
+                                var jsonObject = JSON.parse(arrayContact);
 
 
-                                if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(arrayContact)) {
+                                if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(jsonObject)) {
                                     if (currentEmail == req.body.Email_Address) {
                                         dbo.collection(switlover).updateOne(
                                             {
@@ -1183,7 +1183,7 @@ client.connect((err, db) => {
                                             {
                                                 $set: {
                                                     Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
+                                                    Phone_Number: jsonObject,
                                                     updatedAt: new Date()
                                                 }
                                             }).then((data) => {
@@ -1202,7 +1202,7 @@ client.connect((err, db) => {
                                                 $set: {
                                                     Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
                                                     Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
+                                                    Phone_Number: jsonObject,
                                                     updatedAt: new Date()
                                                 }
                                             }).then((data) => {
@@ -1268,7 +1268,7 @@ client.connect((err, db) => {
                                             }
                                         });
                                     }
-                                }else if(req.body.Username != null && req.body.Username && !isEmpty(arrayContact))
+                                }else if(req.body.Username != null && req.body.Username && !isEmpty(jsonObject))
                                 {
                                     dbo.collection(switlover).updateOne(
                                         {
@@ -1277,7 +1277,7 @@ client.connect((err, db) => {
                                         {
                                             $set: {
                                                 Username: UsernameArray,
-                                                Phone_Number: arrayContact,
+                                                Phone_Number: jsonObject,
                                                 updatedAt: new Date()
                                             }
                                         }).then((data) => {
@@ -1352,13 +1352,13 @@ client.connect((err, db) => {
                                         });
                                     }
 
-                                } else if (!isEmpty(arrayContact)) {
+                                } else if (!isEmpty(jsonObject)) {
 
                                     dbo.collection(switlover).updateOne({
                                         Auth_Token: Auth_Token,
                                         is_Block: {$ne: 1}
                                     }, {
-                                        $set: {Phone_Number: arrayContact, updatedAt: new Date()}
+                                        $set: {Phone_Number: jsonObject, updatedAt: new Date()}
                                     }).then((dataresult) => {
                                         if (dataresult['result']['n'] == 1) {
                                             var dataArray = dbo.collection(switlover).find({
