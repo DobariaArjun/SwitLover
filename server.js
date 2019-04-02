@@ -1676,6 +1676,68 @@ client.connect((err, db) => {
             });
             //--------------------------------------------------------------------------------------------------------------
 
+            //--------------------------------------------------------------------------------------------------------------
+            // Block particuler number from the contact list
+            app.post('/api/removeNumber', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    var dataArray = dbo.collection(switlover).find({
+                        Auth_Token: Auth_Token
+                    }).toArray();
+                    dataArray.then((result) => {
+                        if (!isEmpty(result)) {
+                            for (var i = 0; i < result[0]["Contact_List"].length; i++) {
+                                if (result[0]["Contact_List"][i]["number"] == req.body.number) {
+                                    if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1 || result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                Auth_Token: Auth_Token,
+                                            },
+                                            {
+                                                $set: {'Contact_List.$.isRemovedByAdmin': 0, updatedAt: new Date()}
+                                            }
+                                        ).then((result) => {
+                                            if (result['result']['n'] == 1) {
+                                                res.json({
+                                                    status: "1",
+                                                    message: "success"
+                                                });
+                                            }
+                                        }).catch((err) => {
+                                            res.json({status: "3", message: "Internal server error"});
+                                        })
+                                    } else {
+
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                Auth_Token: Auth_Token
+                                            },
+                                            {
+                                                $set: {'Contact_List.$.isRemovedByAdmin': 1, updatedAt: new Date()}
+                                            }
+                                        ).then((result) => {
+                                            if (result['result']['n'] == 1) {
+                                                res.json({
+                                                    status: "1",
+                                                    message: "success"
+                                                });
+                                            }
+                                        }).catch((err) => {
+                                            res.json({status: "3", message: "Internal server error" + err});
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }).catch((err) => {
+                        res.json({status: "3", message: "Internal server error"});
+                    })
+                }
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
             //**************************************************************************************************************
             // Admin Panel API
             //**************************************************************************************************************
