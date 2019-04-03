@@ -617,10 +617,127 @@ client.connect((err, db) => {
                                         }).toArray();
                                         dataArray.then((result) => {
                                             if (!isEmpty(result)) {
-                                                res.json({status: "1", message: "success", user_data: result});
+
+                                                var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
+                                                dataNotification.then((result) => {
+                                                    if (isEmpty(result)) {
+                                                        var myObj = {
+                                                            userID: req.body.userID,
+                                                            matcheek: {
+                                                                play_sound_for_every_notification: 1,
+                                                                play_sound_for_every_message: 1,
+                                                                likes: 1,
+                                                                matches: 1,
+                                                                messages: 1,
+                                                                power_of_time: 1,
+                                                                promotions: 1
+                                                            },
+                                                            phone: {
+                                                                play_sound_for_every_notification: 1,
+                                                                play_sound_for_every_message: 1,
+                                                                likes: 1,
+                                                                matches: 1,
+                                                                messages: 1,
+                                                                power_of_time: 1,
+                                                                promotions: 1
+                                                            },
+                                                            email: {
+                                                                frequency: {
+                                                                    every_notification: 0,
+                                                                    twice_a_day: 0,
+                                                                    once_a_day: 1,
+                                                                    once_a_week: 0,
+                                                                    once_a_month: 0
+                                                                },
+                                                                newsletter: 1,
+                                                                promotions: 1,
+                                                                likes: 1,
+                                                                matches: 1,
+                                                                messages: 1,
+                                                                power_of_time: 1
+                                                            }
+                                                        }
+                                                        dbo.collection(notification).insertOne(myObj, (err, result) => {
+                                                            if (err)
+                                                                res.json({status: "3", message: "Inserting faild"});
+                                                            else {
+                                                                es.json({
+                                                                    status: "1",
+                                                                    message: "success",
+                                                                    user_data: result
+                                                                });
+                                                            }
+                                                        });
+                                                    } else {
+
+                                                        dbo.collection(notification).updateOne(
+                                                            {
+                                                                userID: req.body.userID,
+                                                            },
+                                                            {
+                                                                $set: {
+                                                                    matcheek: {
+                                                                        play_sound_for_every_notification: req.body.matcheek["play_sound_for_every_notification"],
+                                                                        play_sound_for_every_message: req.body.matcheek["play_sound_for_every_message"],
+                                                                        likes: req.body.matcheek["likes"],
+                                                                        matches: req.body.matcheek["matches"],
+                                                                        messages: req.body.matcheek["messages"],
+                                                                        power_of_time: req.body.matcheek["power_of_time"],
+                                                                        promotions: req.body.matcheek["promotions"]
+                                                                    },
+                                                                    phone: {
+                                                                        play_sound_for_every_notification: req.body.phone["play_sound_for_every_notification"],
+                                                                        play_sound_for_every_message: req.body.phone["play_sound_for_every_message"],
+                                                                        likes: req.body.phone["likes"],
+                                                                        matches: req.body.phone["matches"],
+                                                                        messages: req.body.phone["messages"],
+                                                                        power_of_time: req.body.phone["power_of_time"],
+                                                                        promotions: req.body.phone["promotions"]
+                                                                    },
+                                                                    email: {
+                                                                        frequency: {
+                                                                            every_notification: req.body.email["frequency"]["every_notification"],
+                                                                            twice_a_day: req.body.email["frequency"]["twice_a_day"],
+                                                                            once_a_day: req.body.email["frequency"]["once_a_day"],
+                                                                            once_a_week: req.body.email["frequency"]["once_a_week"],
+                                                                            once_a_month: req.body.email["frequency"]["once_a_month"]
+                                                                        },
+                                                                        newsletter: req.body.email["newsletter"],
+                                                                        promotions: req.body.email["promotions"],
+                                                                        likes: req.body.email["likes"],
+                                                                        matches: req.body.email["matches"],
+                                                                        messages: req.body.email["messages"],
+                                                                        power_of_time: req.body.email["power_of_time"]
+                                                                    }
+                                                                },
+                                                            }
+                                                        ).then((result) => {
+
+                                                            if (result['result']['n'] == 1)
+                                                                es.json({
+                                                                    status: "1",
+                                                                    message: "success",
+                                                                    user_data: result
+                                                                });
+                                                            else
+                                                                res.json({
+                                                                    status: "3",
+                                                                    message: "notification updated failed"
+                                                                });
+                                                        }).catch((err) => {
+                                                            res.json({
+                                                                status: "3 ",
+                                                                message: "notification updated failed"
+                                                            });
+                                                        });
+
+                                                        res.json({status: "1", message: "success", user_data: result});
+                                                    }
+                                                }).catch((err) => {
+                                                    res.json({status: "3", message: "Internal Server error"});
+                                                });
+
                                             }
-                                        }).catch((err) => {
-                                            res.json({status: "3", message: "Internal Server error"});
                                         });
                                     }
                                 });
@@ -736,6 +853,14 @@ client.connect((err, db) => {
                                         for (var j = 0; j < myLikesArray.length; j++) {
                                             if (myLikesArray[j].length < 15) {
                                                 if (myLikesArray[j] == number) {
+                                                    myObj = {
+                                                        name: data[0]['Contact_List'][i]['name'],
+                                                        image: data[0]['Contact_List'][i]['image'],
+                                                        code: data[0]['Contact_List'][i]['code'],
+                                                        number: number,
+                                                        isLiked: 1
+                                                    };
+                                                    break;
                                                 } else {
 
                                                     myObj = {
@@ -743,6 +868,7 @@ client.connect((err, db) => {
                                                         image: data[0]['Contact_List'][i]['image'],
                                                         code: data[0]['Contact_List'][i]['code'],
                                                         number: number,
+                                                        isLiked: 0
                                                     };
                                                 }
 
@@ -807,7 +933,9 @@ client.connect((err, db) => {
                                                     image: data[0]['Contact_List'][i]['image'],
                                                     code: data[0]['Contact_List'][i]['code'],
                                                     number: number,
+                                                    isLiked: 1
                                                 };
+                                                numberArray.push(myObj);
                                                 break;
                                             }
                                         }
@@ -816,7 +944,6 @@ client.connect((err, db) => {
                                     }
                                 }
                             }
-                            numberArray.push(myObj);
                             res.json({status: "1", message: "Contact List", userdata: numberArray});
                         }
                     }).catch((err) => {
