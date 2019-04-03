@@ -1535,11 +1535,11 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
-                    var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
+                    var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.userID)}).toArray();
                     dataNotification.then((result) => {
                         if (isEmpty(result)) {
                             var myObj = {
-                                userID: req.body.userID,
+                                userID: new ObjectId(req.body.userID),
                                 matcheek: {
                                     play_sound_for_every_notification: req.body.matcheek["play_sound_for_every_notification"],
                                     play_sound_for_every_message: req.body.matcheek["play_sound_for_every_message"],
