@@ -1579,6 +1579,9 @@ client.connect((err, db) => {
                         if (isEmpty(result))
                             res.json({status: "0", message: "No notification settings found"});
                         else
+                            var dataresult = result[0];
+                            delete dataresult._id;
+                            delete dataresult.userID;
                             res.json({status: "1", message: "success", user_data: result});
                     }).catch((err) => {
                         res.json({status: "3 ", message: "notification updated failed"});
