@@ -612,16 +612,19 @@ client.connect((err, db) => {
                                         res.json({status: "3", message: "Error while inserting records"});
                                     else {
                                         var dataArray = dbo.collection(switlover).find({
-                                            Request_token: Request_token,
+                                            'Phone_Number.Contry_Code': req.body.Contry_Code,
+                                            'Phone_Number.Number': req.body.Number,
+                                            'Phone_Number.Location': req.body.Location,
                                             is_Block: {$ne: 1}
                                         }).toArray();
-                                        dataArray.then((result) => {
-                                            if (!isEmpty(result)) {
-                                                var dataNotification = dbo.collection(notification).find({userID: result[0]["_id"]}).toArray();
+                                        dataArray.then((dataresult) => {
+                                            if (!isEmpty(dataresult)) {
+                                                console.log(dataresult[0]["_id"])
+                                                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(dataresult[0]["_id"])}).toArray();
                                                 dataNotification.then((result) => {
                                                     if (isEmpty(result)) {
                                                         var myObj = {
-                                                            userID: result[0]["_id"],
+                                                            userID: dataresult[0]["_id"],
                                                             matcheek: {
                                                                 play_sound_for_every_notification: 1,
                                                                 play_sound_for_every_message: 1,
@@ -663,7 +666,7 @@ client.connect((err, db) => {
                                                                 res.json({
                                                                     status: "1",
                                                                     message: "success",
-                                                                    user_data: result
+                                                                    user_data: dataresult
                                                                 });
                                                             }
                                                         });
@@ -1509,7 +1512,7 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
-                    var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
+                    var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.userID)}).toArray();
                     dataNotification.then((result) => {
                         if (isEmpty(result))
                             res.json({status: "0", message: "No notification settings found"});
