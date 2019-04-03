@@ -617,12 +617,11 @@ client.connect((err, db) => {
                                         }).toArray();
                                         dataArray.then((result) => {
                                             if (!isEmpty(result)) {
-
-                                                var dataNotification = dbo.collection(notification).find({userID: req.body.userID}).toArray();
+                                                var dataNotification = dbo.collection(notification).find({userID: result[0]["_id"]}).toArray();
                                                 dataNotification.then((result) => {
                                                     if (isEmpty(result)) {
                                                         var myObj = {
-                                                            userID: req.body.userID,
+                                                            userID: result[0]["_id"],
                                                             matcheek: {
                                                                 play_sound_for_every_notification: 1,
                                                                 play_sound_for_every_message: 1,
@@ -657,81 +656,17 @@ client.connect((err, db) => {
                                                                 power_of_time: 1
                                                             }
                                                         }
-                                                        dbo.collection(notification).insertOne(myObj, (err, result) => {
+                                                        dbo.collection(notification).insertOne(myObj, (err, resu) => {
                                                             if (err)
                                                                 res.json({status: "3", message: "Inserting faild"});
                                                             else {
-                                                                es.json({
-                                                                    status: "1",
-                                                                    message: "success",
-                                                                    user_data: result
-                                                                });
-                                                            }
-                                                        });
-                                                    } else {
-
-                                                        dbo.collection(notification).updateOne(
-                                                            {
-                                                                userID: req.body.userID,
-                                                            },
-                                                            {
-                                                                $set: {
-                                                                    matcheek: {
-                                                                        play_sound_for_every_notification: req.body.matcheek["play_sound_for_every_notification"],
-                                                                        play_sound_for_every_message: req.body.matcheek["play_sound_for_every_message"],
-                                                                        likes: req.body.matcheek["likes"],
-                                                                        matches: req.body.matcheek["matches"],
-                                                                        messages: req.body.matcheek["messages"],
-                                                                        power_of_time: req.body.matcheek["power_of_time"],
-                                                                        promotions: req.body.matcheek["promotions"]
-                                                                    },
-                                                                    phone: {
-                                                                        play_sound_for_every_notification: req.body.phone["play_sound_for_every_notification"],
-                                                                        play_sound_for_every_message: req.body.phone["play_sound_for_every_message"],
-                                                                        likes: req.body.phone["likes"],
-                                                                        matches: req.body.phone["matches"],
-                                                                        messages: req.body.phone["messages"],
-                                                                        power_of_time: req.body.phone["power_of_time"],
-                                                                        promotions: req.body.phone["promotions"]
-                                                                    },
-                                                                    email: {
-                                                                        frequency: {
-                                                                            every_notification: req.body.email["frequency"]["every_notification"],
-                                                                            twice_a_day: req.body.email["frequency"]["twice_a_day"],
-                                                                            once_a_day: req.body.email["frequency"]["once_a_day"],
-                                                                            once_a_week: req.body.email["frequency"]["once_a_week"],
-                                                                            once_a_month: req.body.email["frequency"]["once_a_month"]
-                                                                        },
-                                                                        newsletter: req.body.email["newsletter"],
-                                                                        promotions: req.body.email["promotions"],
-                                                                        likes: req.body.email["likes"],
-                                                                        matches: req.body.email["matches"],
-                                                                        messages: req.body.email["messages"],
-                                                                        power_of_time: req.body.email["power_of_time"]
-                                                                    }
-                                                                },
-                                                            }
-                                                        ).then((result) => {
-
-                                                            if (result['result']['n'] == 1)
-                                                                es.json({
-                                                                    status: "1",
-                                                                    message: "success",
-                                                                    user_data: result
-                                                                });
-                                                            else
                                                                 res.json({
-                                                                    status: "3",
-                                                                    message: "notification updated failed"
+                                                                    status: "1",
+                                                                    message: "success",
+                                                                    user_data: result
                                                                 });
-                                                        }).catch((err) => {
-                                                            res.json({
-                                                                status: "3 ",
-                                                                message: "notification updated failed"
-                                                            });
+                                                            }
                                                         });
-
-                                                        res.json({status: "1", message: "success", user_data: result});
                                                     }
                                                 }).catch((err) => {
                                                     res.json({status: "3", message: "Internal Server error"});
