@@ -932,7 +932,7 @@ client.connect((err, db) => {
                                                     name: data[0]['Contact_List'][i]['name'],
                                                     image: data[0]['Contact_List'][i]['image'],
                                                     code: data[0]['Contact_List'][i]['code'],
-                                                    number: number,
+                                                    number: data[0]['Contact_List'][i]['number'],
                                                     isLiked: 1
                                                 };
                                                 numberArray.push(myObj);
