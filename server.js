@@ -857,7 +857,7 @@ client.connect((err, db) => {
                                                         name: data[0]['Contact_List'][i]['name'],
                                                         image: data[0]['Contact_List'][i]['image'],
                                                         code: data[0]['Contact_List'][i]['code'],
-                                                        number: number,
+                                                        number: data[0]['Contact_List'][i]['number'],
                                                         isLiked: 1
                                                     };
                                                     break;
@@ -867,7 +867,7 @@ client.connect((err, db) => {
                                                         name: data[0]['Contact_List'][i]['name'],
                                                         image: data[0]['Contact_List'][i]['image'],
                                                         code: data[0]['Contact_List'][i]['code'],
-                                                        number: number,
+                                                        number: data[0]['Contact_List'][i]['number'],
                                                         isLiked: 0
                                                     };
                                                 }
@@ -879,7 +879,7 @@ client.connect((err, db) => {
                                             name: data[0]['Contact_List'][i]['name'],
                                             image: data[0]['Contact_List'][i]['image'],
                                             code: data[0]['Contact_List'][i]['code'],
-                                            number: number,
+                                            number: data[0]['Contact_List'][i]['number'],
                                         };
                                     }
                                     numberArray.push(myObj);
@@ -1476,10 +1476,12 @@ client.connect((err, db) => {
                 } else {
                     dbo.collection(switlover).updateOne(
                         {
-                            Auth_Token: Auth_Token
+                            Auth_Token: Auth_Token,
+                            'Phone_Number.Number' : req.body.number,
+                            'Phone_Number.Contry_Code' : req.body.code
                         },
                         {
-                            $set: {'Phone_Number.is_OverVerification': 1, updatedAt: new Date()}
+                            $set: {'Phone_Number.$.is_OverVerification': 1, updatedAt: new Date()}
                         }
                     ).then((result) => {
                         if (result['result']['n'] == 1) {
