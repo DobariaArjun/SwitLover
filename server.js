@@ -736,15 +736,6 @@ client.connect((err, db) => {
                                         for (var j = 0; j < myLikesArray.length; j++) {
                                             if (myLikesArray[j].length < 15) {
                                                 if (myLikesArray[j] == number) {
-
-                                                    // myObj = {
-                                                    //     name: data[0]['Contact_List'][i]['name'],
-                                                    //     image: data[0]['Contact_List'][i]['image'],
-                                                    //     code: data[0]['Contact_List'][i]['code'],
-                                                    //     number: number,
-                                                    // };
-                                                    // break;
-
                                                 } else {
 
                                                     myObj = {
@@ -837,7 +828,7 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //Update Profile - after login first time
-            app.post('/api/UpdateProfile', (req, res) => {
+            app.post('/api/UpdateProfile', (req, res) =>    {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -1479,38 +1470,38 @@ client.connect((err, db) => {
                         if (isEmpty(result)) {
                             var myObj = {
                                 userID: req.body.userID,
-                                switlover: {
-                                    play_sound_for_every_notification: 0,
-                                    play_sound_for_every_message: 0,
-                                    likes: 0,
-                                    matches: 0,
-                                    messages: 0,
-                                    power_of_time: 0,
-                                    promotions: 0,
+                                matcheek: {
+                                    play_sound_for_every_notification: req.body.matcheek["play_sound_for_every_notification"],
+                                    play_sound_for_every_message: req.body.matcheek["play_sound_for_every_message"],
+                                    likes: req.body.matcheek["likes"],
+                                    matches: req.body.matcheek["matches"],
+                                    messages: req.body.matcheek["messages"],
+                                    power_of_time: req.body.matcheek["power_of_time"],
+                                    promotions: req.body.matcheek["promotions"]
                                 },
                                 phone: {
-                                    play_sound_for_every_notification: 0,
-                                    play_sound_for_every_message: 0,
-                                    likes: 0,
-                                    matches: 0,
-                                    messages: 0,
-                                    power_of_time: 0,
-                                    promotions: 0,
+                                    play_sound_for_every_notification: req.body.phone["play_sound_for_every_notification"],
+                                    play_sound_for_every_message: req.body.phone["play_sound_for_every_message"],
+                                    likes: req.body.phone["likes"],
+                                    matches: req.body.phone["matches"],
+                                    messages: req.body.phone["messages"],
+                                    power_of_time: req.body.phone["power_of_time"],
+                                    promotions: req.body.phone["promotions"]
                                 },
                                 email: {
                                     frequency: {
-                                        every_notification: 0,
-                                        twice_a_day: 0,
-                                        once_a_day: 0,
-                                        once_a_week: 0,
-                                        once_a_month: 0
+                                        every_notification: req.body.email["frequency"]["every_notification"],
+                                        twice_a_day: req.body.email["frequency"]["twice_a_day"],
+                                        once_a_day: req.body.email["frequency"]["once_a_day"],
+                                        once_a_week: req.body.email["frequency"]["once_a_week"],
+                                        once_a_month: req.body.email["frequency"]["once_a_month"]
                                     },
-                                    newsletter: 0,
-                                    promotions: 0,
-                                    likes: 0,
-                                    matches: 0,
-                                    messages: 0,
-                                    power_of_time: 0
+                                    newsletter: req.body.email["newsletter"],
+                                    promotions: req.body.email["promotions"],
+                                    likes: req.body.email["likes"],
+                                    matches: req.body.email["matches"],
+                                    messages: req.body.email["messages"],
+                                    power_of_time: req.body.email["power_of_time"]
                                 }
                             }
                             dbo.collection(notification).insertOne(myObj, (err, result) => {
@@ -1528,38 +1519,38 @@ client.connect((err, db) => {
                                 },
                                 {
                                     $set: {
-                                        switlover: {
-                                            switlover_play_sound_for_every_notification: req.body.switlover_play_sound_for_every_notification,
-                                            switlover_play_sound_for_every_message: req.body.switlover_play_sound_for_every_message,
-                                            switlover_likes: req.body.switlover_likes,
-                                            switlover_matches: req.body.switlover_matches,
-                                            switlover_messages: req.body.switlover_messages,
-                                            switlover_power_of_time: req.body.switlover_power_of_time,
-                                            switlover_promotions: req.body.switlover_promotions
+                                        matcheek: {
+                                            play_sound_for_every_notification: req.body.matcheek["play_sound_for_every_notification"],
+                                            play_sound_for_every_message: req.body.matcheek["play_sound_for_every_message"],
+                                            likes: req.body.matcheek["likes"],
+                                            matches: req.body.matcheek["matches"],
+                                            messages: req.body.matcheek["messages"],
+                                            power_of_time: req.body.matcheek["power_of_time"],
+                                            promotions: req.body.matcheek["promotions"]
                                         },
                                         phone: {
-                                            phone_play_sound_for_every_notification: req.body.phone_play_sound_for_every_notification,
-                                            phone_play_sound_for_every_message: req.body.phone_play_sound_for_every_message,
-                                            phone_likes: req.body.phone_likes,
-                                            phone_matches: req.body.phone_matches,
-                                            phone_messages: req.body.phone_messages,
-                                            phone_power_of_time: req.body.phone_power_of_time,
-                                            phone_promotions: req.body.phone_promotions
+                                            play_sound_for_every_notification: req.body.phone["play_sound_for_every_notification"],
+                                            play_sound_for_every_message: req.body.phone["play_sound_for_every_message"],
+                                            likes: req.body.phone["likes"],
+                                            matches: req.body.phone["matches"],
+                                            messages: req.body.phone["messages"],
+                                            power_of_time: req.body.phone["power_of_time"],
+                                            promotions: req.body.phone["promotions"]
                                         },
                                         email: {
                                             frequency: {
-                                                frequency_every_notification: req.body.frequency_every_notification,
-                                                frequency_twice_a_day: req.body.frequency_twice_a_day,
-                                                frequency_once_a_day: req.body.frequency_once_a_day,
-                                                frequency_once_a_week: req.body.frequency_once_a_week,
-                                                frequency_once_a_month: req.body.frequency_once_a_month
+                                                every_notification: req.body.email["frequency"]["every_notification"],
+                                                twice_a_day: req.body.email["frequency"]["twice_a_day"],
+                                                once_a_day: req.body.email["frequency"]["once_a_day"],
+                                                once_a_week: req.body.email["frequency"]["once_a_week"],
+                                                once_a_month: req.body.email["frequency"]["once_a_month"]
                                             },
-                                            email_newsletter: req.body.email_newsletter,
-                                            email_promotions: req.body.email_promotions,
-                                            email_likes: req.body.email_likes,
-                                            email_matches: req.body.email_matches,
-                                            email_messages: req.body.email_messages,
-                                            email_power_of_time: req.body.email_power_of_time
+                                            newsletter: req.body.email["newsletter"],
+                                            promotions: req.body.email["promotions"],
+                                            likes: req.body.email["likes"],
+                                            matches: req.body.email["matches"],
+                                            messages: req.body.email["messages"],
+                                            power_of_time: req.body.email["power_of_time"]
                                         }
                                     },
                                 }
