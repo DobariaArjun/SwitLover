@@ -1848,7 +1848,10 @@ client.connect((err, db) => {
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
                         var data = [];
-                        for(var i = 0; i < result.length; i++) {
+                        var is_Deleted;
+                        var is_Online;
+                        var is_Block;
+                        for (var i = 0; i < result.length; i++) {
                             var dataresult = result[0];
 
                             delete dataresult.Request_token;
@@ -1868,27 +1871,41 @@ client.connect((err, db) => {
                             delete dataresult.updatedAt;
                             delete dataresult.deletedAt;
 
-                            var finalData = {
-                                _id: dataresult["_id"],
-                                Username: dataresult["Username"][(dataresult["Username"]).length - 1],
-                                Contry_Code: dataresult["Phone_Number"][0]["Contry_Code"],
-                                Phone_Number: dataresult["Phone_Number"][0]["Number"],
-                                Email: dataresult["Email"]["EmailAddress"],
-                                is_Deleted: dataresult["is_Deleted"],
-                                is_Online: dataresult["is_Online"],
-                                is_Block: dataresult["is_Block"]
-                            };
+                            if (dataresult["is_Deleted"] == 0) {
+                                is_Deleted = "No";
+                            } else {
+                                is_Deleted = "Yes";
+                            }
+                            if (dataresult["is_Online"] == 0) {
+                                is_Online = "No";
+                            } else {
+                                is_Online = "Yes";
+                            }
+                            if (dataresult["is_Block"] == 0) {
+                                is_Block = "No";
+                            } else {
+                                is_Block = "Yes";
+                            }
+
+                            var finalData = [
+                                dataresult["_id"],
+                                dataresult["Username"][(dataresult["Username"]).length - 1],
+                                dataresult["Phone_Number"][0]["Contry_Code"],
+                                dataresult["Phone_Number"][0]["Number"],
+                                dataresult["Email"]["EmailAddress"],
+                                is_Deleted,
+                                is_Online,
+                                is_Block
+                            ];
                             data.push(finalData);
                         }
 
                         res.json({
-                            status: "1",
-                            message: "success",
-                            userdata: data
+                            data: data
                         });
                     }
                 }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"+err});
+                    res.json({status: "3", message: "Internal server error" + err});
                 })
             })
             //--------------------------------------------------------------------------------------------------------------
