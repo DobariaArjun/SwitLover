@@ -1851,8 +1851,9 @@ client.connect((err, db) => {
                         var is_Deleted;
                         var is_Online;
                         var is_Block;
+                        var name;
                         for (var i = 0; i < result.length; i++) {
-                            var dataresult = result[0];
+                            var dataresult = result[i];
 
                             delete dataresult.Request_token;
                             delete dataresult.Auth_Token;
@@ -1886,10 +1887,15 @@ client.connect((err, db) => {
                             } else {
                                 is_Block = "Yes";
                             }
+                            if (dataresult["Username"][(dataresult["Username"]).length - 1] == null) {
+                                name = "";
+                            }else{
+                                name = dataresult["Username"][(dataresult["Username"]).length - 1];
+                            }
 
                             var finalData = [
                                 dataresult["_id"],
-                                dataresult["Username"][(dataresult["Username"]).length - 1],
+                                name,
                                 dataresult["Phone_Number"][0]["Contry_Code"],
                                 dataresult["Phone_Number"][0]["Number"],
                                 dataresult["Email"]["EmailAddress"],
@@ -1899,7 +1905,6 @@ client.connect((err, db) => {
                             ];
                             data.push(finalData);
                         }
-
                         res.json({
                             data: data
                         });
