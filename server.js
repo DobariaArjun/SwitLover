@@ -1647,7 +1647,7 @@ client.connect((err, db) => {
                                         },
                                         email: {
                                             frequency: {
-                                                every_notification: req.body.email["frequency"]["every_notification"],
+                                                notification: req.body.email["frequency"]["every_notification"],
                                                 twice_a_day: req.body.email["frequency"]["twice_a_day"],
                                                 once_a_day: req.body.email["frequency"]["once_a_day"],
                                                 once_a_week: req.body.email["frequency"]["once_a_week"],
