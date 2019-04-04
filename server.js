@@ -1215,7 +1215,7 @@ client.connect((err, db) => {
                                 var UsernameArray = [];
                                 UsernameArray = result[0]['Username'];
 
-                                if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "" || UsernameArray != "null") {
+                                if (!isEmpty(UsernameArray)) {
                                     var existUser = UsernameArray[UsernameArray.length - 1];
                                     var newUsername = req.body.Username;
                                     if (newUsername != existUser) {
@@ -1623,7 +1623,7 @@ client.connect((err, db) => {
 
                             dbo.collection(notification).updateOne(
                                 {
-                                    userID: req.body.userID,
+                                    userID: new ObjectId(req.body.userID)
                                 },
                                 {
                                     $set: {
@@ -1842,6 +1842,68 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
+            //get single user based on ID
+            app.post('/api/singleUserNumber', (req, res) => {
+                var dataArray = dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.id),
+                    is_Block: {$ne: 1}
+                }).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+
+
+
+                        var dataresult = result[0];
+                        delete dataresult._id;
+                        delete dataresult.Request_token;
+                        delete dataresult.Auth_Token;
+                        delete dataresult.Contact_Not_Recognized;
+                        delete dataresult.Add_New_Number_From_App;
+                        delete dataresult.Contact_Remove_Ratio;
+                        delete dataresult.Like;
+                        delete dataresult.Username;
+                        delete dataresult.Phone_Number;
+                        delete dataresult.Email;
+                        delete dataresult.is_Block;
+                        delete dataresult.is_Online;
+                        delete dataresult.is_Deleted;
+                        delete dataresult.Profile_Pic;
+                        delete dataresult.Match_Ratio;
+                        delete dataresult.PowerID;
+                        delete dataresult.Not_In_App_Purchase;
+                        delete dataresult.language;
+                        delete dataresult.Device;
+                        delete dataresult.createdAt;
+                        delete dataresult.updatedAt;
+                        delete dataresult.deletedAt;
+
+                        var dataArray1 = [];
+
+                        for(var i = 0; i < dataresult.Contact_List.length; i++)
+                        {
+                            var data = [
+                                i+1,
+                                dataresult.Contact_List[i]["code"],
+                                dataresult.Contact_List[i]["number"],
+                                dataresult.Contact_List[i]["name"]
+                            ];
+
+                            dataArray1.push(data);
+                        }
+
+
+
+                        res.json({
+                            data: dataArray1
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3", message: "Internal server error"+err});
+                })
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
             //get all user list
             app.post('/api/allUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
@@ -1896,8 +1958,7 @@ client.connect((err, db) => {
                             var finalData = [
                                 dataresult["_id"],
                                 name,
-                                dataresult["Phone_Number"][0]["Contry_Code"],
-                                dataresult["Phone_Number"][0]["Number"],
+                                dataresult["Phone_Number"][0]["Contry_Code"]+''+dataresult["Phone_Number"][0]["Number"],
                                 dataresult["Email"]["EmailAddress"],
                                 is_Deleted,
                                 is_Online,
