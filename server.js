@@ -893,7 +893,7 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //Preference setting for the match
-            app.post('/api/PreferenceSetting',(req,res) => {
+            app.post('/api/PreferenceSetting', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -903,8 +903,7 @@ client.connect((err, db) => {
                         is_Block: {$ne: 1}
                     }).toArray();
                     dataArray.then((result) => {
-                        if(!isEmpty(result))
-                        {
+                        if (!isEmpty(result)) {
                             dbo.collection(switlover).updateOne(
                                 {
                                     Auth_Token: Auth_Token
@@ -924,14 +923,15 @@ client.connect((err, db) => {
                                 }
                             });
                         }
-                    }).catch((err) => {})
+                    }).catch((err) => {
+                    })
                 }
             })
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
             //Update Profile - after login first time
-            app.post('/api/UpdateProfile', (req, res) =>    {
+            app.post('/api/UpdateProfile', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -1453,8 +1453,8 @@ client.connect((err, db) => {
                     dbo.collection(switlover).updateOne(
                         {
                             Auth_Token: Auth_Token,
-                            'Phone_Number.Number' : req.body.number,
-                            'Phone_Number.Contry_Code' : req.body.code
+                            'Phone_Number.Number': req.body.number,
+                            'Phone_Number.Contry_Code': req.body.code
                         },
                         {
                             $set: {'Phone_Number.$.is_OverVerification': 1, updatedAt: new Date()}
@@ -1556,9 +1556,9 @@ client.connect((err, db) => {
                             res.json({status: "0", message: "No notification settings found"});
                         else
                             var dataresult = result[0];
-                            delete dataresult._id;
-                            delete dataresult.userID;
-                            res.json({status: "1", message: "success", user_data: result});
+                        delete dataresult._id;
+                        delete dataresult.userID;
+                        res.json({status: "1", message: "success", user_data: result});
                     }).catch((err) => {
                         res.json({status: "3 ", message: "notification updated failed"});
                     });
@@ -1847,14 +1847,48 @@ client.connect((err, db) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
+                        var data = [];
+                        for(var i = 0; i < result.length; i++) {
+                            var dataresult = result[0];
+
+                            delete dataresult.Request_token;
+                            delete dataresult.Auth_Token;
+                            delete dataresult.Contact_Not_Recognized;
+                            delete dataresult.Add_New_Number_From_App;
+                            delete dataresult.Contact_Remove_Ratio;
+                            delete dataresult.Like;
+                            delete dataresult.Contact_List;
+                            delete dataresult.Profile_Pic;
+                            delete dataresult.Match_Ratio;
+                            delete dataresult.PowerID;
+                            delete dataresult.Not_In_App_Purchase;
+                            delete dataresult.language;
+                            delete dataresult.Device;
+                            delete dataresult.createdAt;
+                            delete dataresult.updatedAt;
+                            delete dataresult.deletedAt;
+
+                            var finalData = {
+                                _id: dataresult["_id"],
+                                Username: dataresult["Username"][(dataresult["Username"]).length - 1],
+                                Contry_Code: dataresult["Phone_Number"][0]["Contry_Code"],
+                                Phone_Number: dataresult["Phone_Number"][0]["Number"],
+                                Email: dataresult["Email"]["EmailAddress"],
+                                is_Deleted: dataresult["is_Deleted"],
+                                is_Online: dataresult["is_Online"],
+                                is_Block: dataresult["is_Block"]
+                            };
+                            data.push(finalData);
+                        }
+
                         res.json({
                             status: "1",
                             message: "success",
-                            userdata: result
+                            userdata: data
                         });
                     }
                 }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"});
+                    res.json({status: "3", message: "Internal server error"+err});
                 })
             })
             //--------------------------------------------------------------------------------------------------------------
