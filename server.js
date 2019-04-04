@@ -1673,7 +1673,7 @@ client.connect((err, db) => {
                             });
                         }
                     }).catch((err) => {
-                        res.json({status: "3 ", message: "Internal server error"});
+                        res.json({status: "3 ", message: "Internal server error"+err});
                     });
                 }
             });
