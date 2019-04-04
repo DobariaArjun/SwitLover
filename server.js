@@ -892,6 +892,44 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
+            //Preference setting for the match
+            app.post('/api/PreferenceSetting',(req,res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    var dataArray = dbo.collection(switlover).find({
+                        Auth_Token: Auth_Token,
+                        is_Block: {$ne: 1}
+                    }).toArray();
+                    dataArray.then((result) => {
+                        if(!isEmpty(result))
+                        {
+                            dbo.collection(switlover).updateOne(
+                                {
+                                    Auth_Token: Auth_Token
+                                },
+                                {
+                                    $set: {
+                                        'PowerID.Power_Of_Match': req.body.match,
+                                        'PowerID.Power_Of_Time': req.body.time,
+                                        'PowerID.Golden_Power': req.body.golden,
+                                        updatedAt: new Date()
+                                    }
+                                }).then((data) => {
+                                if (data['result']['n'] == 1) {
+                                    res.json({status: "1", message: "success"});
+                                } else {
+                                    res.json({status: "3", message: "fail"});
+                                }
+                            });
+                        }
+                    }).catch((err) => {})
+                }
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
             //Update Profile - after login first time
             app.post('/api/UpdateProfile', (req, res) =>    {
                 var Auth_Token = req.header('Auth_Token');
