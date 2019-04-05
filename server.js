@@ -1914,7 +1914,6 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Block Full User
             app.post('/api/block_unblock', (req, res) => {
-                console.log(req.body)
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
@@ -2027,11 +2026,48 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Delete User from the database
             app.post('/api/deleteUser', (req, res) => {
-                dbo.collection(switlover).deleteOne({
+                var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
-                }).then((result) => {
-                    if (result['result']['n'] == 1) {
-                        res.json({status: "1", message: "success"});
+                }).toArray();
+                dataArray.then((result) => {
+                    if (!isEmpty(result)) {
+                        if (result[0]["is_Deleted"] == 0) {
+                            dbo.collection(switlover).updateOne(
+                                {
+                                    _id: new ObjectId(req.body.id)
+                                },
+                                {
+                                    $set: {is_Deleted: 1, is_Block: 1,updatedAt: new Date()}
+                                }
+                            ).then((result) => {
+                                if (result['result']['n'] == 1) {
+                                    res.json({
+                                        status: "1",
+                                        message: "success"
+                                    });
+                                }
+                            }).catch((err) => {
+                                res.json({status: "3", message: "Internal server error"});
+                            })
+                        } else {
+                            dbo.collection(switlover).updateOne(
+                                {
+                                    _id: new ObjectId(req.body.id)
+                                },
+                                {
+                                    $set: {is_Deleted: 0, is_Block: 0, updatedAt: new Date()}
+                                }
+                            ).then((result) => {
+                                if (result['result']['n'] == 1) {
+                                    res.json({
+                                        status: "1",
+                                        message: "success"
+                                    });
+                                }
+                            }).catch((err) => {
+                                res.json({status: "3", message: "Internal server error"});
+                            })
+                        }
                     }
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal server error"});
