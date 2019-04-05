@@ -1835,6 +1835,12 @@ client.connect((err, db) => {
                             userdata: result
                         });
                     }
+                    else{
+                        res.json({
+                            status: "0",
+                            message: "no data"
+                        });
+                    }
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
@@ -1979,7 +1985,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Block Full User
             app.post('/api/block_unblock', (req, res) => {
-
+                console.log(req.body)
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
