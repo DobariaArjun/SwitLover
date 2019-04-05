@@ -219,72 +219,76 @@ client.connect((err, db) => {
                 } else {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token,
-                        is_Block: {$ne: 1}
                     }).toArray()
 
                     dataArray.then((result) => {
-                        var likeArraybyMe = result[0]['Like'];
 
-                        for (var i = 0; i < likeArraybyMe.length; i++) {
+                        if (result[0]["is_Block"] == 0) {
+                            var likeArraybyMe = result[0]['Like'];
 
-                            var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': '9714470952'}).toArray()
-                            numberArray.then((idresult) => {
-                                var myObj1 = [];
-                                var myObj;
-                                if (!isEmpty(idresult)) {
+                            for (var i = 0; i < likeArraybyMe.length; i++) {
 
-                                    var username = idresult[0]['Username'];
-                                    var name = username[username.length - 1];
-                                    myObj = {
-                                        id: idresult[0]['_id'],
-                                        name: name,
-                                        image: idresult[0]['Profile_Pic'],
-                                        is_used: "false",
-                                        createdAt: new Date()
-                                    }
+                                var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': '9714470952'}).toArray()
+                                numberArray.then((idresult) => {
+                                    var myObj1 = [];
+                                    var myObj;
+                                    if (!isEmpty(idresult)) {
 
-                                    myObj1.push(myObj);
-                                    if (!isEmpty(myObj1)) {
-                                        var finalObj = {
-                                            currentUser: idresult[0]['_id'],
-                                            follobackUser: myObj1
+                                        var username = idresult[0]['Username'];
+                                        var name = username[username.length - 1];
+                                        myObj = {
+                                            id: idresult[0]['_id'],
+                                            name: name,
+                                            image: idresult[0]['Profile_Pic'],
+                                            is_used: "false",
+                                            createdAt: new Date()
                                         }
 
-                                        var dataArray = dbo.collection(match).find({}).toArray()
-                                        dataArray.then((result) => {
-                                            if (!isEmpty(result)) {
+                                        myObj1.push(myObj);
+                                        if (!isEmpty(myObj1)) {
+                                            var finalObj = {
+                                                currentUser: idresult[0]['_id'],
+                                                follobackUser: myObj1
+                                            }
 
-                                                for (var j = 0; j < result.length; j++) {
+                                            var dataArray = dbo.collection(match).find({}).toArray()
+                                            dataArray.then((result) => {
+                                                if (!isEmpty(result)) {
 
-                                                    for (var k = 0; k < result[j]["follobackUser"].length; k++) {
-                                                        if (result[j]["follobackUser"][k]["name"] == name) {
-                                                            res.json({status: "0", message: "Already matched user"});
-                                                        } else {
-                                                            dbo.collection(match).insertOne(finalObj, (err, result) => {
-                                                                if (err)
-                                                                    res.json({
-                                                                        status: "3",
-                                                                        message: "Error while inserting records"
-                                                                    });
-                                                                else {
-                                                                    res.json({status: "1", message: "success"});
-                                                                }
-                                                            })
+                                                    for (var j = 0; j < result.length; j++) {
+
+                                                        for (var k = 0; k < result[j]["follobackUser"].length; k++) {
+                                                            if (result[j]["follobackUser"][k]["name"] == name) {
+                                                                res.json({status: "0", message: "Already matched user"});
+                                                            } else {
+                                                                dbo.collection(match).insertOne(finalObj, (err, result) => {
+                                                                    if (err)
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Error while inserting records"
+                                                                        });
+                                                                    else {
+                                                                        res.json({status: "1", message: "success"});
+                                                                    }
+                                                                })
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        }).catch((err) => {
-                                            // res.json({status: "3", message: "1Internal server error"});
-                                        })
+                                            }).catch((err) => {
+                                                // res.json({status: "3", message: "1Internal server error"});
+                                            })
 
+                                        }
+                                    } else {
+                                        res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                     }
-                                } else {
-                                    res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
-                                }
-                            }).catch((error) => {
-                                res.json({status: "3", message: "2Internal server error"});
-                            })
+                                }).catch((error) => {
+                                    res.json({status: "3", message: "2Internal server error"});
+                                })
+                            }
+                        } else {
+                            res.json({status: "7", message: "You have been blocked by Admin"})
                         }
                     }).catch((err) => {
                         res.json({status: "3", message: "3Internal server error"});
@@ -313,155 +317,49 @@ client.connect((err, db) => {
                         var isLiked1 = false;
                         var numberArray = [];
                         var dataArray = dbo.collection(switlover).find({
-                            Auth_Token: Auth_Token,
-                            is_Block: {$ne: 1}
+                            Auth_Token: Auth_Token
                         }).toArray();
                         dataArray.then((dataresult) => {
-                            existingLikes = dataresult[0]['Like']
-                            if (!isEmpty(existingLikes)) {
-                                for (var j = 0; j < existingLikes.length; j++) {
-                                    if (existingLikes[j].length < 15) {
-                                        if (existingLikes[j] == number) {
-                                            isLiked1 = true;
+                            if (dataresult[0]['is_Block'] == 0) {
+                                existingLikes = dataresult[0]['Like']
+                                if (!isEmpty(existingLikes)) {
+                                    for (var j = 0; j < existingLikes.length; j++) {
+                                        if (existingLikes[j].length < 15) {
+                                            if (existingLikes[j] == number) {
+                                                isLiked1 = true;
+                                            } else {
+                                                numberArray.push(existingLikes[j])
+                                            }
                                         } else {
                                             numberArray.push(existingLikes[j])
                                         }
-                                    } else {
-                                        numberArray.push(existingLikes[j])
                                     }
-                                }
-                                if (!isLiked1) {
-                                    numberArray.push(number);
-                                }
-                            } else {
-                                numberArray.push(number)
-                            }
-                            dbo.collection(switlover).updateOne({
-                                    Auth_Token: Auth_Token,
-                                },
-                                {
-                                    $set: {Like: numberArray}
-                                }).then((resultdata) => {
-                                if (resultdata['result']['n'] == 1) {
-                                    res.json({status: "1", message: "success"});
+                                    if (!isLiked1) {
+                                        numberArray.push(number);
+                                    }
                                 } else {
-                                    res.json({status: "3", message: "Internal server error"})
+                                    numberArray.push(number)
                                 }
-                            }).catch((errdata) => {
-                                res.json({status: "3", message: "Internal server error"})
-                            })
+                                dbo.collection(switlover).updateOne({
+                                        Auth_Token: Auth_Token,
+                                    },
+                                    {
+                                        $set: {Like: numberArray}
+                                    }).then((resultdata) => {
+                                    if (resultdata['result']['n'] == 1) {
+                                        res.json({status: "1", message: "success"});
+                                    } else {
+                                        res.json({status: "3", message: "Internal server error"})
+                                    }
+                                }).catch((errdata) => {
+                                    res.json({status: "3", message: "Internal server error"})
+                                })
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"})
+                            }
                         }).catch((dataerror) => {
 
                         })
-
-                        // var dataArray = dbo.collection(switlover).find({
-                        //     'Phone_Number.Contry_Code': req.body.code,
-                        //     'Phone_Number.Number': req.body.number,
-                        //     is_Block: {$ne: 1}
-                        // }).toArray();
-                        // dataArray.then((result) => {
-                        //     if (!isEmpty(result)) {
-                        //
-                        //         var userID = result[0]['_id'];
-                        //
-                        //         var likeArray = [];
-                        //
-                        //         var isLiked = false;
-                        //         var existingLikes = [];
-                        //
-                        //         var dataArray = dbo.collection(switlover).find({
-                        //             Auth_Token: Auth_Token,
-                        //             is_Block: {$ne: 1}
-                        //         }).toArray();
-                        //         dataArray.then((dataresult) => {
-                        //             existingLikes = dataresult[0]['Like']
-                        //             console.log(existingLikes)
-                        //             if (!isEmpty(existingLikes)) {
-                        //                 for (var j = 0; j < existingLikes.length; j++) {
-                        //                     if (existingLikes[j].length < 15) {
-                        //                         likeArray.push(existingLikes[j]);
-                        //                     } else if (existingLikes[j].equals(userID)) {
-                        //                         isLiked = true;
-                        //                     } else {
-                        //                         likeArray.push(existingLikes[j])
-                        //                         // isLiked = false;
-                        //                     }
-                        //                 }
-                        //                 if (!isLiked) {
-                        //                     likeArray.push(userID);
-                        //                 }
-                        //             } else {
-                        //                 likeArray.push(userID)
-                        //             }
-                        //
-                        //
-                        //             dbo.collection(switlover).updateOne({
-                        //                     Auth_Token: Auth_Token,
-                        //                 },
-                        //                 {
-                        //                     $set: {Like: likeArray}
-                        //                 }).then((resultdata) => {
-                        //                 if (resultdata['result']['n'] == 1) {
-                        //                     res.json({status: "1", message: "success"});
-                        //                 } else {
-                        //                     res.json({status: "3", message: "Internal server error"})
-                        //                 }
-                        //             }).catch((errdata) => {
-                        //                 res.json({status: "3", message: "Internal server error"})
-                        //             })
-                        //         }).catch((dataerror) => {
-                        //
-                        //         })
-                        //
-                        //     } else {
-                        //         //User is not using this app
-                        //         var isLiked1 = false;
-                        //         var numberArray = [];
-                        //         var dataArray = dbo.collection(switlover).find({
-                        //             Auth_Token: Auth_Token,
-                        //             is_Block: {$ne: 1}
-                        //         }).toArray();
-                        //         dataArray.then((dataresult) => {
-                        //             existingLikes = dataresult[0]['Like']
-                        //             if (!isEmpty(existingLikes)) {
-                        //                 for (var j = 0; j < existingLikes.length; j++) {
-                        //                     if (existingLikes[j].length < 15) {
-                        //                         if (existingLikes[j] == number) {
-                        //                             isLiked1 = true;
-                        //                         } else {
-                        //                             numberArray.push(existingLikes[j])
-                        //                         }
-                        //                     } else {
-                        //                         numberArray.push(existingLikes[j])
-                        //                     }
-                        //                 }
-                        //                 if (!isLiked1) {
-                        //                     numberArray.push(number);
-                        //                 }
-                        //             } else {
-                        //                 numberArray.push(number)
-                        //             }
-                        //             dbo.collection(switlover).updateOne({
-                        //                     Auth_Token: Auth_Token,
-                        //                 },
-                        //                 {
-                        //                     $set: {Like: numberArray}
-                        //                 }).then((resultdata) => {
-                        //                 if (resultdata['result']['n'] == 1) {
-                        //                     res.json({status: "1", message: "success"});
-                        //                 } else {
-                        //                     res.json({status: "3", message: "Internal server error"})
-                        //                 }
-                        //             }).catch((errdata) => {
-                        //                 res.json({status: "3", message: "Internal server error"})
-                        //             })
-                        //         }).catch((dataerror) => {
-                        //
-                        //         })
-                        //     }
-                        // }).catch((err) => {
-                        //     res.json({status: "3", message: "Internal server error" + err})
-                        // })
                     }
                 }
             });
@@ -476,36 +374,42 @@ client.connect((err, db) => {
                 } else {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token,
-                        is_Block: {$ne: 1}
                     }).toArray()
                     dataArray.then((result) => {
-                        var userId = result[0]['_id'];
-                        var idArray = dbo.collection(switlover).find({
-                            Like: userId,
-                            is_Block: {$ne: 1}
-                        }).toArray()
-                        idArray.then((idresult) => {
-                            console.log(idresult);
-                            var myObj1 = [];
-                            if (!isEmpty(idresult)) {
-                                for (var i = 0; i < idresult.length; i++) {
-                                    var username = idresult[i]['Username'];
-                                    var name = username[username.length - 1]
+                        if (result[0]["is_Block"] == 0) {
+                            var userId = result[0]['_id'];
+                            var idArray = dbo.collection(switlover).find({
+                                Like: userId,
+                            }).toArray()
+                            idArray.then((idresult) => {
+                                if (idresult[0]["is_Block"] == 0) {
+                                    var myObj1 = [];
+                                    if (!isEmpty(idresult)) {
+                                        for (var i = 0; i < idresult.length; i++) {
+                                            var username = idresult[i]['Username'];
+                                            var name = username[username.length - 1]
 
-                                    var myObj = {
-                                        id: idresult[i]['_id'],
-                                        name: name,
-                                        image: idresult[i]['Profile_Pic']
+                                            var myObj = {
+                                                id: idresult[i]['_id'],
+                                                name: name,
+                                                image: idresult[i]['Profile_Pic']
+                                            }
+                                            myObj1.push(myObj);
+                                        }
+                                        res.json({status: "1", message: "success", user_data: myObj1});
+                                    } else {
+                                        res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                     }
-                                    myObj1.push(myObj);
+                                } else {
+                                    res.json({status: "7", message: "You have been blocked by Admin"})
                                 }
-                                res.json({status: "1", message: "success", user_data: myObj1});
-                            } else {
-                                res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
-                            }
-                        }).catch((iserr) => {
-                            res.json({status: "3", message: "Internal server error"});
-                        })
+
+                            }).catch((iserr) => {
+                                res.json({status: "3", message: "Internal server error"});
+                            })
+                        } else {
+                            res.json({status: "7", message: "You have been blocked by Admin"})
+                        }
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
@@ -529,55 +433,60 @@ client.connect((err, db) => {
                             'Phone_Number.Contry_Code': req.body.Contry_Code,
                             'Phone_Number.Number': req.body.Number,
                             'Phone_Number.Location': req.body.Location,
-                            is_Block: {$ne: 1}
                         }).toArray();
                         dataArray.then((result) => {
                             if (!isEmpty(result)) {
-                                //User Exist
-                                dbo.collection(switlover).updateOne({
-                                    'Phone_Number.Contry_Code': req.body.Contry_Code,
-                                    'Phone_Number.Number': req.body.Number,
-                                    'Phone_Number.Location': req.body.Location,
-                                    is_Block: {$ne: 1}
-                                }, {
-                                    $set: {Request_token: Request_token, updatedAt: new Date()}
-                                }).then((dataresult) => {
-                                    if (dataresult['result']['n'] == 1) {
-                                        var dataArray = dbo.collection(switlover).find({
-                                            Request_token: Request_token,
-                                            is_Block: {$ne: 1}
-                                        }).toArray();
-                                        dataArray.then((finalresult) => {
-                                            delete finalresult[0].Contact_List;
-                                            delete finalresult[0].is_Block;
-                                            delete finalresult[0].is_Deleted;
-                                            delete finalresult[0].Contact_Not_Recognized;
-                                            delete finalresult[0].Add_New_Number_From_App;
-                                            delete finalresult[0].Contact_Remove_Ratio;
-                                            delete finalresult[0].Like;
-                                            delete finalresult[0].Match_Ratio;
-                                            delete finalresult[0].PowerID;
-                                            delete finalresult[0].Not_In_App_Purchase;
-                                            delete finalresult[0].language;
-                                            delete finalresult[0].Device;
-                                            delete finalresult[0].createdAt;
-                                            delete finalresult[0].updatedAt;
-                                            delete finalresult[0].deletedAt;
-                                            delete finalresult[0].is_Online;
-                                            res.json({
-                                                status: "1",
-                                                message: "User is available",
-                                                user_data: finalresult
-                                            });
-                                        }).catch((finalerr) => {
+                                if (result[0]["is_Block"] == 0) {
+                                    //User Exist
+                                    dbo.collection(switlover).updateOne({
+                                        'Phone_Number.Contry_Code': req.body.Contry_Code,
+                                        'Phone_Number.Number': req.body.Number,
+                                        'Phone_Number.Location': req.body.Location,
+                                    }, {
+                                        $set: {Request_token: Request_token, updatedAt: new Date()}
+                                    }).then((dataresult) => {
+                                        if (dataresult['result']['n'] == 1) {
+                                            var dataArray = dbo.collection(switlover).find({
+                                                Request_token: Request_token,
+                                            }).toArray();
+                                            dataArray.then((finalresult) => {
+                                                if (finalresult[0]["is_Block"]) {
+                                                    delete finalresult[0].Contact_List;
+                                                    delete finalresult[0].is_Block;
+                                                    delete finalresult[0].is_Deleted;
+                                                    delete finalresult[0].Contact_Not_Recognized;
+                                                    delete finalresult[0].Add_New_Number_From_App;
+                                                    delete finalresult[0].Contact_Remove_Ratio;
+                                                    delete finalresult[0].Like;
+                                                    delete finalresult[0].Match_Ratio;
+                                                    delete finalresult[0].PowerID;
+                                                    delete finalresult[0].Not_In_App_Purchase;
+                                                    delete finalresult[0].language;
+                                                    delete finalresult[0].Device;
+                                                    delete finalresult[0].createdAt;
+                                                    delete finalresult[0].updatedAt;
+                                                    delete finalresult[0].deletedAt;
+                                                    delete finalresult[0].is_Online;
+                                                    res.json({
+                                                        status: "1",
+                                                        message: "User is available",
+                                                        user_data: finalresult
+                                                    });
+                                                } else {
+                                                    res.json({status: "7", message: "You have been blocked by Admin"})
+                                                }
+                                            }).catch((finalerr) => {
+                                                res.json({status: "3", message: "Internal server error"});
+                                            })
+                                        } else {
                                             res.json({status: "3", message: "Internal server error"});
-                                        })
-                                    } else {
-                                        res.json({status: "3", message: "Internal server error"});
-                                    }
-                                }).catch((catcherr) => {
-                                    res.json({status: "3", message: "Internal Server error"});
-                                })
+                                        }
+                                    }).catch((catcherr) => {
+                                        res.json({status: "3", message: "Internal Server error"});
+                                    })
+                                } else {
+                                    res.json({status: "7", message: "You have been blocked by Admin"});
+                                }
                             } else {
                                 var myObj = {
                                     Request_token: Request_token,
@@ -615,66 +524,67 @@ client.connect((err, db) => {
                                             'Phone_Number.Contry_Code': req.body.Contry_Code,
                                             'Phone_Number.Number': req.body.Number,
                                             'Phone_Number.Location': req.body.Location,
-                                            is_Block: {$ne: 1}
                                         }).toArray();
                                         dataArray.then((dataresult) => {
                                             if (!isEmpty(dataresult)) {
-                                                console.log(dataresult[0]["_id"])
-                                                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(dataresult[0]["_id"])}).toArray();
-                                                dataNotification.then((result) => {
-                                                    if (isEmpty(result)) {
-                                                        var myObj = {
-                                                            userID: dataresult[0]["_id"],
-                                                            matcheek: {
-                                                                play_sound_for_every_notification: 1,
-                                                                play_sound_for_every_message: 1,
-                                                                likes: 1,
-                                                                matches: 1,
-                                                                messages: 1,
-                                                                power_of_time: 1,
-                                                                promotions: 1
-                                                            },
-                                                            phone: {
-                                                                play_sound_for_every_notification: 1,
-                                                                play_sound_for_every_message: 1,
-                                                                likes: 1,
-                                                                matches: 1,
-                                                                messages: 1,
-                                                                power_of_time: 1,
-                                                                promotions: 1
-                                                            },
-                                                            email: {
-                                                                frequency: {
-                                                                    every_notification: 0,
-                                                                    twice_a_day: 0,
-                                                                    once_a_day: 1,
-                                                                    once_a_week: 0,
-                                                                    once_a_month: 0
+                                                if (dataresult[0]["is_Block"]) {
+                                                    var dataNotification = dbo.collection(notification).find({userID: new ObjectId(dataresult[0]["_id"])}).toArray();
+                                                    dataNotification.then((result) => {
+                                                        if (isEmpty(result)) {
+                                                            var myObj = {
+                                                                userID: dataresult[0]["_id"],
+                                                                matcheek: {
+                                                                    play_sound_for_every_notification: 1,
+                                                                    play_sound_for_every_message: 1,
+                                                                    likes: 1,
+                                                                    matches: 1,
+                                                                    messages: 1,
+                                                                    power_of_time: 1,
+                                                                    promotions: 1
                                                                 },
-                                                                newsletter: 1,
-                                                                promotions: 1,
-                                                                likes: 1,
-                                                                matches: 1,
-                                                                messages: 1,
-                                                                power_of_time: 1
+                                                                phone: {
+                                                                    play_sound_for_every_notification: 1,
+                                                                    play_sound_for_every_message: 1,
+                                                                    likes: 1,
+                                                                    matches: 1,
+                                                                    messages: 1,
+                                                                    power_of_time: 1,
+                                                                    promotions: 1
+                                                                },
+                                                                email: {
+                                                                    frequency: {
+                                                                        every_notification: 0,
+                                                                        twice_a_day: 0,
+                                                                        once_a_day: 1,
+                                                                        once_a_week: 0,
+                                                                        once_a_month: 0
+                                                                    },
+                                                                    newsletter: 1,
+                                                                    promotions: 1,
+                                                                    likes: 1,
+                                                                    matches: 1,
+                                                                    messages: 1,
+                                                                    power_of_time: 1
+                                                                }
                                                             }
+                                                            dbo.collection(notification).insertOne(myObj, (err, resu) => {
+                                                                if (err)
+                                                                    res.json({status: "3", message: "Inserting faild"});
+                                                                else {
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "success",
+                                                                        user_data: dataresult
+                                                                    });
+                                                                }
+                                                            });
                                                         }
-                                                        dbo.collection(notification).insertOne(myObj, (err, resu) => {
-                                                            if (err)
-                                                                res.json({status: "3", message: "Inserting faild"});
-                                                            else {
-                                                                res.json({
-                                                                    status: "1",
-                                                                    message: "success",
-                                                                    user_data: dataresult
-                                                                });
-                                                            }
-                                                        });
-                                                    }
-                                                }).catch((err) => {
-                                                    res.json({status: "3", message: "Internal Server error"});
-                                                });
-
+                                                    }).catch((err) => {
+                                                        res.json({status: "3", message: "Internal Server error"});
+                                                    });
+                                                } else {
+                                                    res.json({status: "7", message: "You have been blocked by Admin"})
+                                                }
                                             }
                                         });
                                     }
@@ -699,59 +609,65 @@ client.connect((err, db) => {
                 } else {
                     if (!req.body.userID || req.body.userID == null) {
                         var dataArray = dbo.collection(switlover).find({
-                            Auth_Token: Auth_Token,
-                            is_Block: {$ne: 1}
+                            Auth_Token: Auth_Token
                         }).toArray();
                         dataArray.then((result) => {
-                            var dataresult = result[0];
-                            delete dataresult.Request_token;
-                            delete dataresult.Auth_Token;
-                            delete dataresult.Contact_List;
-                            delete dataresult.is_Block;
-                            delete dataresult.is_Deleted;
-                            delete dataresult.Contact_Not_Recognized;
-                            delete dataresult.Add_New_Number_From_App;
-                            delete dataresult.Contact_Remove_Ratio;
-                            delete dataresult.Like;
-                            delete dataresult.Match_Ratio;
-                            delete dataresult.PowerID;
-                            delete dataresult.Not_In_App_Purchase;
-                            delete dataresult.language;
-                            delete dataresult.Device;
-                            delete dataresult.createdAt;
-                            delete dataresult.updatedAt;
-                            delete dataresult.deletedAt;
-                            delete dataresult.is_Online;
-                            res.json({status: "1", message: "success", user_data: dataresult});
+                            if (result[0]["is_Block"] == 0) {
+                                var dataresult = result[0];
+                                delete dataresult.Request_token;
+                                delete dataresult.Auth_Token;
+                                delete dataresult.Contact_List;
+                                delete dataresult.is_Block;
+                                delete dataresult.is_Deleted;
+                                delete dataresult.Contact_Not_Recognized;
+                                delete dataresult.Add_New_Number_From_App;
+                                delete dataresult.Contact_Remove_Ratio;
+                                delete dataresult.Like;
+                                delete dataresult.Match_Ratio;
+                                delete dataresult.PowerID;
+                                delete dataresult.Not_In_App_Purchase;
+                                delete dataresult.language;
+                                delete dataresult.Device;
+                                delete dataresult.createdAt;
+                                delete dataresult.updatedAt;
+                                delete dataresult.deletedAt;
+                                delete dataresult.is_Online;
+                                res.json({status: "1", message: "success", user_data: dataresult});
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"});
+                            }
                         }).catch((err) => {
                             res.json({status: "3", message: "Internal server error"});
-                        })
+                        });
                     } else {
                         var dataArray = dbo.collection(switlover).find({
-                            _id: new ObjectId(req.body.userID),
-                            is_Block: {$ne: 1}
+                            _id: new ObjectId(req.body.userID)
                         }).toArray();
                         dataArray.then((result) => {
-                            var dataresult = result[0];
-                            delete dataresult.Request_token;
-                            delete dataresult.Auth_Token;
-                            delete dataresult.Contact_List;
-                            delete dataresult.is_Block;
-                            delete dataresult.is_Deleted;
-                            delete dataresult.Contact_Not_Recognized;
-                            delete dataresult.Add_New_Number_From_App;
-                            delete dataresult.Contact_Remove_Ratio;
-                            delete dataresult.Like;
-                            delete dataresult.Match_Ratio;
-                            delete dataresult.PowerID;
-                            delete dataresult.Not_In_App_Purchase;
-                            delete dataresult.language;
-                            delete dataresult.Device;
-                            delete dataresult.createdAt;
-                            delete dataresult.updatedAt;
-                            delete dataresult.deletedAt;
-                            delete dataresult.is_Online;
-                            res.json({status: "1", message: "success", user_data: dataresult});
+                            if (result[0]["is_Block"] == 0) {
+                                var dataresult = result[0];
+                                delete dataresult.Request_token;
+                                delete dataresult.Auth_Token;
+                                delete dataresult.Contact_List;
+                                delete dataresult.is_Block;
+                                delete dataresult.is_Deleted;
+                                delete dataresult.Contact_Not_Recognized;
+                                delete dataresult.Add_New_Number_From_App;
+                                delete dataresult.Contact_Remove_Ratio;
+                                delete dataresult.Like;
+                                delete dataresult.Match_Ratio;
+                                delete dataresult.PowerID;
+                                delete dataresult.Not_In_App_Purchase;
+                                delete dataresult.language;
+                                delete dataresult.Device;
+                                delete dataresult.createdAt;
+                                delete dataresult.updatedAt;
+                                delete dataresult.deletedAt;
+                                delete dataresult.is_Online;
+                                res.json({status: "1", message: "success", user_data: dataresult});
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"});
+                            }
                         }).catch((err) => {
                             res.json({status: "3", message: "Internal server error"});
                         })
@@ -768,66 +684,69 @@ client.connect((err, db) => {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
                     var dataArray = dbo.collection(switlover).find({
-                        Auth_Token: Auth_Token,
-                        is_Block: {$ne: 1}
+                        Auth_Token: Auth_Token
                     }).toArray();
 
                     dataArray.then((data) => {
-                        if (!isEmpty(data[0]['Contact_List'])) {
-                            var numberArray = [];
-                            for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                                if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                    var number;
-                                    var myObj;
-                                    if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                        number = data[0]['Contact_List'][i]['number'];
-                                    } else {
-                                        number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                    }
-
-                                    var myLikesArray = data[0]['Like'];
-
-                                    if (!isEmpty(myLikesArray)) {
-                                        for (var j = 0; j < myLikesArray.length; j++) {
-                                            if (myLikesArray[j].length < 15) {
-                                                if (myLikesArray[j] == number) {
-                                                    myObj = {
-                                                        name: data[0]['Contact_List'][i]['name'],
-                                                        image: data[0]['Contact_List'][i]['image'],
-                                                        code: data[0]['Contact_List'][i]['code'],
-                                                        number: data[0]['Contact_List'][i]['number'],
-                                                        isLiked: 1
-                                                    };
-                                                    break;
-                                                } else {
-
-                                                    myObj = {
-                                                        name: data[0]['Contact_List'][i]['name'],
-                                                        image: data[0]['Contact_List'][i]['image'],
-                                                        code: data[0]['Contact_List'][i]['code'],
-                                                        number: data[0]['Contact_List'][i]['number'],
-                                                        isLiked: 0
-                                                    };
-                                                }
-
-                                            }
+                        if (data[0]["is_Block"] == 0) {
+                            if (!isEmpty(data[0]['Contact_List'])) {
+                                var numberArray = [];
+                                for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
+                                    if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                        var number;
+                                        var myObj;
+                                        if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
+                                            number = data[0]['Contact_List'][i]['number'];
+                                        } else {
+                                            number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
                                         }
+
+                                        var myLikesArray = data[0]['Like'];
+
+                                        if (!isEmpty(myLikesArray)) {
+                                            for (var j = 0; j < myLikesArray.length; j++) {
+                                                if (myLikesArray[j].length < 15) {
+                                                    if (myLikesArray[j] == number) {
+                                                        myObj = {
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            code: data[0]['Contact_List'][i]['code'],
+                                                            number: data[0]['Contact_List'][i]['number'],
+                                                            isLiked: 1
+                                                        };
+                                                        break;
+                                                    } else {
+
+                                                        myObj = {
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            code: data[0]['Contact_List'][i]['code'],
+                                                            number: data[0]['Contact_List'][i]['number'],
+                                                            isLiked: 0
+                                                        };
+                                                    }
+
+                                                }
+                                            }
+                                        } else {
+                                            myObj = {
+                                                name: data[0]['Contact_List'][i]['name'],
+                                                image: data[0]['Contact_List'][i]['image'],
+                                                code: data[0]['Contact_List'][i]['code'],
+                                                number: data[0]['Contact_List'][i]['number'],
+                                            };
+                                        }
+                                        numberArray.push(myObj);
                                     } else {
-                                        myObj = {
-                                            name: data[0]['Contact_List'][i]['name'],
-                                            image: data[0]['Contact_List'][i]['image'],
-                                            code: data[0]['Contact_List'][i]['code'],
-                                            number: data[0]['Contact_List'][i]['number'],
-                                        };
-                                    }
-                                    numberArray.push(myObj);
-                                } else {
-                                    if (isEmpty(numberArray)) {
-                                        res.json({status: "0", message: "Sorry there is no contact to display"});
+                                        if (isEmpty(numberArray)) {
+                                            res.json({status: "0", message: "Sorry there is no contact to display"});
+                                        }
                                     }
                                 }
+                                res.json({status: "1", message: "Contact List", userdata: numberArray});
                             }
-                            res.json({status: "1", message: "Contact List", userdata: numberArray});
+                        } else {
+                            res.json({status: "7", message: "You have been blocked by Admin"});
                         }
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal Server error" + err});
@@ -845,7 +764,6 @@ client.connect((err, db) => {
                 } else {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token,
-                        is_Block: {$ne: 1}
                     }).toArray();
 
                     dataArray.then((data) => {
@@ -900,28 +818,32 @@ client.connect((err, db) => {
                 } else {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token,
-                        is_Block: {$ne: 1}
+
                     }).toArray();
                     dataArray.then((result) => {
                         if (!isEmpty(result)) {
-                            dbo.collection(switlover).updateOne(
-                                {
-                                    Auth_Token: Auth_Token
-                                },
-                                {
-                                    $set: {
-                                        'PowerID.Power_Of_Match': req.body.match,
-                                        'PowerID.Power_Of_Time': req.body.time,
-                                        'PowerID.Golden_Power': req.body.golden,
-                                        updatedAt: new Date()
+                            if (result[0]["is_Block"] == 0) {
+                                dbo.collection(switlover).updateOne(
+                                    {
+                                        Auth_Token: Auth_Token
+                                    },
+                                    {
+                                        $set: {
+                                            'PowerID.Power_Of_Match': req.body.match,
+                                            'PowerID.Power_Of_Time': req.body.time,
+                                            'PowerID.Golden_Power': req.body.golden,
+                                            updatedAt: new Date()
+                                        }
+                                    }).then((data) => {
+                                    if (data['result']['n'] == 1) {
+                                        res.json({status: "1", message: "success"});
+                                    } else {
+                                        res.json({status: "3", message: "fail"});
                                     }
-                                }).then((data) => {
-                                if (data['result']['n'] == 1) {
-                                    res.json({status: "1", message: "success"});
-                                } else {
-                                    res.json({status: "3", message: "fail"});
-                                }
-                            });
+                                });
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"});
+                            }
                         }
                     }).catch((err) => {
                     })
@@ -941,244 +863,249 @@ client.connect((err, db) => {
                     } else {
                         var dataArray = dbo.collection(switlover).find({
                             Auth_Token: Auth_Token,
-                            is_Block: {$ne: 1}
                         }).toArray();
                         dataArray.then((result) => {
                             if (isEmpty(result)) {
                                 res.json({status: "0", message: "User not found"});
                             } else {
+                                if (result[0]["is_Block"] == 0) {
+                                    var currentEmail = result[0]['Email']['EmailAddress'];
+                                    console.log(currentEmail);
 
-                                var currentEmail = result[0]['Email']['EmailAddress'];
-                                console.log(currentEmail);
 
+                                    var UsernameArray = [];
+                                    UsernameArray = result[0]['Username'];
 
-                                var UsernameArray = [];
-                                UsernameArray = result[0]['Username'];
-
-                                if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "" || UsernameArray != "null") {
-                                    var existUser = UsernameArray[UsernameArray.length - 1];
-                                    var newUsername = req.body.Username;
-                                    if (newUsername != existUser) {
+                                    if (UsernameArray != null || !isEmpty(UsernameArray) || UsernameArray != "" || UsernameArray != "null") {
+                                        var existUser = UsernameArray[UsernameArray.length - 1];
+                                        var newUsername = req.body.Username;
+                                        if (newUsername != existUser) {
+                                            UsernameArray.push(req.body.Username);
+                                        }
+                                    } else {
                                         UsernameArray.push(req.body.Username);
                                     }
+
+                                    var arrayContact = [];
+                                    var isAvailable;
+                                    arrayContact = result[0]['Phone_Number'];
+                                    if (arrayContact != null || !isEmpty(arrayContact)) {
+                                        for (var i = 0; i < arrayContact.length; i++) {
+                                            if (arrayContact[i]['Number'] == req.body.Number && arrayContact[i]['Contry_Code'] == req.body.Contry_Code
+                                                && arrayContact[i]['Location'] == req.body.Location) {
+                                                isAvailable = true;
+                                                break;
+                                            } else {
+                                                isAvailable = false;
+                                            }
+                                        }
+                                        if (!isAvailable) {
+                                            var myObj = {
+                                                Contry_Code: req.body.Contry_Code,
+                                                Number: req.body.Number,
+                                                Location: req.body.Location,
+                                                Verified: req.body.Verified,
+                                                is_OverVerification: 0
+                                            };
+                                            arrayContact.push(myObj);
+                                        }
+                                    }
+
+                                    if (req.body.Contry_Code && req.body.Contry_Code != null && req.body.Number && req.body.Number != null
+                                        && req.body.Location && req.body.Location != null && req.body.Verified && req.body.Verified != null
+                                        && req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Username: UsernameArray,
+                                                        Phone_Number: arrayContact,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        Username: UsernameArray,
+                                                        Phone_Number: arrayContact,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
+                                    } else if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Username: UsernameArray,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        Username: UsernameArray,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
+                                    } else if (req.body.Username != null && req.body.Username) {
+
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                Auth_Token: Auth_Token
+                                            },
+                                            {
+                                                $set: {Username: UsernameArray, updatedAt: new Date()}
+                                            }).then((data) => {
+                                            console.log(data);
+                                            if (data['result']['n'] == 1) {
+                                                res.json({status: "1", message: "Profile updated successfully"});
+                                            } else {
+                                                res.json({status: "3", message: "Profile updation field"});
+                                            }
+                                        }).catch((error) => {
+                                            res.json({status: "0", message: "Profile not found"});
+                                        })
+
+                                    } else if (req.body.Email_Address != null && req.body.Email_Address) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
+
+                                    } else if (req.body.Contry_Code && req.body.Contry_Code != null && req.body.Number && req.body.Number != null
+                                        && req.body.Location && req.body.Location != null && req.body.Verified && req.body.Verified != null) {
+
+                                        dbo.collection(switlover).updateOne({
+                                            Auth_Token: Auth_Token,
+                                            is_Block: {$ne: 1}
+                                        }, {
+                                            $set: {Phone_Number: arrayContact, updatedAt: new Date()}
+                                        }).then((dataresult) => {
+                                            if (dataresult['result']['n'] == 1) {
+                                                var dataArray = dbo.collection(switlover).find({
+                                                    Auth_Token: Auth_Token,
+                                                }).toArray();
+                                                dataArray.then((finalresult) => {
+                                                    if (finalresult[0]["is_Block"] == 0) {
+                                                        res.json({
+                                                            status: "1",
+                                                            message: "success",
+                                                            user_data: finalresult
+                                                        });
+                                                    } else {
+                                                        res.json({status: "7", message: "You have been blocked by Admin"});
+                                                    }
+                                                }).catch((finalerr) => {
+                                                    res.json({status: "3", message: "1Internal server error"});
+                                                })
+                                            } else {
+                                                res.json({status: "3", message: "2Internal server error"});
+                                            }
+                                        }).catch((catcherr) => {
+                                            res.json({status: "3", message: "3Internal Server error"});
+                                        });
+                                    }
                                 } else {
-                                    UsernameArray.push(req.body.Username);
-                                }
-
-                                var arrayContact = [];
-                                var isAvailable;
-                                arrayContact = result[0]['Phone_Number'];
-                                if (arrayContact != null || !isEmpty(arrayContact)) {
-                                    for (var i = 0; i < arrayContact.length; i++) {
-                                        if (arrayContact[i]['Number'] == req.body.Number && arrayContact[i]['Contry_Code'] == req.body.Contry_Code
-                                            && arrayContact[i]['Location'] == req.body.Location) {
-                                            isAvailable = true;
-                                            break;
-                                        } else {
-                                            isAvailable = false;
-                                        }
-                                    }
-                                    if (!isAvailable) {
-                                        var myObj = {
-                                            Contry_Code: req.body.Contry_Code,
-                                            Number: req.body.Number,
-                                            Location: req.body.Location,
-                                            Verified: req.body.Verified,
-                                            is_OverVerification: 0
-                                        };
-                                        arrayContact.push(myObj);
-                                    }
-                                }
-
-                                if (req.body.Contry_Code && req.body.Contry_Code != null && req.body.Number && req.body.Number != null
-                                    && req.body.Location && req.body.Location != null && req.body.Verified && req.body.Verified != null
-                                    && req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
-                                    if (currentEmail == req.body.Email_Address) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                res.json({status: "1", message: "Profile updated successfully"});
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    } else {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                                    Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                                    if (!apierr) {
-                                                        res.json({
-                                                            status: "7",
-                                                            message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                        });
-                                                    } else {
-                                                        res.json({status: "3", message: "Mail sending faild"});
-                                                    }
-                                                })
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    }
-                                } else if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
-                                    if (currentEmail == req.body.Email_Address) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Username: UsernameArray,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                res.json({status: "1", message: "Profile updated successfully"});
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    } else {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                                    Username: UsernameArray,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                                    if (!apierr) {
-                                                        res.json({
-                                                            status: "7",
-                                                            message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                        });
-                                                    } else {
-                                                        res.json({status: "3", message: "Mail sending faild"});
-                                                    }
-                                                })
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    }
-                                } else if (req.body.Username != null && req.body.Username) {
-
-                                    dbo.collection(switlover).updateOne(
-                                        {
-                                            Auth_Token: Auth_Token
-                                        },
-                                        {
-                                            $set: {Username: UsernameArray, updatedAt: new Date()}
-                                        }).then((data) => {
-                                        console.log(data);
-                                        if (data['result']['n'] == 1) {
-                                            res.json({status: "1", message: "Profile updated successfully"});
-                                        } else {
-                                            res.json({status: "3", message: "Profile updation field"});
-                                        }
-                                    }).catch((error) => {
-                                        res.json({status: "0", message: "Profile not found"});
-                                    })
-
-                                } else if (req.body.Email_Address != null && req.body.Email_Address) {
-                                    if (currentEmail == req.body.Email_Address) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                res.json({status: "1", message: "Profile updated successfully"});
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    } else {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                                    if (!apierr) {
-                                                        res.json({
-                                                            status: "7",
-                                                            message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                        });
-                                                    } else {
-                                                        res.json({status: "3", message: "Mail sending faild"});
-                                                    }
-                                                })
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    }
-
-                                } else if (req.body.Contry_Code && req.body.Contry_Code != null && req.body.Number && req.body.Number != null
-                                    && req.body.Location && req.body.Location != null && req.body.Verified && req.body.Verified != null) {
-
-                                    dbo.collection(switlover).updateOne({
-                                        Auth_Token: Auth_Token,
-                                        is_Block: {$ne: 1}
-                                    }, {
-                                        $set: {Phone_Number: arrayContact, updatedAt: new Date()}
-                                    }).then((dataresult) => {
-                                        if (dataresult['result']['n'] == 1) {
-                                            var dataArray = dbo.collection(switlover).find({
-                                                Auth_Token: Auth_Token,
-                                                is_Block: {$ne: 1}
-                                            }).toArray();
-                                            dataArray.then((finalresult) => {
-                                                res.json({
-                                                    status: "1",
-                                                    message: "success",
-                                                    user_data: finalresult
-                                                });
-                                            }).catch((finalerr) => {
-                                                res.json({status: "3", message: "1Internal server error"});
-                                            })
-                                        } else {
-                                            res.json({status: "3", message: "2Internal server error"});
-                                        }
-                                    }).catch((catcherr) => {
-                                        res.json({status: "3", message: "3Internal Server error"});
-                                    });
+                                    res.json({status: "7", message: "You have been blocked by Admin"});
                                 }
                             }
                         }).catch((err) => {
@@ -1201,238 +1128,243 @@ client.connect((err, db) => {
                     } else {
                         var dataArray = dbo.collection(switlover).find({
                             Auth_Token: Auth_Token,
-                            is_Block: {$ne: 1}
                         }).toArray();
                         dataArray.then((result) => {
                             if (isEmpty(result)) {
                                 res.json({status: "0", message: "User not found"});
                             } else {
+                                if (result[0]["is_Block"] == 0) {
+                                    var currentEmail = result[0]['Email']['EmailAddress'];
+                                    console.log(currentEmail);
 
-                                var currentEmail = result[0]['Email']['EmailAddress'];
-                                console.log(currentEmail);
 
+                                    var UsernameArray = [];
+                                    UsernameArray = result[0]['Username'];
 
-                                var UsernameArray = [];
-                                UsernameArray = result[0]['Username'];
-
-                                if (!isEmpty(UsernameArray)) {
-                                    var existUser = UsernameArray[UsernameArray.length - 1];
-                                    var newUsername = req.body.Username;
-                                    if (newUsername != existUser) {
+                                    if (!isEmpty(UsernameArray)) {
+                                        var existUser = UsernameArray[UsernameArray.length - 1];
+                                        var newUsername = req.body.Username;
+                                        if (newUsername != existUser) {
+                                            UsernameArray.push(req.body.Username);
+                                        }
+                                    } else {
                                         UsernameArray.push(req.body.Username);
                                     }
+
+                                    var arrayContact = req.body.number;
+                                    var jsonObject = JSON.parse(arrayContact);
+
+
+                                    if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(jsonObject)) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Username: UsernameArray,
+                                                        Phone_Number: jsonObject,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        Username: UsernameArray,
+                                                        Phone_Number: jsonObject,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
+                                    } else if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Username: UsernameArray,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        Username: UsernameArray,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
+                                    } else if (req.body.Username != null && req.body.Username && !isEmpty(jsonObject)) {
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                Auth_Token: Auth_Token
+                                            },
+                                            {
+                                                $set: {
+                                                    Username: UsernameArray,
+                                                    Phone_Number: jsonObject,
+                                                    updatedAt: new Date()
+                                                }
+                                            }).then((data) => {
+                                            if (data['result']['n'] == 1) {
+                                                res.json({status: "1", message: "Profile updated successfully"});
+                                            } else {
+                                                res.json({status: "3", message: "Profile updation field"});
+                                            }
+                                        });
+                                    } else if (req.body.Username != null && req.body.Username) {
+
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                Auth_Token: Auth_Token
+                                            },
+                                            {
+                                                $set: {Username: UsernameArray, updatedAt: new Date()}
+                                            }).then((data) => {
+                                            console.log(data);
+                                            if (data['result']['n'] == 1) {
+                                                res.json({status: "1", message: "Profile updated successfully"});
+                                            } else {
+                                                res.json({status: "3", message: "Profile updation field"});
+                                            }
+                                        }).catch((error) => {
+                                            res.json({status: "0", message: "Profile not found"});
+                                        })
+
+                                    } else if (req.body.Email_Address != null && req.body.Email_Address) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
+
+                                    } else if (!isEmpty(jsonObject)) {
+
+                                        dbo.collection(switlover).updateOne({
+                                            Auth_Token: Auth_Token,
+                                            is_Block: {$ne: 1}
+                                        }, {
+                                            $set: {Phone_Number: jsonObject, updatedAt: new Date()}
+                                        }).then((dataresult) => {
+                                            if (dataresult['result']['n'] == 1) {
+                                                var dataArray = dbo.collection(switlover).find({
+                                                    Auth_Token: Auth_Token,
+                                                }).toArray();
+                                                dataArray.then((finalresult) => {
+                                                    if (finalresult[0]["is_Block"] == 0) {
+                                                        res.json({
+                                                            status: "1",
+                                                            message: "success",
+                                                            user_data: finalresult
+                                                        });
+                                                    } else {
+                                                        res.json({status: "7", message: "You have been blocked by Admin"});
+                                                    }
+                                                }).catch((finalerr) => {
+                                                    res.json({status: "3", message: "1Internal server error"});
+                                                })
+                                            } else {
+                                                res.json({status: "3", message: "2Internal server error"});
+                                            }
+                                        }).catch((catcherr) => {
+                                            res.json({status: "3", message: "3Internal Server error"});
+                                        });
+                                    }
                                 } else {
-                                    UsernameArray.push(req.body.Username);
-                                }
-
-                                var arrayContact = req.body.number;
-                                var jsonObject = JSON.parse(arrayContact);
-
-
-                                if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(jsonObject)) {
-                                    if (currentEmail == req.body.Email_Address) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Username: UsernameArray,
-                                                    Phone_Number: jsonObject,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                res.json({status: "1", message: "Profile updated successfully"});
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    } else {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                                    Username: UsernameArray,
-                                                    Phone_Number: jsonObject,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                                    if (!apierr) {
-                                                        res.json({
-                                                            status: "7",
-                                                            message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                        });
-                                                    } else {
-                                                        res.json({status: "3", message: "Mail sending faild"});
-                                                    }
-                                                })
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    }
-                                } else if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address) {
-                                    if (currentEmail == req.body.Email_Address) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Username: UsernameArray,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                res.json({status: "1", message: "Profile updated successfully"});
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    } else {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                                    Username: UsernameArray,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                                    if (!apierr) {
-                                                        res.json({
-                                                            status: "7",
-                                                            message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                        });
-                                                    } else {
-                                                        res.json({status: "3", message: "Mail sending faild"});
-                                                    }
-                                                })
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    }
-                                } else if (req.body.Username != null && req.body.Username && !isEmpty(jsonObject)) {
-                                    dbo.collection(switlover).updateOne(
-                                        {
-                                            Auth_Token: Auth_Token
-                                        },
-                                        {
-                                            $set: {
-                                                Username: UsernameArray,
-                                                Phone_Number: jsonObject,
-                                                updatedAt: new Date()
-                                            }
-                                        }).then((data) => {
-                                        if (data['result']['n'] == 1) {
-                                            res.json({status: "1", message: "Profile updated successfully"});
-                                        } else {
-                                            res.json({status: "3", message: "Profile updation field"});
-                                        }
-                                    });
-                                } else if (req.body.Username != null && req.body.Username) {
-
-                                    dbo.collection(switlover).updateOne(
-                                        {
-                                            Auth_Token: Auth_Token
-                                        },
-                                        {
-                                            $set: {Username: UsernameArray, updatedAt: new Date()}
-                                        }).then((data) => {
-                                        console.log(data);
-                                        if (data['result']['n'] == 1) {
-                                            res.json({status: "1", message: "Profile updated successfully"});
-                                        } else {
-                                            res.json({status: "3", message: "Profile updation field"});
-                                        }
-                                    }).catch((error) => {
-                                        res.json({status: "0", message: "Profile not found"});
-                                    })
-
-                                } else if (req.body.Email_Address != null && req.body.Email_Address) {
-                                    if (currentEmail == req.body.Email_Address) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                res.json({status: "1", message: "Profile updated successfully"});
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    } else {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((data) => {
-                                            if (data['result']['n'] == 1) {
-                                                request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
-                                                    if (!apierr) {
-                                                        res.json({
-                                                            status: "7",
-                                                            message: "Please check your inbox for the verification mail send from the SwitLover"
-                                                        });
-                                                    } else {
-                                                        res.json({status: "3", message: "Mail sending faild"});
-                                                    }
-                                                })
-                                            } else {
-                                                res.json({status: "3", message: "Profile updation field"});
-                                            }
-                                        });
-                                    }
-
-                                } else if (!isEmpty(jsonObject)) {
-
-                                    dbo.collection(switlover).updateOne({
-                                        Auth_Token: Auth_Token,
-                                        is_Block: {$ne: 1}
-                                    }, {
-                                        $set: {Phone_Number: jsonObject, updatedAt: new Date()}
-                                    }).then((dataresult) => {
-                                        if (dataresult['result']['n'] == 1) {
-                                            var dataArray = dbo.collection(switlover).find({
-                                                Auth_Token: Auth_Token,
-                                                is_Block: {$ne: 1}
-                                            }).toArray();
-                                            dataArray.then((finalresult) => {
-                                                res.json({
-                                                    status: "1",
-                                                    message: "success",
-                                                    user_data: finalresult
-                                                });
-                                            }).catch((finalerr) => {
-                                                res.json({status: "3", message: "1Internal server error"});
-                                            })
-                                        } else {
-                                            res.json({status: "3", message: "2Internal server error"});
-                                        }
-                                    }).catch((catcherr) => {
-                                        res.json({status: "3", message: "3Internal Server error"});
-                                    });
+                                    res.json({status: "7", message: "You have been blocked by Admin"});
                                 }
                             }
                         }).catch((err) => {
@@ -1481,12 +1413,15 @@ client.connect((err, db) => {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
                     var dataArray = dbo.collection(switlover).find({
-                        Auth_Token: Auth_Token,
-                        is_Block: {$ne: 1}
+                        Auth_Token: Auth_Token
                     }).toArray();
                     dataArray.then((data) => {
                         if (!isEmpty(data[0]['Contact_List'])) {
-                            res.json({status: "1", message: "Contact List", user_data: data[0]['Contact_List']});
+                            if (data[0]["is_Block"] == 0) {
+                                res.json({status: "1", message: "Contact List", user_data: data[0]['Contact_List']});
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"});
+                            }
                         } else {
                             res.json({
                                 status: "0",
@@ -1673,7 +1608,7 @@ client.connect((err, db) => {
                             });
                         }
                     }).catch((err) => {
-                        res.json({status: "3 ", message: "Internal server error"+err});
+                        res.json({status: "3 ", message: "Internal server error" + err});
                     });
                 }
             });
@@ -1824,8 +1759,7 @@ client.connect((err, db) => {
             //get single user based on ID
             app.post('/api/singleUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
-                    _id: new ObjectId(req.body.id),
-                    is_Block: {$ne: 1}
+                    _id: new ObjectId(req.body.id)
                 }).toArray();
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
@@ -1834,8 +1768,7 @@ client.connect((err, db) => {
                             message: "success",
                             userdata: result
                         });
-                    }
-                    else{
+                    } else {
                         res.json({
                             status: "0",
                             message: "no data"
@@ -1851,12 +1784,10 @@ client.connect((err, db) => {
             //get single user based on ID
             app.post('/api/singleUserNumber', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
-                    _id: new ObjectId(req.body.id),
-                    is_Block: {$ne: 1}
+                    _id: new ObjectId(req.body.id)
                 }).toArray();
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
-
 
 
                         var dataresult = result[0];
@@ -1885,10 +1816,9 @@ client.connect((err, db) => {
 
                         var dataArray1 = [];
 
-                        for(var i = 0; i < dataresult.Contact_List.length; i++)
-                        {
+                        for (var i = 0; i < dataresult.Contact_List.length; i++) {
                             var data = [
-                                i+1,
+                                i + 1,
                                 dataresult.Contact_List[i]["code"],
                                 dataresult.Contact_List[i]["number"],
                                 dataresult.Contact_List[i]["name"]
@@ -1898,13 +1828,12 @@ client.connect((err, db) => {
                         }
 
 
-
                         res.json({
                             data: dataArray1
                         });
                     }
                 }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error"+err});
+                    res.json({status: "3", message: "Internal server error" + err});
                 })
             })
             //--------------------------------------------------------------------------------------------------------------
@@ -1957,14 +1886,14 @@ client.connect((err, db) => {
                             }
                             if (dataresult["Username"][(dataresult["Username"]).length - 1] == null) {
                                 name = "";
-                            }else{
+                            } else {
                                 name = dataresult["Username"][(dataresult["Username"]).length - 1];
                             }
 
                             var finalData = [
                                 dataresult["_id"],
                                 name,
-                                dataresult["Phone_Number"][0]["Contry_Code"]+''+dataresult["Phone_Number"][0]["Number"],
+                                dataresult["Phone_Number"][0]["Contry_Code"] + '' + dataresult["Phone_Number"][0]["Number"],
                                 dataresult["Email"]["EmailAddress"],
                                 is_Deleted,
                                 is_Online,
@@ -2134,7 +2063,6 @@ client.connect((err, db) => {
             app.post('/api/GetLikeContact', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id),
-                    is_Block: {$ne: 1}
                 }).toArray();
 
                 dataArray.then((data) => {
