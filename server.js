@@ -382,42 +382,46 @@ client.connect((err, db) => {
                         Auth_Token: Auth_Token,
                     }).toArray()
                     dataArray.then((result) => {
-                        if (result[0]["is_Block"] == 0) {
-                            var userId = result[0]['_id'];
-                            var idArray = dbo.collection(switlover).find({
-                                Like: userId,
-                            }).toArray()
-                            idArray.then((idresult) => {
-                                if (idresult[0]["is_Block"] == 0) {
-                                    var myObj1 = [];
-                                    if (!isEmpty(idresult)) {
-                                        for (var i = 0; i < idresult.length; i++) {
-                                            var username = idresult[i]['Username'];
-                                            var name = username[username.length - 1]
+                        // if (result[0]["is_Block"] == 0) {
+                            var userNumber;
+                            for(var i = 0; i < result[0]["Phone_Number"].length; i++)
+                            {
+                                userNumber = result[0]["Phone_Number"][i]["Contry_Code"] + "" + result[0]["Phone_Number"][i]["Number"];
+                                var idArray = dbo.collection(switlover).find({
+                                    Like: userNumber,
+                                }).toArray()
+                                idArray.then((idresult) => {
+                                    // if (idresult[0]["is_Block"] == 0) {
+                                        var myObj1 = [];
+                                        if (!isEmpty(idresult)) {
+                                            for (var i = 0; i < idresult.length; i++) {
+                                                var username = idresult[i]['Username'];
+                                                var name = username[username.length - 1]
 
-                                            var myObj = {
-                                                id: idresult[i]['_id'],
-                                                name: name,
-                                                image: idresult[i]['Profile_Pic']
+                                                var myObj = {
+                                                    id: idresult[i]['_id'],
+                                                    name: name,
+                                                    image: idresult[i]['Profile_Pic']
+                                                }
+                                                myObj1.push(myObj);
                                             }
-                                            myObj1.push(myObj);
+                                            res.json({status: "1", message: "success", user_data: myObj1});
+                                        } else {
+                                            res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                         }
-                                        res.json({status: "1", message: "success", user_data: myObj1});
-                                    } else {
-                                        res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
-                                    }
-                                } else {
-                                    res.json({status: "7", message: "You have been blocked by Admin"})
-                                }
+                                    // } else {
+                                    //     res.json({status: "7", message: "You have been blocked by Admin"})
+                                    // }
 
-                            }).catch((iserr) => {
-                                res.json({status: "3", message: "Internal server error"});
-                            })
-                        } else {
-                            res.json({status: "7", message: "You have been blocked by Admin"})
-                        }
+                                }).catch((iserr) => {
+                                    res.json({status: "3", message: "Internal server error"+ iserr});
+                                })
+                            }
+                        // } else {
+                        //     res.json({status: "7", message: "You have been blocked by Admin"})
+                        // }
                     }).catch((err) => {
-                        res.json({status: "3", message: "Internal server error"});
+                        res.json({status: "3", message: "Internal server error"+ err});
                     })
                 }
             });
