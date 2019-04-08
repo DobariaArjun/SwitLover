@@ -450,7 +450,7 @@ client.connect((err, db) => {
                                                 Request_token: Request_token,
                                             }).toArray();
                                             dataArray.then((finalresult) => {
-                                                if (finalresult[0]["is_Block"]) {
+                                                if (finalresult[0]["is_Block"] == 0) {
                                                     delete finalresult[0].Contact_List;
                                                     delete finalresult[0].is_Block;
                                                     delete finalresult[0].is_Deleted;
@@ -1836,8 +1836,8 @@ client.connect((err, db) => {
                                 dataresult.Contact_List[i]["code"],
                                 dataresult.Contact_List[i]["number"],
                                 dataresult.Contact_List[i]["name"],
-                                isRemovedByAdmin,
-                                isRemovedByUser
+                                isRemovedByUser,
+                                isRemovedByAdmin
                             ];
                             dataArray1.push(data);
                         }
