@@ -24,7 +24,7 @@ var smtpTransport = nodemailer.createTransport({
     }
 });
 
-function paginate (array, page_size, page_number) {
+function paginate(array, page_size, page_number) {
     // because pages logically start with 1, but technically with 0
     return array.slice(page_number * page_size, (page_number + 1) * page_size);
 }
@@ -384,8 +384,7 @@ client.connect((err, db) => {
                     dataArray.then((result) => {
                         if (result[0]["is_Block"] == 0) {
                             var userNumber;
-                            for(var i = 0; i < result[0]["Phone_Number"].length; i++)
-                            {
+                            for (var i = 0; i < result[0]["Phone_Number"].length; i++) {
                                 userNumber = result[0]["Phone_Number"][i]["Contry_Code"] + "" + result[0]["Phone_Number"][i]["Number"];
                                 var idArray = dbo.collection(switlover).find({
                                     Like: userNumber,
@@ -416,14 +415,14 @@ client.connect((err, db) => {
                                     }
 
                                 }).catch((iserr) => {
-                                    res.json({status: "3", message: "Internal server error"+ iserr});
+                                    res.json({status: "3", message: "Internal server error" + iserr});
                                 })
                             }
                         } else {
                             res.json({status: "7", message: "You have been blocked by Admin"})
                         }
                     }).catch((err) => {
-                        res.json({status: "3", message: "Internal server error"+ err});
+                        res.json({status: "3", message: "Internal server error" + err});
                     })
                 }
             });
@@ -760,7 +759,11 @@ client.connect((err, db) => {
                                     }
                                 }
 
-                                res.json({status: "1", message: "Contact List", userdata: paginate(numberArray,perPage,page)});
+                                res.json({
+                                    status: "1",
+                                    message: "Contact List",
+                                    userdata: paginate(numberArray, perPage, page)
+                                });
                             }
                         } else {
                             res.json({status: "7", message: "You have been blocked by Admin"});
@@ -1522,7 +1525,8 @@ client.connect((err, db) => {
             //Set Notification Settings
             app.post('/api/SetNotificationSettings', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
-                console.log(req.body)
+                console.log("/api/SetNotificationSettings")
+                console.log("Body" + req.body);
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
@@ -1569,7 +1573,7 @@ client.connect((err, db) => {
                                 if (err)
                                     res.json({status: "3", message: "Inserting faild"});
                                 else {
-                                    console.log(result)
+                                    console.log("result" + result)
                                     res.json({status: "1", message: "Notification set successfully"});
                                 }
                             });
@@ -1618,11 +1622,13 @@ client.connect((err, db) => {
                                 }
                             ).then((result) => {
 
-                                if (result['result']['n'] == 1)
-                                    res.json({status: "1", message: "notification updated successfully"});
-                                else
-                                    res.json({status: "3", message: "notification updated failed"});
-                            }).catch((err) => {
+                                    if (result['result']['n'] == 1) {
+                                        console.log("Updated result" + result);
+                                        res.json({status: "1", message: "notification updated successfully"});
+                                    } else
+                                        res.json({status: "3", message: "notification updated failed"});
+                                }
+                            ).catch((err) => {
                                 res.json({status: "3 ", message: "notification updated failed"});
                             });
                         }
@@ -1631,10 +1637,10 @@ client.connect((err, db) => {
                     });
                 }
             });
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Send Email For Verification
+//--------------------------------------------------------------------------------------------------------------
+//Send Email For Verification
             app.get('/api/EmailVerification', (req, res) => {
                 rand = Math.floor((Math.random() * 1000) + 54);
                 host = req.get('host');
@@ -1655,10 +1661,10 @@ client.connect((err, db) => {
                     }
                 });
             });
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Email Verification
+//--------------------------------------------------------------------------------------------------------------
+//Email Verification
             app.get('/verify', (req, res) => {
                 console.log(req.protocol + ":/" + req.get('host'));
                 if ((req.protocol + "://" + req.get('host')) == ("http://" + host)) {
@@ -1688,10 +1694,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Request is from unknown source"});
                 }
             });
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            // Block particuler number from the contact list
+//--------------------------------------------------------------------------------------------------------------
+// Block particuler number from the contact list
             app.post('/api/removeNumber', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
@@ -1750,14 +1756,14 @@ client.connect((err, db) => {
                     })
                 }
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //**************************************************************************************************************
-            // Admin Panel API
-            //**************************************************************************************************************
+//**************************************************************************************************************
+// Admin Panel API
+//**************************************************************************************************************
 
-            //--------------------------------------------------------------------------------------------------------------
-            //get count for not login yet
+//--------------------------------------------------------------------------------------------------------------
+//get count for not login yet
             app.post('/api/notloginyetcount', (req, res) => {
                 var dataArray = dbo.collection(counter).find({}).toArray();
                 dataArray.then((result) => {
@@ -1772,10 +1778,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //get single user based on ID
+//--------------------------------------------------------------------------------------------------------------
+//get single user based on ID
             app.post('/api/singleUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -1797,10 +1803,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //get single user based on ID
+//--------------------------------------------------------------------------------------------------------------
+//get single user based on ID
             app.post('/api/singleUserNumber', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -1871,10 +1877,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error" + err});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //get single user based on ID
+//--------------------------------------------------------------------------------------------------------------
+//get single user based on ID
             app.post('/api/singleUsePhonerNumber', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -1936,10 +1942,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error" + err});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //get all user list
+//--------------------------------------------------------------------------------------------------------------
+//get all user list
             app.post('/api/allUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
@@ -2009,10 +2015,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error" + err});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Block Full User
+//--------------------------------------------------------------------------------------------------------------
+//Block Full User
             app.post('/api/block_unblock', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -2061,10 +2067,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            // Block particuler number from the contact list
+//--------------------------------------------------------------------------------------------------------------
+// Block particuler number from the contact list
             app.post('/api/blockNumber', (req, res) => {
                 console.log(req.body);
                 var dataArray = dbo.collection(switlover).find({
@@ -2123,10 +2129,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Delete User from the database
+//--------------------------------------------------------------------------------------------------------------
+//Delete User from the database
             app.post('/api/deleteUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -2175,10 +2181,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //get count of total user
+//--------------------------------------------------------------------------------------------------------------
+//get count of total user
             app.post('/api/count', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
@@ -2194,10 +2200,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Get Like Contact
+//--------------------------------------------------------------------------------------------------------------
+//Get Like Contact
             app.post('/api/GetLikeContact', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id),
@@ -2260,10 +2266,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal Server error" + err});
                 })
             });
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Get Notification Settings
+//--------------------------------------------------------------------------------------------------------------
+//Get Notification Settings
             app.post('/api/GetNotificationadmin', (req, res) => {
                 var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.id)}).toArray();
                 dataNotification.then((result) => {
@@ -2278,10 +2284,10 @@ client.connect((err, db) => {
                     res.json({status: "3 ", message: "notification updated failed"});
                 });
             });
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
-            //--------------------------------------------------------------------------------------------------------------
-            //Set Notification Settings
+//--------------------------------------------------------------------------------------------------------------
+//Set Notification Settings
             app.post('/api/SetNotificationSettings', (req, res) => {
                 var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["id"])}).toArray();
                 dataNotification.then((result) => {
@@ -2386,7 +2392,7 @@ client.connect((err, db) => {
                     res.json({status: "3 ", message: "Internal server error" + err});
                 });
             });
-            //--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------
 
 
         }
