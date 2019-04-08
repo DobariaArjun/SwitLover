@@ -1527,7 +1527,7 @@ client.connect((err, db) => {
                 var Auth_Token = req.header('Auth_Token');
                 console.log("/api/SetNotificationSettings")
                 console.log("Body" + req.body);
-                console.log("Body" + req.body.data["userID"]);
+                console.log("Body" + req.body.data);
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
