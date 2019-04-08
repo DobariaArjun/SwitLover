@@ -1525,9 +1525,6 @@ client.connect((err, db) => {
             //Set Notification Settings
             app.post('/api/SetNotificationSettings', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
-                console.log("/api/SetNotificationSettings")
-                console.log("Body" + req.body);
-                console.log("Body" + req.body.userID);
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
@@ -1574,7 +1571,7 @@ client.connect((err, db) => {
                                 if (err)
                                     res.json({status: "3", message: "Inserting faild"});
                                 else {
-                                    console.log("result" + result)
+
                                     res.json({status: "1", message: "Notification set successfully"});
                                 }
                             });
@@ -1624,7 +1621,6 @@ client.connect((err, db) => {
                             ).then((result) => {
 
                                     if (result['result']['n'] == 1) {
-                                        console.log("Updated result" + result);
                                         res.json({status: "1", message: "notification updated successfully"});
                                     } else
                                         res.json({status: "3", message: "notification updated failed"});
