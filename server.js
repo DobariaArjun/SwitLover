@@ -527,7 +527,7 @@ client.connect((err, db) => {
                                         }).toArray();
                                         dataArray.then((dataresult) => {
                                             if (!isEmpty(dataresult)) {
-                                                if (dataresult[0]["is_Block"]) {
+                                                if (dataresult[0]["is_Block"] == 0) {
                                                     var dataNotification = dbo.collection(notification).find({userID: new ObjectId(dataresult[0]["_id"])}).toArray();
                                                     dataNotification.then((result) => {
                                                         if (isEmpty(result)) {
