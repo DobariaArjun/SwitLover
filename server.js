@@ -23,6 +23,12 @@ var smtpTransport = nodemailer.createTransport({
         pass: "Switlover123"
     }
 });
+
+function paginate (array, page_size, page_number) {
+    // because pages logically start with 1, but technically with 0
+    return array.slice(page_number * page_size, (page_number + 1) * page_size);
+}
+
 var rand, mailOptions, host, link;
 
 //--------------------------------------------------------------------------------------------------------------
@@ -683,10 +689,14 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
+
+
+                    var perPage = req.body.perpage;
+                    var page = req.body.page;
+
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token
                     }).toArray();
-
                     dataArray.then((data) => {
                         if (data[0]["is_Block"] == 0) {
                             if (!isEmpty(data[0]['Contact_List'])) {
@@ -743,7 +753,8 @@ client.connect((err, db) => {
                                         }
                                     }
                                 }
-                                res.json({status: "1", message: "Contact List", userdata: numberArray});
+
+                                res.json({status: "1", message: "Contact List", userdata: paginate(numberArray,perPage,page)});
                             }
                         } else {
                             res.json({status: "7", message: "You have been blocked by Admin"});
@@ -1791,6 +1802,7 @@ client.connect((err, db) => {
 
                         var isRemovedByAdmin;
                         var isRemovedByUser;
+                        var buttonAction;
                         var dataresult = result[0];
                         delete dataresult._id;
                         delete dataresult.Request_token;
@@ -1816,14 +1828,15 @@ client.connect((err, db) => {
                         delete dataresult.deletedAt;
 
 
-
                         var dataArray1 = [];
 
                         for (var i = 0; i < dataresult.Contact_List.length; i++) {
                             if (dataresult["Contact_List"][i]["isRemovedByAdmin"] == 0) {
                                 isRemovedByAdmin = "No";
+                                buttonAction = "<button id='remove' class='btn btn-outline-danger btn-sm'>Remove</button>"
                             } else {
                                 isRemovedByAdmin = "Yes";
+                                buttonAction = "<button id='remove' class='btn btn-outline-warning btn-sm'>Put Back</button>"
                             }
 
                             if (dataresult["Contact_List"][i]["isRemovedByUser"] == 0) {
@@ -1837,7 +1850,8 @@ client.connect((err, db) => {
                                 dataresult.Contact_List[i]["number"],
                                 dataresult.Contact_List[i]["name"],
                                 isRemovedByUser,
-                                isRemovedByAdmin
+                                isRemovedByAdmin,
+                                buttonAction
                             ];
                             dataArray1.push(data);
                         }
@@ -1859,6 +1873,7 @@ client.connect((err, db) => {
                 }).toArray();
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
+                        var verified;
                         var dataresult = result[0];
                         delete dataresult._id;
                         delete dataresult.Request_token;
@@ -1886,13 +1901,20 @@ client.connect((err, db) => {
                         var dataArray1 = [];
 
                         for (var i = 0; i < dataresult.Phone_Number.length; i++) {
+                            if (dataresult["Phone_Number"][i]["is_OverVerification"] == 0) {
+                                verified = "No";
+
+                            } else {
+                                verified = "Yes";
+
+                            }
                             var data = [
                                 i + 1,
                                 dataresult.Phone_Number[i]["Contry_Code"],
                                 dataresult.Phone_Number[i]["Number"],
                                 dataresult.Phone_Number[i]["Location"],
                                 dataresult.Phone_Number[i]["Verified"],
-                                dataresult.Phone_Number[i]["is_OverVerification"]
+                                verified
                             ];
                             dataArray1.push(data);
                         }
@@ -2172,10 +2194,7 @@ client.connect((err, db) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id),
                 }).toArray();
-
                 dataArray.then((data) => {
-
-
                     if (!isEmpty(data[0]['Contact_List'])) {
                         var numberArray = [];
                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
@@ -2187,62 +2206,177 @@ client.connect((err, db) => {
                                 } else {
                                     number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
                                 }
-
+                                var isRemovedByAdmin;
+                                var counter = 0;
+                                var isRemovedByUser;
                                 var myLikesArray = data[0]['Like'];
                                 if (!isEmpty(myLikesArray)) {
                                     for (var j = 0; j < myLikesArray.length; j++) {
                                         if (myLikesArray[j].length < 15) {
+                                            counter = counter + 1;
                                             if (myLikesArray[j] == number) {
 
-                                                myObj = {
-                                                    name: data[0]['Contact_List'][i]['name'],
-                                                    image: data[0]['Contact_List'][i]['image'],
-                                                    code: data[0]['Contact_List'][i]['code'],
-                                                    number: number,
-                                                    isLiked: 1,
-                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                                };
+                                                if (data[0]["Contact_List"][i]["isRemovedByAdmin"] == 0) {
+                                                    isRemovedByAdmin = "No";
+                                                } else {
+                                                    isRemovedByAdmin = "Yes";
+                                                }
+                                                if (data[0]["Contact_List"][i]["isRemovedByUser"] == 0) {
+                                                    isRemovedByUser = "No";
+                                                } else {
+                                                    isRemovedByUser = "Yes";
+                                                }
+                                                myObj = [
+                                                    counter,
+                                                    data[0]['Contact_List'][i]['code'],
+                                                    data[0]['Contact_List'][i]['number'],
+                                                    data[0]['Contact_List'][i]['name'],
+                                                    isRemovedByUser,
+                                                    isRemovedByAdmin
+                                                ];
+                                                numberArray.push(myObj);
                                                 break;
-
-                                            } else {
-
-                                                myObj = {
-                                                    name: data[0]['Contact_List'][i]['name'],
-                                                    image: data[0]['Contact_List'][i]['image'],
-                                                    code: data[0]['Contact_List'][i]['code'],
-                                                    number: number,
-                                                    isLiked: 0,
-                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                                };
                                             }
-
                                         }
                                     }
-                                } else {
-                                    myObj = {
-                                        name: data[0]['Contact_List'][i]['name'],
-                                        image: data[0]['Contact_List'][i]['image'],
-                                        code: data[0]['Contact_List'][i]['code'],
-                                        number: number,
-                                        isLiked: 0,
-                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin']
-                                    };
                                 }
-                                numberArray.push(myObj);
                             } else {
                                 if (isEmpty(numberArray)) {
                                     res.json({status: "0", message: "Sorry there is no contact to display"});
                                 }
                             }
                         }
-                        res.json({status: "1", message: "Contact List", userdata: numberArray});
+                        res.json({data: numberArray});
                     }
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal Server error" + err});
                 })
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Get Notification Settings
+            app.post('/api/GetNotificationadmin', (req, res) => {
+                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.id)}).toArray();
+                dataNotification.then((result) => {
+                    if (isEmpty(result))
+                        res.json({status: "0", message: "No notification settings found"});
+                    else
+                        var dataresult = result[0];
+                    delete dataresult._id;
+                    delete dataresult.userID;
+                    res.json({status: "1", message: "success", userdata: result});
+                }).catch((err) => {
+                    res.json({status: "3 ", message: "notification updated failed"});
+                });
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Set Notification Settings
+            app.post('/api/SetNotificationSettings', (req, res) => {
+                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["id"])}).toArray();
+                dataNotification.then((result) => {
+                    if (isEmpty(result)) {
+                        var myObj = {
+                            userID: new ObjectId(req.body.data["id"]),
+                            matcheek: {
+                                play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                                play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                                likes: req.body.data["matcheek"]["likes"],
+                                matches: req.body.data["matcheek"]["matches"],
+                                messages: req.body.data["matcheek"]["messages"],
+                                power_of_time: req.body.data["matcheek"]["power_of_time"],
+                                promotions: req.body.data["matcheek"]["promotions"]
+                            },
+                            phone: {
+                                play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                                play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                                likes: req.body.data["phone"]["likes"],
+                                matches: req.body.data["phone"]["matches"],
+                                messages: req.body.data["phone"]["messages"],
+                                power_of_time: req.body.data["phone"]["power_of_time"],
+                                promotions: req.body.data["phone"]["promotions"]
+                            },
+                            email: {
+                                frequency: {
+                                    every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                                    twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                                    once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                                    once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                                    once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                                },
+                                newsletter: req.body.data["email"]["newsletter"],
+                                promotions: req.body.data["email"]["promotions"],
+                                likes: req.body.data["email"]["likes"],
+                                matches: req.body.data["email"]["matches"],
+                                messages: req.body.data["email"]["messages"],
+                                power_of_time: req.body.data["email"]["power_of_time"]
+                            }
+                        }
+                        dbo.collection(notification).insertOne(myObj, (err, result) => {
+                            if (err)
+                                res.json({status: "3", message: "Inserting faild"});
+                            else {
+                                res.json({status: "1", message: "Notification set successfully"});
+                            }
+                        });
+                    } else {
+
+                        dbo.collection(notification).updateOne(
+                            {
+                                userID: new ObjectId(req.body.data["userID"])
+                            },
+                            {
+                                $set: {
+                                    matcheek: {
+                                        play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                                        play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                                        likes: req.body.data["matcheek"]["likes"],
+                                        matches: req.body.data["matcheek"]["matches"],
+                                        messages: req.body.data["matcheek"]["messages"],
+                                        power_of_time: req.body.data["matcheek"]["power_of_time"],
+                                        promotions: req.body.data["matcheek"]["promotions"]
+                                    },
+                                    phone: {
+                                        play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                                        play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                                        likes: req.body.data["phone"]["likes"],
+                                        matches: req.body.data["phone"]["matches"],
+                                        messages: req.body.data["phone"]["messages"],
+                                        power_of_time: req.body.data["phone"]["power_of_time"],
+                                        promotions: req.body.data["phone"]["promotions"]
+                                    },
+                                    email: {
+                                        frequency: {
+                                            every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                                            twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                                            once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                                            once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                                            once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                                        },
+                                        newsletter: req.body.data["email"]["newsletter"],
+                                        promotions: req.body.data["email"]["promotions"],
+                                        likes: req.body.data["email"]["likes"],
+                                        matches: req.body.data["email"]["matches"],
+                                        messages: req.body.data["email"]["messages"],
+                                        power_of_time: req.body.data["email"]["power_of_time"]
+                                    }
+                                },
+                            }
+                        ).then((result) => {
+
+                            if (result['result']['n'] == 1)
+                                res.json({status: "1", message: "notification updated successfully"});
+                            else
+                                res.json({status: "3", message: "notification updated failed"});
+                        }).catch((err) => {
+                            res.json({status: "3 ", message: "notification updated failed"});
+                        });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3 ", message: "Internal server error" + err});
+                });
             });
             //--------------------------------------------------------------------------------------------------------------
 
