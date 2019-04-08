@@ -1527,116 +1527,116 @@ client.connect((err, db) => {
                 var Auth_Token = req.header('Auth_Token');
                 console.log("/api/SetNotificationSettings")
                 console.log("Body" + req.body);
-                console.log("Body" + req.body.data);
-                if (!Auth_Token || Auth_Token == null) {
-                    res.json({status: "6", message: "Auth token missing"});
-                } else {
-                    var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
-                    dataNotification.then((result) => {
-                        if (isEmpty(result)) {
-                            var myObj = {
-                                userID: new ObjectId(req.body.data["userID"]),
-                                matcheek: {
-                                    play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
-                                    play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
-                                    likes: req.body.data["matcheek"]["likes"],
-                                    matches: req.body.data["matcheek"]["matches"],
-                                    messages: req.body.data["matcheek"]["messages"],
-                                    power_of_time: req.body.data["matcheek"]["power_of_time"],
-                                    promotions: req.body.data["matcheek"]["promotions"]
-                                },
-                                phone: {
-                                    play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
-                                    play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
-                                    likes: req.body.data["phone"]["likes"],
-                                    matches: req.body.data["phone"]["matches"],
-                                    messages: req.body.data["phone"]["messages"],
-                                    power_of_time: req.body.data["phone"]["power_of_time"],
-                                    promotions: req.body.data["phone"]["promotions"]
-                                },
-                                email: {
-                                    frequency: {
-                                        every_notification: req.body.data["email"]["frequency"]["every_notification"],
-                                        twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
-                                        once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
-                                        once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
-                                        once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
-                                    },
-                                    newsletter: req.body.data["email"]["newsletter"],
-                                    promotions: req.body.data["email"]["promotions"],
-                                    likes: req.body.data["email"]["likes"],
-                                    matches: req.body.data["email"]["matches"],
-                                    messages: req.body.data["email"]["messages"],
-                                    power_of_time: req.body.data["email"]["power_of_time"]
-                                }
-                            }
-                            dbo.collection(notification).insertOne(myObj, (err, result) => {
-                                if (err)
-                                    res.json({status: "3", message: "Inserting faild"});
-                                else {
-                                    console.log("result" + result)
-                                    res.json({status: "1", message: "Notification set successfully"});
-                                }
-                            });
-                        } else {
-
-                            dbo.collection(notification).updateOne(
-                                {
-                                    userID: new ObjectId(req.body.data["userID"])
-                                },
-                                {
-                                    $set: {
-                                        matcheek: {
-                                            play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
-                                            play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
-                                            likes: req.body.data["matcheek"]["likes"],
-                                            matches: req.body.data["matcheek"]["matches"],
-                                            messages: req.body.data["matcheek"]["messages"],
-                                            power_of_time: req.body.data["matcheek"]["power_of_time"],
-                                            promotions: req.body.data["matcheek"]["promotions"]
-                                        },
-                                        phone: {
-                                            play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
-                                            play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
-                                            likes: req.body.data["phone"]["likes"],
-                                            matches: req.body.data["phone"]["matches"],
-                                            messages: req.body.data["phone"]["messages"],
-                                            power_of_time: req.body.data["phone"]["power_of_time"],
-                                            promotions: req.body.data["phone"]["promotions"]
-                                        },
-                                        email: {
-                                            frequency: {
-                                                every_notification: req.body.data["email"]["frequency"]["every_notification"],
-                                                twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
-                                                once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
-                                                once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
-                                                once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
-                                            },
-                                            newsletter: req.body.data["email"]["newsletter"],
-                                            promotions: req.body.data["email"]["promotions"],
-                                            likes: req.body.data["email"]["likes"],
-                                            matches: req.body.data["email"]["matches"],
-                                            messages: req.body.data["email"]["messages"],
-                                            power_of_time: req.body.data["email"]["power_of_time"]
-                                        }
-                                    },
-                                }
-                            ).then((result) => {
-
-                                    if (result['result']['n'] == 1) {
-                                        console.log("Updated result" + result);
-                                        res.json({status: "1", message: "notification updated successfully"});
-                                    } else
-                                        res.json({status: "3", message: "notification updated failed"});
-                                }
-                            ).catch((err) => {
-                                res.json({status: "3 ", message: "notification updated failed"});
-                            });
-                        }
-                    }).catch((err) => {
-                        res.json({status: "3 ", message: "Internal server error" + err});
-                    });
-                }
+                console.log("Body" + req.body.userID);
+                // if (!Auth_Token || Auth_Token == null) {
+                //     res.json({status: "6", message: "Auth token missing"});
+                // } else {
+                //     var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
+                //     dataNotification.then((result) => {
+                //         if (isEmpty(result)) {
+                //             var myObj = {
+                //                 userID: new ObjectId(req.body.data["userID"]),
+                //                 matcheek: {
+                //                     play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                //                     play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                //                     likes: req.body.data["matcheek"]["likes"],
+                //                     matches: req.body.data["matcheek"]["matches"],
+                //                     messages: req.body.data["matcheek"]["messages"],
+                //                     power_of_time: req.body.data["matcheek"]["power_of_time"],
+                //                     promotions: req.body.data["matcheek"]["promotions"]
+                //                 },
+                //                 phone: {
+                //                     play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                //                     play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                //                     likes: req.body.data["phone"]["likes"],
+                //                     matches: req.body.data["phone"]["matches"],
+                //                     messages: req.body.data["phone"]["messages"],
+                //                     power_of_time: req.body.data["phone"]["power_of_time"],
+                //                     promotions: req.body.data["phone"]["promotions"]
+                //                 },
+                //                 email: {
+                //                     frequency: {
+                //                         every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                //                         twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                //                         once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                //                         once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                //                         once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                //                     },
+                //                     newsletter: req.body.data["email"]["newsletter"],
+                //                     promotions: req.body.data["email"]["promotions"],
+                //                     likes: req.body.data["email"]["likes"],
+                //                     matches: req.body.data["email"]["matches"],
+                //                     messages: req.body.data["email"]["messages"],
+                //                     power_of_time: req.body.data["email"]["power_of_time"]
+                //                 }
+                //             }
+                //             dbo.collection(notification).insertOne(myObj, (err, result) => {
+                //                 if (err)
+                //                     res.json({status: "3", message: "Inserting faild"});
+                //                 else {
+                //                     console.log("result" + result)
+                //                     res.json({status: "1", message: "Notification set successfully"});
+                //                 }
+                //             });
+                //         } else {
+                //
+                //             dbo.collection(notification).updateOne(
+                //                 {
+                //                     userID: new ObjectId(req.body.data["userID"])
+                //                 },
+                //                 {
+                //                     $set: {
+                //                         matcheek: {
+                //                             play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                //                             play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                //                             likes: req.body.data["matcheek"]["likes"],
+                //                             matches: req.body.data["matcheek"]["matches"],
+                //                             messages: req.body.data["matcheek"]["messages"],
+                //                             power_of_time: req.body.data["matcheek"]["power_of_time"],
+                //                             promotions: req.body.data["matcheek"]["promotions"]
+                //                         },
+                //                         phone: {
+                //                             play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                //                             play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                //                             likes: req.body.data["phone"]["likes"],
+                //                             matches: req.body.data["phone"]["matches"],
+                //                             messages: req.body.data["phone"]["messages"],
+                //                             power_of_time: req.body.data["phone"]["power_of_time"],
+                //                             promotions: req.body.data["phone"]["promotions"]
+                //                         },
+                //                         email: {
+                //                             frequency: {
+                //                                 every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                //                                 twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                //                                 once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                //                                 once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                //                                 once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                //                             },
+                //                             newsletter: req.body.data["email"]["newsletter"],
+                //                             promotions: req.body.data["email"]["promotions"],
+                //                             likes: req.body.data["email"]["likes"],
+                //                             matches: req.body.data["email"]["matches"],
+                //                             messages: req.body.data["email"]["messages"],
+                //                             power_of_time: req.body.data["email"]["power_of_time"]
+                //                         }
+                //                     },
+                //                 }
+                //             ).then((result) => {
+                //
+                //                     if (result['result']['n'] == 1) {
+                //                         console.log("Updated result" + result);
+                //                         res.json({status: "1", message: "notification updated successfully"});
+                //                     } else
+                //                         res.json({status: "3", message: "notification updated failed"});
+                //                 }
+                //             ).catch((err) => {
+                //                 res.json({status: "3 ", message: "notification updated failed"});
+                //             });
+                //         }
+                //     }).catch((err) => {
+                //         res.json({status: "3 ", message: "Internal server error" + err});
+                //     });
+                // }
             });
 //--------------------------------------------------------------------------------------------------------------
 
@@ -2132,8 +2132,8 @@ client.connect((err, db) => {
             })
 //--------------------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------------------
-//Delete User from the database
+            //--------------------------------------------------------------------------------------------------------------
+            //Delete User from the database
             app.post('/api/deleteUser', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -2182,10 +2182,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-//--------------------------------------------------------------------------------------------------------------
+            //--------------------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------------------
-//get count of total user
+            //--------------------------------------------------------------------------------------------------------------
+            //get count of total user
             app.post('/api/count', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({}).toArray();
                 dataArray.then((result) => {
@@ -2201,10 +2201,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
             })
-//--------------------------------------------------------------------------------------------------------------
+            //--------------------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------------------
-//Get Like Contact
+            //--------------------------------------------------------------------------------------------------------------
+            //Get Like Contact
             app.post('/api/GetLikeContact', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id),
@@ -2267,10 +2267,10 @@ client.connect((err, db) => {
                     res.json({status: "3", message: "Internal Server error" + err});
                 })
             });
-//--------------------------------------------------------------------------------------------------------------
+            //--------------------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------------------
-//Get Notification Settings
+            //--------------------------------------------------------------------------------------------------------------
+            //Get Notification Settings
             app.post('/api/GetNotificationadmin', (req, res) => {
                 var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.id)}).toArray();
                 dataNotification.then((result) => {
@@ -2285,10 +2285,10 @@ client.connect((err, db) => {
                     res.json({status: "3 ", message: "notification updated failed"});
                 });
             });
-//--------------------------------------------------------------------------------------------------------------
+            //--------------------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------------------
-//Set Notification Settings
+            //--------------------------------------------------------------------------------------------------------------
+            //Set Notification Settings
             app.post('/api/SetNotificationSettings', (req, res) => {
                 var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["id"])}).toArray();
                 dataNotification.then((result) => {
@@ -2393,7 +2393,7 @@ client.connect((err, db) => {
                     res.json({status: "3 ", message: "Internal server error" + err});
                 });
             });
-//--------------------------------------------------------------------------------------------------------------
+            //--------------------------------------------------------------------------------------------------------------
 
 
         }
