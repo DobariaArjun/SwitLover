@@ -382,7 +382,7 @@ client.connect((err, db) => {
                         Auth_Token: Auth_Token,
                     }).toArray()
                     dataArray.then((result) => {
-                        // if (result[0]["is_Block"] == 0) {
+                        if (result[0]["is_Block"] == 0) {
                             var userNumber;
                             for(var i = 0; i < result[0]["Phone_Number"].length; i++)
                             {
@@ -390,13 +390,15 @@ client.connect((err, db) => {
                                 var idArray = dbo.collection(switlover).find({
                                     Like: userNumber,
                                 }).toArray()
+                                var name;
                                 idArray.then((idresult) => {
-                                    // if (idresult[0]["is_Block"] == 0) {
+                                    console.log(idresult);
+                                    if (idresult[0]["is_Block"] == 0) {
                                         var myObj1 = [];
                                         if (!isEmpty(idresult)) {
                                             for (var i = 0; i < idresult.length; i++) {
                                                 var username = idresult[i]['Username'];
-                                                var name = username[username.length - 1]
+                                                name = username[username.length - 1]
 
                                                 var myObj = {
                                                     id: idresult[i]['_id'],
@@ -409,17 +411,17 @@ client.connect((err, db) => {
                                         } else {
                                             res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                         }
-                                    // } else {
-                                    //     res.json({status: "7", message: "You have been blocked by Admin"})
-                                    // }
+                                    } else {
+                                        res.json({status: "7", message: "You have been blocked by Admin"})
+                                    }
 
                                 }).catch((iserr) => {
                                     res.json({status: "3", message: "Internal server error"+ iserr});
                                 })
                             }
-                        // } else {
-                        //     res.json({status: "7", message: "You have been blocked by Admin"})
-                        // }
+                        } else {
+                            res.json({status: "7", message: "You have been blocked by Admin"})
+                        }
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal server error"+ err});
                     })
@@ -1520,6 +1522,7 @@ client.connect((err, db) => {
             //Set Notification Settings
             app.post('/api/SetNotificationSettings', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
+                console.log(req.body)
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
@@ -1566,6 +1569,7 @@ client.connect((err, db) => {
                                 if (err)
                                     res.json({status: "3", message: "Inserting faild"});
                                 else {
+                                    console.log(result)
                                     res.json({status: "1", message: "Notification set successfully"});
                                 }
                             });
