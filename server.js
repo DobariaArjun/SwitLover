@@ -2285,12 +2285,13 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //Set Notification Settings
-            app.post('/api/SetNotificationSettings', (req, res) => {
-                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["id"])}).toArray();
+            app.post('/api/SetNotificationadmin', (req, res) => {
+
+                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
                 dataNotification.then((result) => {
                     if (isEmpty(result)) {
                         var myObj = {
-                            userID: new ObjectId(req.body.data["id"]),
+                            userID: new ObjectId(req.body.data["userID"]),
                             matcheek: {
                                 play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
                                 play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
