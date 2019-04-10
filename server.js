@@ -217,6 +217,164 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
+            //Check user is     exist or not
+            app.post('/api/SwitchUser', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
+                        && !req.body.Location || req.body.Location == null) {
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
+                    } else {
+                        var dataArray = dbo.collection(switlover).find({
+                            'Phone_Number.Contry_Code': req.body.Contry_Code,
+                            'Phone_Number.Number': req.body.Number,
+                            'Phone_Number.Location': req.body.Location
+                        }).toArray();
+                        dataArray.then((result) => {
+                            if (!isEmpty(result)) {
+
+                                var isOver;
+                                if (result[0]['is_Block'] == 1) {
+                                    res.json({
+                                        status: "7",
+                                        type: "1",
+                                        message: "Sorry you are block for this app. Contact to our support team."
+                                    });
+                                    return;
+                                }
+                                if (result[0]['is_Deleted'] == 1) {
+                                    res.json({
+                                        status: "7",
+                                        type: "2",
+                                        message: "Sorry you are deleted from this app. If you not do this then please contact to support team."
+                                    });
+                                    return;
+                                }
+
+                                if (result[0]["Phone_Number"].length > 1) {
+                                    //It has more than 1 number
+                                    for (var i = 0; i < result[0]['Phone_Number'].length; i++) {
+                                        if (result[0]['Phone_Number'][i]["Number"] == req.body.Number) {
+                                            if (result[0]['Phone_Number'][i]['is_OverVerification'] == 1) {
+                                                res.json({
+                                                    status: "7",
+                                                    type: "3",
+                                                    message: "Sorry this number is block for over verification. Please contact to our support team"
+                                                });
+                                                return;
+                                            } else {
+                                                var myObj = {
+                                                    Contry_Code: req.body.Contry_Code,
+                                                    Number: req.body.Number,
+                                                    Location: req.body.Location,
+                                                    is_OverVerification: req.body.is_OverVerification,
+                                                    Verified: req.body.Verified
+                                                }
+                                                var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                                                dataArray.then((currentUserResult) => {
+                                                    var userPhone_Number = currentUserResult[0]["Phone_Number"];
+                                                    userPhone_Number.push(myObj);
+                                                    dbo.collection(switlover).updateOne(
+                                                        {Auth_Token: Auth_Token},
+                                                        {$set: {Phone_Number: userPhone_Number}})
+                                                        .then((updateResult) => {
+                                                            dbo.collection(switlover).updateOne(
+                                                                {_id: new ObjectId(result[0]["_id"])},
+                                                                {
+                                                                    $pull: {
+                                                                        Phone_Number: {
+                                                                            Contry_Code: req.body.Contry_Code,
+                                                                            Number: req.body.Number,
+                                                                            Location: req.body.Location,
+                                                                            is_OverVerification: req.body.is_OverVerification,
+                                                                            Verified: req.body.Verified
+                                                                        }
+                                                                    }
+                                                                })
+                                                                .then((updateResult) => {
+                                                                    res.json({status: "1", message: "Success"});
+                                                                })
+                                                                .catch((updateErr) => {
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Internal server error" + updateErr
+                                                                    });
+                                                                })
+                                                        })
+                                                        .catch((updateErr) => {
+                                                            res.json({
+                                                                status: "3",
+                                                                message: "Internal server error" + updateErr
+                                                            });
+                                                        })
+                                                }).catch((err) => {
+                                                    res.json({status: "3", message: "Internal server error" + err});
+                                                })
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    //It has only one register number
+
+                                    if (result[0]['Phone_Number'][0]['is_OverVerification'] == 1) {
+                                        res.json({
+                                            status: "7",
+                                            type: "3",
+                                            message: "Sorry this number is block for over verification. Please contact to our support team"
+                                        });
+                                        return;
+                                    } else {
+                                        var myObj = {
+                                            Contry_Code: result[0]["Phone_Number"][0]["Contry_Code"],
+                                            Number: result[0]["Phone_Number"][0]["Number"],
+                                            Location: result[0]["Phone_Number"][0]["Location"],
+                                            is_OverVerification: result[0]["Phone_Number"][0]["is_OverVerification"],
+                                            Verified: result[0]["Phone_Number"][0]["Verified"]
+                                        }
+
+                                        //insert this my object at the place of current user
+                                        var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                                        dataArray.then((currentUserResult) => {
+                                            var userPhone_Number = currentUserResult[0]["Phone_Number"];
+                                            userPhone_Number.push(myObj);
+                                            console.log(userPhone_Number);
+                                            dbo.collection(switlover).updateOne(
+                                                {Auth_Token: Auth_Token},
+                                                {$set: {Phone_Number: userPhone_Number}})
+                                                .then((updateResult) => {
+                                                    //Delete this account permenantly with notification and all that
+                                                    dbo.collection(switlover).removeOne({_id: new ObjectId(result[0]["_id"])}).then((dataresult) => {
+                                                        console.log(dataresult);
+                                                        dbo.collection(notification).removeOne({userID: new ObjectId(result[0]["_id"])}).then((data) => {
+                                                            res.json({status: "1", message: "success"});
+                                                        }).catch((dataerr) => {
+                                                            res.json({status: "3", message: "Internal server error"});
+                                                        })
+                                                    }).catch((err) => {
+                                                        res.json({status: 3, message: "Internal server error"});
+                                                    })
+                                                })
+                                                .catch((updateErr) => {
+                                                    res.json({status: "3", message: "Internal server error"});
+                                                })
+                                        }).catch((err) => {
+                                            res.json({status: "3", message: "Internal server error"});
+                                        })
+                                    }
+                                }
+                            } else
+                                res.json({status: "0", message: "User is not register yet"});
+                        }).catch((err) => {
+                            res.json({status: "3", message: "Internal server error"});
+                        })
+                    }
+                }
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
             //Match Logic
             app.post('/api/match', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
@@ -582,6 +740,22 @@ client.connect((err, db) => {
                                                                 if (err)
                                                                     res.json({status: "3", message: "Inserting faild"});
                                                                 else {
+                                                                    delete dataresult[0].Contact_List;
+                                                                    delete dataresult[0].is_Block;
+                                                                    delete dataresult[0].is_Deleted;
+                                                                    delete dataresult[0].Contact_Not_Recognized;
+                                                                    delete dataresult[0].Add_New_Number_From_App;
+                                                                    delete dataresult[0].Contact_Remove_Ratio;
+                                                                    delete dataresult[0].Like;
+                                                                    delete dataresult[0].Match_Ratio;
+                                                                    delete dataresult[0].PowerID;
+                                                                    delete dataresult[0].Not_In_App_Purchase;
+                                                                    delete dataresult[0].language;
+                                                                    delete dataresult[0].Device;
+                                                                    delete dataresult[0].createdAt;
+                                                                    delete dataresult[0].updatedAt;
+                                                                    delete dataresult[0].deletedAt;
+                                                                    delete dataresult[0].is_Online;
                                                                     res.json({
                                                                         status: "1",
                                                                         message: "success",
