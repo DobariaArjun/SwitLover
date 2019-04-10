@@ -549,10 +549,9 @@ client.connect((err, db) => {
                                 }).toArray()
                                 var name;
                                 idArray.then((idresult) => {
-                                    console.log(idresult);
-                                    if (idresult[0]["is_Block"] == 0) {
-                                        var myObj1 = [];
-                                        if (!isEmpty(idresult)) {
+                                    if (!isEmpty(idresult)) {
+                                        if (idresult[0]["is_Block"] == 0) {
+                                            var myObj1 = [];
                                             for (var i = 0; i < idresult.length; i++) {
                                                 var username = idresult[i]['Username'];
                                                 name = username[username.length - 1]
@@ -566,12 +565,11 @@ client.connect((err, db) => {
                                             }
                                             res.json({status: "1", message: "success", user_data: myObj1});
                                         } else {
-                                            res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
+                                            res.json({status: "7", message: "You have been blocked by Admin"})
                                         }
                                     } else {
-                                        res.json({status: "7", message: "You have been blocked by Admin"})
+                                        res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                     }
-
                                 }).catch((iserr) => {
                                     res.json({status: "3", message: "Internal server error" + iserr});
                                 })
@@ -701,7 +699,7 @@ client.connect((err, db) => {
                                                     dataNotification.then((result) => {
                                                         if (isEmpty(result)) {
                                                             var myObj = {
-                                                                userID: dataresult[0]["_id"],
+                                                                userID: new ObjectId(dataresult[0]["_id"]),
                                                                 matcheek: {
                                                                     play_sound_for_every_notification: 1,
                                                                     play_sound_for_every_message: 1,
@@ -2316,7 +2314,7 @@ client.connect((err, db) => {
                                     _id: new ObjectId(req.body.id)
                                 },
                                 {
-                                    $set: {is_Deleted: 1, is_Block: 1, updatedAt: new Date()}
+                                    $set: {is_Deleted: 1, updatedAt: new Date()}
                                 }
                             ).then((result) => {
                                 if (result['result']['n'] == 1) {
@@ -2334,7 +2332,7 @@ client.connect((err, db) => {
                                     _id: new ObjectId(req.body.id)
                                 },
                                 {
-                                    $set: {is_Deleted: 0, is_Block: 0, updatedAt: new Date()}
+                                    $set: {is_Deleted: 0, updatedAt: new Date()}
                                 }
                             ).then((result) => {
                                 if (result['result']['n'] == 1) {
