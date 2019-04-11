@@ -1066,6 +1066,9 @@ client.connect((err, db) => {
                                     }
                                     res.json({status: "1", message: "Contact List", userdata: numberArray});
                                 }
+                                else {
+                                    res.json({status: "0", message: "Please sync your contact first"});
+                                }
                             } else {
                                 res.json({status: "7", message: "You have been blocked by Admin"});
                             }
