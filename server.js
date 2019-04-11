@@ -184,7 +184,8 @@ client.connect((err, db) => {
                                     res.json({
                                         status: "7",
                                         type: "2",
-                                        message: "Sorry you are deleted from this app. If you not do this then please contact to support team."
+                                        message: "Sorry you are deleted from this app. If you not do this then please contact to support team.",
+                                        user_data: result
                                     });
                                     return;
                                 }
@@ -217,7 +218,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //Check user is     exist or not
+            //Switch the user
             app.post('/api/SwitchUser', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
@@ -384,6 +385,21 @@ client.connect((err, db) => {
                     }
                 }
             });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Restore User if deleted
+            app.post('/api/Restore', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                    dataArray.then((result) => {
+
+                    })
+                }
+            })
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -950,7 +966,7 @@ client.connect((err, db) => {
                                             userdata: paginate(numberArray, perPage, page)
                                         });
                                     } else {
-                                        res.json({status: "7", message: "Please sync your contact first"});
+                                        res.json({status: "0", message: "Please sync your contact first"});
                                     }
                                 } else {
                                     res.json({status: "7", message: "You have been blocked by Admin"});
@@ -974,42 +990,49 @@ client.connect((err, db) => {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token,
                     }).toArray();
-
                     dataArray.then((data) => {
-                        if (!isEmpty(data[0]['Contact_List'])) {
-                            var numberArray = [];
-                            for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                                if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                    var number;
-                                    var myObj;
-                                    if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                        number = data[0]['Contact_List'][i]['number'];
-                                    } else {
-                                        number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                    }
+                        if (!isEmpty(data)) {
+                            if (data[0]["is_Block"] == 0) {
+                                if (!isEmpty(data[0]['Contact_List'])) {
+                                    var numberArray = [];
+                                    for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
+                                        if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                            var number;
+                                            var myObj;
+                                            if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
+                                                number = data[0]['Contact_List'][i]['number'];
+                                            } else {
+                                                number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
+                                            }
 
-                                    var myLikesArray = data[0]['Like'];
+                                            var myLikesArray = data[0]['Like'];
 
-                                    if (!isEmpty(myLikesArray)) {
-                                        for (var j = 0; j < myLikesArray.length; j++) {
-                                            if (myLikesArray[j] == number) {
-                                                myObj = {
-                                                    name: data[0]['Contact_List'][i]['name'],
-                                                    image: data[0]['Contact_List'][i]['image'],
-                                                    code: data[0]['Contact_List'][i]['code'],
-                                                    number: data[0]['Contact_List'][i]['number'],
-                                                    isLiked: 1
-                                                };
-                                                numberArray.push(myObj);
-                                                break;
+                                            if (!isEmpty(myLikesArray)) {
+                                                for (var j = 0; j < myLikesArray.length; j++) {
+                                                    if (myLikesArray[j] == number) {
+                                                        myObj = {
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            code: data[0]['Contact_List'][i]['code'],
+                                                            number: data[0]['Contact_List'][i]['number'],
+                                                            isLiked: 1
+                                                        };
+                                                        numberArray.push(myObj);
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                res.json({status: "1", message: "Sorry there is no likes to display"});
                                             }
                                         }
-                                    } else {
-                                        res.json({status: "1", message: "Sorry there is no contact to display"});
                                     }
+                                    res.json({status: "1", message: "Contact List", userdata: numberArray});
                                 }
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"});
                             }
-                            res.json({status: "1", message: "Contact List", userdata: numberArray});
+                        } else {
+                            res.json({status: "1", message: "Sorry there is no likes to display"});
                         }
                     }).catch((err) => {
                         res.json({status: "3", message: "Internal Server error" + err});
