@@ -396,7 +396,29 @@ client.connect((err, db) => {
                 } else {
                     var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
                     dataArray.then((result) => {
-
+                        if (!isEmpty(result)) {
+                            if (result[0]["is_Deleted"] == 1) {
+                                dbo.collection(switlover).updateOne(
+                                    {Auth_Token: Auth_Token},
+                                    {$set: {is_Deleted: 0, updatedAt: new Date()}}
+                                ).then((updateresult) => {
+                                    if(updateresult['result']['n'] == 1)
+                                    {
+                                        var updateData = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                                        updateData.then((updateDataResult) => {
+                                            res.json({status: "1", message: "success", user_data: updateDataResult});
+                                        }).catch((updateDateErr) => {
+                                            res.json({status: "0", message: "err" + updateDateErr})
+                                        })
+                                    }
+                                    else{
+                                        res.json({status: "0", message: "err"})
+                                    }
+                                }).catch((updateerr) => {
+                                    res.json({status: "0", message: "err" + updateerr})
+                                })
+                            }
+                        }
                     })
                 }
             })
