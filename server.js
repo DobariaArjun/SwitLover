@@ -181,11 +181,27 @@ client.connect((err, db) => {
                                     return;
                                 }
                                 if (result[0]['is_Deleted'] == 1) {
+                                    var dataresult = result[0];
+                                    delete dataresult.Contact_List;
+                                    delete dataresult.Contact_Not_Recognized;
+                                    delete dataresult.Add_New_Number_From_App;
+                                    delete dataresult.Contact_Remove_Ratio;
+                                    delete dataresult.Like;
+                                    delete dataresult.Match_Ratio;
+                                    delete dataresult.PowerID;
+                                    delete dataresult.Not_In_App_Purchase;
+                                    delete dataresult.language;
+                                    delete dataresult.Device;
+                                    delete dataresult.createdAt;
+                                    delete dataresult.updatedAt;
+                                    delete dataresult.deletedAt;
+                                    delete dataresult.is_Online;
+                                    delete dataresult.is_Blocked;
                                     res.json({
                                         status: "7",
                                         type: "2",
                                         message: "Sorry you are deleted from this app. If you not do this then please contact to support team.",
-                                        user_data: result
+                                        user_data: dataresult
                                     });
                                     return;
                                 }
