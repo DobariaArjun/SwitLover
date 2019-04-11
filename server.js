@@ -280,28 +280,40 @@ client.connect((err, db) => {
                                                         {Auth_Token: Auth_Token},
                                                         {$set: {Phone_Number: userPhone_Number}})
                                                         .then((updateResult) => {
-                                                            dbo.collection(switlover).updateOne(
-                                                                {_id: new ObjectId(result[0]["_id"])},
-                                                                {
-                                                                    $pull: {
-                                                                        Phone_Number: {
-                                                                            Contry_Code: req.body.Contry_Code,
-                                                                            Number: req.body.Number,
-                                                                            Location: req.body.Location,
-                                                                            is_OverVerification: req.body.is_OverVerification,
-                                                                            Verified: req.body.Verified
+                                                            var arraydata = [];
+                                                            var resultDelete = dbo.collection(switlover).find({_id: new ObjectId(result[0]["_id"])}).toArray();
+                                                            resultDelete.then((resDel) => {
+                                                                for (var i = 0; i < resDel[0]['Phone_Number'].length; i++) {
+                                                                    if (resDel[0]['Phone_Number'][i]["Number"] != req.body.Number) {
+                                                                        var myObj = {
+                                                                            Contry_Code: resDel[0]['Phone_Number'][i]["Contry_Code"],
+                                                                            Number: resDel[0]['Phone_Number'][i]["Number"],
+                                                                            Location: resDel[0]['Phone_Number'][i]["Location"],
+                                                                            is_OverVerification: resDel[0]['Phone_Number'][i]["is_OverVerification"],
+                                                                            Verified: resDel[0]['Phone_Number'][i]["Verified"]
                                                                         }
+                                                                        arraydata.push(myObj);
                                                                     }
-                                                                })
-                                                                .then((updateResult) => {
-                                                                    res.json({status: "1", message: "Success"});
-                                                                })
-                                                                .catch((updateErr) => {
+                                                                }
+                                                                dbo.collection(switlover).updateOne(
+                                                                    {_id: new ObjectId(result[0]["_id"])},
+                                                                    {$set: {Phone_Number: arraydata}})
+                                                                    .then((resa) => {
+                                                                        if (resa["result"]["n"] == 1) {
+                                                                            res.json({status: "1", message: "Success"});
+                                                                        }
+                                                                    }).catch((erra) => {
                                                                     res.json({
                                                                         status: "3",
-                                                                        message: "Internal server error" + updateErr
+                                                                        message: "Internal server error" + erra
                                                                     });
                                                                 })
+                                                            }).catch((errDel) => {
+                                                                res.json({
+                                                                    status: "3",
+                                                                    message: "Internal server error" + errDel
+                                                                });
+                                                            })
                                                         })
                                                         .catch((updateErr) => {
                                                             res.json({
@@ -1679,13 +1691,14 @@ client.connect((err, db) => {
                 } else {
                     var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.userID)}).toArray();
                     dataNotification.then((result) => {
-                        if (isEmpty(result))
+                        if (isEmpty(result)) {
                             res.json({status: "0", message: "No notification settings found"});
-                        else
+                        } else {
                             var dataresult = result[0];
-                        delete dataresult._id;
-                        delete dataresult.userID;
-                        res.json({status: "1", message: "success", user_data: result});
+                            delete dataresult._id;
+                            delete dataresult.userID;
+                            res.json({status: "1", message: "success", user_data: result});
+                        }
                     }).catch((err) => {
                         res.json({status: "3 ", message: "notification updated failed"});
                     });
