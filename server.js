@@ -1361,7 +1361,7 @@ client.connect((err, db) => {
                                                     if (finalresult[0]["is_Block"] == 0) {
                                                         res.json({
                                                             status: "1",
-                                                            message: "success",
+                                                            message: "Profile updated successfully",
                                                             user_data: finalresult
                                                         });
                                                     } else {
@@ -1620,7 +1620,7 @@ client.connect((err, db) => {
                                                     if (finalresult[0]["is_Block"] == 0) {
                                                         res.json({
                                                             status: "1",
-                                                            message: "success",
+                                                            message: "Profile updated successfully",
                                                             user_data: finalresult
                                                         });
                                                     } else {
