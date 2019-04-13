@@ -418,16 +418,14 @@ client.connect((err, db) => {
                                     {Auth_Token: Auth_Token},
                                     {$set: {is_Deleted: 0, updatedAt: new Date()}}
                                 ).then((updateresult) => {
-                                    if(updateresult['result']['n'] == 1)
-                                    {
+                                    if (updateresult['result']['n'] == 1) {
                                         var updateData = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
                                         updateData.then((updateDataResult) => {
                                             res.json({status: "1", message: "success", user_data: updateDataResult});
                                         }).catch((updateDateErr) => {
                                             res.json({status: "0", message: "err" + updateDateErr})
                                         })
-                                    }
-                                    else{
+                                    } else {
                                         res.json({status: "0", message: "err"})
                                     }
                                 }).catch((updateerr) => {
@@ -435,6 +433,45 @@ client.connect((err, db) => {
                                 })
                             }
                         }
+                    })
+                }
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Delete Account
+            app.post('/api/DeleteUser', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                    dataArray.then((result) => {
+                        if (!isEmpty(result)) {
+                            if (result[0]["is_Deleted"] == 1) {
+                                res.json({status: "0", message: "User is already deleted"});
+                            } else {
+                                dbo.collection(switlover).updateOne(
+                                    {Auth_Token: Auth_Token},
+                                    {$set: {is_Deleted: 1, updatedAt: new Date()}}
+                                ).then((updateresult) => {
+                                    if (updateresult['result']['n'] == 1) {
+                                        var updateData = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                                        updateData.then((updateDataResult) => {
+                                            res.json({status: "1", message: "success"});
+                                        }).catch((updateDateErr) => {
+                                            res.json({status: "0", message: "err" + updateDateErr})
+                                        })
+                                    } else {
+                                        res.json({status: "0", message: "err"})
+                                    }
+                                }).catch((updateerr) => {
+                                    res.json({status: "0", message: "err" + updateerr})
+                                })
+                            }
+                        }
+                    }).catch((err) => {
+
                     })
                 }
             })
@@ -1065,8 +1102,7 @@ client.connect((err, db) => {
                                         }
                                     }
                                     res.json({status: "1", message: "Contact List", userdata: numberArray});
-                                }
-                                else {
+                                } else {
                                     res.json({status: "0", message: "Please sync your contact first"});
                                 }
                             } else {
@@ -1408,8 +1444,6 @@ client.connect((err, db) => {
                             } else {
                                 if (result[0]["is_Block"] == 0) {
                                     var currentEmail = result[0]['Email']['EmailAddress'];
-                                    console.log(currentEmail);
-
 
                                     var UsernameArray = [];
                                     UsernameArray = result[0]['Username'];
