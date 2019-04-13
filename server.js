@@ -1361,8 +1361,7 @@ client.connect((err, db) => {
                                                     if (finalresult[0]["is_Block"] == 0) {
                                                         res.json({
                                                             status: "1",
-                                                            message: "Profile updated successfully",
-                                                            user_data: finalresult
+                                                            message: "Profile updated successfully"
                                                         });
                                                     } else {
                                                         res.json({status: "7", message: "You have been blocked by Admin"});
@@ -1620,8 +1619,7 @@ client.connect((err, db) => {
                                                     if (finalresult[0]["is_Block"] == 0) {
                                                         res.json({
                                                             status: "1",
-                                                            message: "Profile updated successfully",
-                                                            user_data: finalresult
+                                                            message: "Profile updated successfully"
                                                         });
                                                     } else {
                                                         res.json({status: "7", message: "You have been blocked by Admin"});
