@@ -984,7 +984,7 @@ client.connect((err, db) => {
                                     if (!isEmpty(data[0]['Contact_List'])) {
                                         var numberArray = [];
                                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                            // if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
                                                 var number;
                                                 var myObj;
                                                 if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
@@ -1002,6 +1002,8 @@ client.connect((err, db) => {
                                                                     image: data[0]['Contact_List'][i]['image'],
                                                                     code: data[0]['Contact_List'][i]['code'],
                                                                     number: data[0]['Contact_List'][i]['number'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
                                                                     isLiked: 1
                                                                 };
                                                                 break;
@@ -1011,6 +1013,8 @@ client.connect((err, db) => {
                                                                     image: data[0]['Contact_List'][i]['image'],
                                                                     code: data[0]['Contact_List'][i]['code'],
                                                                     number: data[0]['Contact_List'][i]['number'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
                                                                     isLiked: 0
                                                                 };
                                                             }
@@ -1022,18 +1026,20 @@ client.connect((err, db) => {
                                                         image: data[0]['Contact_List'][i]['image'],
                                                         code: data[0]['Contact_List'][i]['code'],
                                                         number: data[0]['Contact_List'][i]['number'],
+                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
                                                         isLiked: 0
                                                     };
                                                 }
                                                 numberArray.push(myObj);
-                                            } else {
-                                                if (isEmpty(numberArray)) {
-                                                    res.json({
-                                                        status: "0",
-                                                        message: "Sorry there is no contact to display"
-                                                    });
-                                                }
-                                            }
+                                            // } else {
+                                            //     if (isEmpty(numberArray)) {
+                                            //         res.json({
+                                            //             status: "0",
+                                            //             message: "Sorry there is no contact to display"
+                                            //         });
+                                            //     }
+                                            // }
                                         }
                                         res.json({
                                             status: "1",
