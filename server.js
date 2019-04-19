@@ -984,13 +984,13 @@ client.connect((err, db) => {
                                     if (!isEmpty(data[0]['Contact_List'])) {
                                         var numberArray = [];
                                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                                            // if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                            for (var j = 0; j < (data[0]['Contact_List'][i]['number']).length; j++) {
                                                 var number;
                                                 var myObj;
-                                                if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                                    number = data[0]['Contact_List'][i]['number'];
+                                                if ((data[0]['Contact_List'][i]['number'][j]['number']).includes(data[0]['Contact_List'][i]['number'][j]['code'])) {
+                                                    number = data[0]['Contact_List'][i]['number'][j]['number'];
                                                 } else {
-                                                    number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
+                                                    number = data[0]['Contact_List'][i]['number'][j]['code'] + "" + data[0]['Contact_List'][i]['number'][j]['number'];
                                                 }
                                                 var myLikesArray = data[0]['Like'];
                                                 if (!isEmpty(myLikesArray)) {
@@ -1000,10 +1000,10 @@ client.connect((err, db) => {
                                                                 myObj = {
                                                                     name: data[0]['Contact_List'][i]['name'],
                                                                     image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                                    code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                    number: data[0]['Contact_List'][i]['number'][j]['number'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
                                                                     isLiked: 1
                                                                 };
                                                                 break;
@@ -1011,10 +1011,10 @@ client.connect((err, db) => {
                                                                 myObj = {
                                                                     name: data[0]['Contact_List'][i]['name'],
                                                                     image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                                    code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                    number: data[0]['Contact_List'][i]['number'][j]['number'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
                                                                     isLiked: 0
                                                                 };
                                                             }
@@ -1024,22 +1024,15 @@ client.connect((err, db) => {
                                                     myObj = {
                                                         name: data[0]['Contact_List'][i]['name'],
                                                         image: data[0]['Contact_List'][i]['image'],
-                                                        code: data[0]['Contact_List'][i]['code'],
-                                                        number: data[0]['Contact_List'][i]['number'],
-                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
-                                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                        code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                        number: data[0]['Contact_List'][i]['number'][j]['number'],
+                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                        isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
                                                         isLiked: 0
                                                     };
                                                 }
                                                 numberArray.push(myObj);
-                                            // } else {
-                                            //     if (isEmpty(numberArray)) {
-                                            //         res.json({
-                                            //             status: "0",
-                                            //             message: "Sorry there is no contact to display"
-                                            //         });
-                                            //     }
-                                            // }
+                                            }
                                         }
                                         res.json({
                                             status: "1",
@@ -1077,33 +1070,35 @@ client.connect((err, db) => {
                                 if (!isEmpty(data[0]['Contact_List'])) {
                                     var numberArray = [];
                                     for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                                        if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                            var number;
-                                            var myObj;
-                                            if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                                number = data[0]['Contact_List'][i]['number'];
-                                            } else {
-                                                number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                            }
-
-                                            var myLikesArray = data[0]['Like'];
-
-                                            if (!isEmpty(myLikesArray)) {
-                                                for (var j = 0; j < myLikesArray.length; j++) {
-                                                    if (myLikesArray[j] == number) {
-                                                        myObj = {
-                                                            name: data[0]['Contact_List'][i]['name'],
-                                                            image: data[0]['Contact_List'][i]['image'],
-                                                            code: data[0]['Contact_List'][i]['code'],
-                                                            number: data[0]['Contact_List'][i]['number'],
-                                                            isLiked: 1
-                                                        };
-                                                        numberArray.push(myObj);
-                                                        break;
-                                                    }
+                                        for (var j = 0; j < (data[0]['Contact_List'][i][number]).length; j++) {
+                                            if (data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'] == 0) {
+                                                var number;
+                                                var myObj;
+                                                if ((data[0]['Contact_List'][i]['number'][j]['number']).includes(data[0]['Contact_List'][i]['number'][j]['code'])) {
+                                                    number = data[0]['Contact_List'][i]['number'][j]['number'];
+                                                } else {
+                                                    number = data[0]['Contact_List'][i]['number'][j]['code'] + "" + data[0]['Contact_List'][i]['number'][j]['number'];
                                                 }
-                                            } else {
-                                                res.json({status: "1", message: "Sorry there is no likes to display"});
+
+                                                var myLikesArray = data[0]['Like'];
+
+                                                if (!isEmpty(myLikesArray)) {
+                                                    for (var j = 0; j < myLikesArray.length; j++) {
+                                                        if (myLikesArray[j] == number) {
+                                                            myObj = {
+                                                                name: data[0]['Contact_List'][i]['name'],
+                                                                image: data[0]['Contact_List'][i]['image'],
+                                                                code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                number: data[0]['Contact_List'][i]['number'][j]['number'],
+                                                                isLiked: 1
+                                                            };
+                                                            numberArray.push(myObj);
+                                                            break;
+                                                        }
+                                                    }
+                                                } else {
+                                                    res.json({status: "1", message: "Sorry there is no likes to display"});
+                                                }
                                             }
                                         }
                                     }
@@ -1999,45 +1994,47 @@ client.connect((err, db) => {
                     dataArray.then((result) => {
                         if (!isEmpty(result)) {
                             for (var i = 0; i < result[0]["Contact_List"].length; i++) {
-                                if (result[0]["Contact_List"][i]["number"] == req.body.number) {
-                                    if (result[0]["Contact_List"][i]["isRemovedByUser"] == 1) {
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token,
-                                            },
-                                            {
-                                                $set: {'Contact_List.$.isRemovedByUser': 0, updatedAt: new Date()}
-                                            }
-                                        ).then((result) => {
-                                            if (result['result']['n'] == 1) {
-                                                res.json({
-                                                    status: "1",
-                                                    message: "success"
-                                                });
-                                            }
-                                        }).catch((err) => {
-                                            res.json({status: "3", message: "Internal server error"});
-                                        })
-                                    } else {
+                                for (var j = 0; j < result[0]["Contact_List"][i]['number'].length; j++) {
+                                    if (result[0]["Contact_List"][i]['number'][j]["number"] == req.body.number) {
+                                        if (result[0]["Contact_List"][i]['number'][j]["isRemovedByUser"] == 1) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token,
+                                                },
+                                                {
+                                                    $set: {'Contact_List.$.number.$.isRemovedByUser': 0, updatedAt: new Date()}
+                                                }
+                                            ).then((result) => {
+                                                if (result['result']['n'] == 1) {
+                                                    res.json({
+                                                        status: "1",
+                                                        message: "success"
+                                                    });
+                                                }
+                                            }).catch((err) => {
+                                                res.json({status: "3", message: "Internal server error"});
+                                            })
+                                        } else {
 
-                                        dbo.collection(switlover).updateOne(
-                                            {
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {'Contact_List.$.isRemovedByUser': 1, updatedAt: new Date()}
-                                            }
-                                        ).then((result) => {
-                                            if (result['result']['n'] == 1) {
-                                                res.json({
-                                                    status: "1",
-                                                    message: "success"
-                                                });
-                                            }
-                                        }).catch((err) => {
-                                            res.json({status: "3", message: "Internal server error" + err});
-                                        })
-                                    }
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {'Contact_List.$.number.$.isRemovedByUser': 1, updatedAt: new Date()}
+                                                }
+                                            ).then((result) => {
+                                                if (result['result']['n'] == 1) {
+                                                    res.json({
+                                                        status: "1",
+                                                        message: "success"
+                                                    });
+                                                }
+                                            }).catch((err) => {
+                                                res.json({status: "3", message: "Internal server error" + err});
+                                            })
+                                        }
+                                    }   
                                 }
                             }
                         }
@@ -2132,32 +2129,34 @@ client.connect((err, db) => {
                         delete dataresult.deletedAt;
 
 
-                        var dataArray1 = [];
+                        var dataArray1 = []; 
 
                         for (var i = 0; i < dataresult.Contact_List.length; i++) {
-                            if (dataresult["Contact_List"][i]["isRemovedByAdmin"] == 0) {
-                                isRemovedByAdmin = "No";
-                                buttonAction = "<button id='remove' class='btn btn-outline-danger btn-sm'>Remove</button>"
-                            } else {
-                                isRemovedByAdmin = "Yes";
-                                buttonAction = "<button id='remove' class='btn btn-outline-warning btn-sm'>Put Back</button>"
-                            }
+                            for (var i = 0; i < dataresult.Contact_List[i]['number'].length; i++) {
+                                if (dataresult["Contact_List"][i]['number'][j]["isRemovedByAdmin"] == 0) {
+                                    isRemovedByAdmin = "No";
+                                    buttonAction = "<button id='remove' class='btn btn-outline-danger btn-sm'>Remove</button>"
+                                } else {
+                                    isRemovedByAdmin = "Yes";
+                                    buttonAction = "<button id='remove' class='btn btn-outline-warning btn-sm'>Put Back</button>"
+                                }
 
-                            if (dataresult["Contact_List"][i]["isRemovedByUser"] == 0) {
-                                isRemovedByUser = "No";
-                            } else {
-                                isRemovedByUser = "Yes";
+                                if (dataresult["Contact_List"][i]['number'][j]["isRemovedByUser"] == 0) {
+                                    isRemovedByUser = "No";
+                                } else {
+                                    isRemovedByUser = "Yes";
+                                }
+                                var data = [
+                                    i + 1,
+                                    dataresult.Contact_List[i]['number'][j]["code"],
+                                    dataresult.Contact_List[i]['number'][j]["number"],
+                                    dataresult.Contact_List[i]["name"],
+                                    isRemovedByUser,
+                                    isRemovedByAdmin,
+                                    buttonAction
+                                ];
+                                dataArray1.push(data);   
                             }
-                            var data = [
-                                i + 1,
-                                dataresult.Contact_List[i]["code"],
-                                dataresult.Contact_List[i]["number"],
-                                dataresult.Contact_List[i]["name"],
-                                isRemovedByUser,
-                                isRemovedByAdmin,
-                                buttonAction
-                            ];
-                            dataArray1.push(data);
                         }
                         res.json({
                             data: dataArray1
@@ -2369,48 +2368,50 @@ client.connect((err, db) => {
                 dataArray.then((result) => {
                     if (!isEmpty(result)) {
                         for (var i = 0; i < result[0]["Contact_List"].length; i++) {
-                            if (result[0]["Contact_List"][i]["number"] == req.body.number) {
-                                if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1) {
+                            for (var j = 0; j < result[0]["Contact_List"][i]['number'].length; j++) {
+                                if (result[0]["Contact_List"][i]['number'][j]["number"] == req.body.number) {
+                                    if (result[0]["Contact_List"][i]['number'][j]["isRemovedByAdmin"] == 1) {
 
 
-                                    dbo.collection(switlover).updateOne(
-                                        {
-                                            _id: new ObjectId(req.body.id),
-                                            'Contact_List.number': req.body.number
-                                        },
-                                        {
-                                            $set: {'Contact_List.$.isRemovedByAdmin': 0}
-                                        }
-                                    ).then((result) => {
-                                        if (result['result']['n'] == 1) {
-                                            res.json({
-                                                status: "1",
-                                                message: "success"
-                                            });
-                                        }
-                                    }).catch((err) => {
-                                        res.json({status: "3", message: "Internal server error"});
-                                    })
-                                } else {
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                _id: new ObjectId(req.body.id),
+                                                'Contact_List.number': req.body.number
+                                            },
+                                            {
+                                                $set: {'Contact_List.$.number.$.isRemovedByAdmin': 0}
+                                            }
+                                        ).then((result) => {
+                                            if (result['result']['n'] == 1) {
+                                                res.json({
+                                                    status: "1",
+                                                    message: "success"
+                                                });
+                                            }
+                                        }).catch((err) => {
+                                            res.json({status: "3", message: "Internal server error"});
+                                        })
+                                    } else {
 
-                                    dbo.collection(switlover).updateOne(
-                                        {
-                                            _id: new ObjectId(req.body.id),
-                                            'Contact_List.number': req.body.number
-                                        },
-                                        {
-                                            $set: {'Contact_List.$.isRemovedByAdmin': 1}
-                                        }
-                                    ).then((result) => {
-                                        if (result['result']['n'] == 1) {
-                                            res.json({
-                                                status: "1",
-                                                message: "success"
-                                            });
-                                        }
-                                    }).catch((err) => {
-                                        res.json({status: "3", message: "Internal server error" + err});
-                                    })
+                                        dbo.collection(switlover).updateOne(
+                                            {
+                                                _id: new ObjectId(req.body.id),
+                                                'Contact_List.number': req.body.number
+                                            },
+                                            {
+                                                $set: {'Contact_List.$.number.$.isRemovedByAdmin': 1}
+                                            }
+                                        ).then((result) => {
+                                            if (result['result']['n'] == 1) {
+                                                res.json({
+                                                    status: "1",
+                                                    message: "success"
+                                                });
+                                            }
+                                        }).catch((err) => {
+                                            res.json({status: "3", message: "Internal server error" + err});
+                                        })
+                                    }
                                 }
                             }
                         }
@@ -2502,52 +2503,54 @@ client.connect((err, db) => {
                     if (!isEmpty(data[0]['Contact_List'])) {
                         var numberArray = [];
                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 || data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                var number;
-                                var myObj;
-                                if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                    number = data[0]['Contact_List'][i]['number'];
-                                } else {
-                                    number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                }
-                                var isRemovedByAdmin;
-                                var counter = 0;
-                                var isRemovedByUser;
-                                var myLikesArray = data[0]['Like'];
-                                if (!isEmpty(myLikesArray)) {
-                                    for (var j = 0; j < myLikesArray.length; j++) {
-                                        if (myLikesArray[j].length < 15) {
-                                            counter = counter + 1;
-                                            if (myLikesArray[j] == number) {
+                            for (var j = 0; j < (data[0]['Contact_List'][i]['number']).length; j++) {
+                                if (data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'] == 0 || data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'] == 0) {
+                                    var number;
+                                    var myObj;
+                                    if ((data[0]['Contact_List'][i]['number'][j]['number']).includes(data[0]['Contact_List'][i]['number'][j]['code'])) {
+                                        number = data[0]['Contact_List'][i]['number'][j]['number'];
+                                    } else {
+                                        number = data[0]['Contact_List'][i]['number'][j]['code'] + "" + data[0]['Contact_List'][i]['number'][j]['number'];
+                                    }
+                                    var isRemovedByAdmin;
+                                    var counter = 0;
+                                    var isRemovedByUser;
+                                    var myLikesArray = data[0]['Like'];
+                                    if (!isEmpty(myLikesArray)) {
+                                        for (var j = 0; j < myLikesArray.length; j++) {
+                                            if (myLikesArray[j].length < 15) {
+                                                counter = counter + 1;
+                                                if (myLikesArray[j] == number) {
 
-                                                if (data[0]["Contact_List"][i]["isRemovedByAdmin"] == 0) {
-                                                    isRemovedByAdmin = "No";
-                                                } else {
-                                                    isRemovedByAdmin = "Yes";
+                                                    if (data[0]["Contact_List"][i]['number'][j]["isRemovedByAdmin"] == 0) {
+                                                        isRemovedByAdmin = "No";
+                                                    } else {
+                                                        isRemovedByAdmin = "Yes";
+                                                    }
+                                                    if (data[0]["Contact_List"][i]['number'][j]["isRemovedByUser"] == 0) {
+                                                        isRemovedByUser = "No";
+                                                    } else {
+                                                        isRemovedByUser = "Yes";
+                                                    }
+                                                    myObj = [
+                                                        counter,
+                                                        data[0]['Contact_List'][i]['number'][j]['code'],
+                                                        data[0]['Contact_List'][i]['number'][j]['number'],
+                                                        data[0]['Contact_List'][i]['name'],
+                                                        isRemovedByUser,
+                                                        isRemovedByAdmin
+                                                    ];
+                                                    numberArray.push(myObj);
+                                                    break;
                                                 }
-                                                if (data[0]["Contact_List"][i]["isRemovedByUser"] == 0) {
-                                                    isRemovedByUser = "No";
-                                                } else {
-                                                    isRemovedByUser = "Yes";
-                                                }
-                                                myObj = [
-                                                    counter,
-                                                    data[0]['Contact_List'][i]['code'],
-                                                    data[0]['Contact_List'][i]['number'],
-                                                    data[0]['Contact_List'][i]['name'],
-                                                    isRemovedByUser,
-                                                    isRemovedByAdmin
-                                                ];
-                                                numberArray.push(myObj);
-                                                break;
                                             }
                                         }
                                     }
-                                }
-                            } else {
-                                if (isEmpty(numberArray)) {
-                                    res.json({status: "0", message: "Sorry there is no contact to display"});
-                                }
+                                } else {
+                                    if (isEmpty(numberArray)) {
+                                        res.json({status: "0", message: "Sorry there is no contact to display"});
+                                    }
+                                }   
                             }
                         }
                         res.json({data: numberArray});
