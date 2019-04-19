@@ -1125,8 +1125,8 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //Preference setting for the match
-            app.post('/api/PreferenceSetting', (req, res) => {
+            //In-app Purchase setting
+            app.post('/api/In-appPurchaseSetting', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -1153,7 +1153,7 @@ client.connect((err, db) => {
                                     if (data['result']['n'] == 1) {
                                         res.json({status: "1", message: "success"});
                                     } else {
-                                        res.json({status: "3", message: "fail"});
+                                        res.json({status: "3", message: "error"});
                                     }
                                 });
                             } else {
