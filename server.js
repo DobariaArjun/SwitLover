@@ -1440,9 +1440,11 @@ client.connect((err, db) => {
                             Auth_Token: Auth_Token,
                         }).toArray();
                         dataArray.then((result) => {
+
                             if (isEmpty(result)) {
                                 res.json({status: "0", message: "User not found"});
                             } else {
+
                                 if (result[0]["is_Block"] == 0) {
                                     var currentEmail = result[0]['Email']['EmailAddress'];
 
@@ -1460,9 +1462,7 @@ client.connect((err, db) => {
                                     }
 
                                     var arrayContact = req.body.number;
-                                    var jsonObject = JSON.parse(arrayContact);
-                                    console.log("Number direct : " + req.body.number);
-                                    console.log("Number after JSON parse : " + jsonObject);
+                                    // var jsonObject = JSON.parse(arrayContact);
 
                                     if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(arrayContact)) {
                                         if (currentEmail == req.body.Email_Address) {
