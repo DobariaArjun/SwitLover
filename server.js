@@ -1070,7 +1070,7 @@ client.connect((err, db) => {
                                 if (!isEmpty(data[0]['Contact_List'])) {
                                     var numberArray = [];
                                     for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                                        for (var j = 0; j < (data[0]['Contact_List'][i][number]).length; j++) {
+                                        for (var j = 0; j < (data[0]['Contact_List'][i]['number']).length; j++) {
                                             if (data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'] == 0) {
                                                 var number;
                                                 var myObj;
