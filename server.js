@@ -1462,11 +1462,10 @@ client.connect((err, db) => {
                                     }
 
                                     var arrayContact = req.body.number;
-                                    // var jsonObject = JSON.parse(arrayContact);
-                                    console.log(req.body)
-                                    console.log(arrayContact);
+                                    var jsonObject = JSON.parse(arrayContact);
 
-                                    if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(arrayContact)) {
+
+                                    if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(jsonObject)) {
                                         if (currentEmail == req.body.Email_Address) {
                                             dbo.collection(switlover).updateOne(
                                                 {
@@ -1475,7 +1474,7 @@ client.connect((err, db) => {
                                                 {
                                                     $set: {
                                                         Username: UsernameArray,
-                                                        Phone_Number: arrayContact,
+                                                        Phone_Number: jsonObject,
                                                         updatedAt: new Date()
                                                     }
                                                 }).then((data) => {
@@ -1494,7 +1493,7 @@ client.connect((err, db) => {
                                                     $set: {
                                                         Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
                                                         Username: UsernameArray,
-                                                        Phone_Number: arrayContact,
+                                                        Phone_Number: jsonObject,
                                                         updatedAt: new Date()
                                                     }
                                                 }).then((data) => {
@@ -1560,7 +1559,7 @@ client.connect((err, db) => {
                                                 }
                                             });
                                         }
-                                    } else if (req.body.Username != null && req.body.Username && !isEmpty(arrayContact)) {
+                                    } else if (req.body.Username != null && req.body.Username && !isEmpty(jsonObject)) {
                                         dbo.collection(switlover).updateOne(
                                             {
                                                 Auth_Token: Auth_Token
@@ -1568,7 +1567,7 @@ client.connect((err, db) => {
                                             {
                                                 $set: {
                                                     Username: UsernameArray,
-                                                    Phone_Number: arrayContact,
+                                                    Phone_Number: jsonObject,
                                                     updatedAt: new Date()
                                                 }
                                             }).then((data) => {
@@ -1578,6 +1577,52 @@ client.connect((err, db) => {
                                                 res.json({status: "3", message: "Profile updation field"});
                                             }
                                         });
+                                    } else if (req.body.Email_Address != null && req.body.Email_Address && !isEmpty(jsonObject)) {
+                                        if (currentEmail == req.body.Email_Address) {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Phone_Number: jsonObject,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        } else {
+                                            dbo.collection(switlover).updateOne(
+                                                {
+                                                    Auth_Token: Auth_Token
+                                                },
+                                                {
+                                                    $set: {
+                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                        Phone_Number: jsonObject,
+                                                        updatedAt: new Date()
+                                                    }
+                                                }).then((data) => {
+                                                if (data['result']['n'] == 1) {
+                                                    request('http://' + req.get('host') + '/api/EmailVerification?Email=' + req.body.Email_Address + '', (apierr, response) => {
+                                                        if (!apierr) {
+                                                            res.json({
+                                                                status: "7",
+                                                                message: "Please check your inbox for the verification mail send from the SwitLover"
+                                                            });
+                                                        } else {
+                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                        }
+                                                    })
+                                                } else {
+                                                    res.json({status: "3", message: "Profile updation field"});
+                                                }
+                                            });
+                                        }
                                     } else if (req.body.Username != null && req.body.Username) {
 
                                         dbo.collection(switlover).updateOne(
@@ -1642,13 +1687,13 @@ client.connect((err, db) => {
                                             });
                                         }
 
-                                    } else if (!isEmpty(arrayContact)) {
+                                    } else if (!isEmpty(jsonObject)) {
 
                                         dbo.collection(switlover).updateOne({
                                             Auth_Token: Auth_Token,
                                             is_Block: {$ne: 1}
                                         }, {
-                                            $set: {Phone_Number: arrayContact, updatedAt: new Date()}
+                                            $set: {Phone_Number: jsonObject, updatedAt: new Date()}
                                         }).then((dataresult) => {
                                             if (dataresult['result']['n'] == 1) {
                                                 var dataArray = dbo.collection(switlover).find({
