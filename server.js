@@ -1001,9 +1001,9 @@ client.connect((err, db) => {
                                                                     name: data[0]['Contact_List'][i]['name'],
                                                                     image: data[0]['Contact_List'][i]['image'],
                                                                     code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'][j]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                                    number: data[0]['Contact_List'][i]['number'],
+                                                                    // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                                    // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
                                                                     isLiked: 1
                                                                 };
                                                                 break;
@@ -1012,9 +1012,9 @@ client.connect((err, db) => {
                                                                     name: data[0]['Contact_List'][i]['name'],
                                                                     image: data[0]['Contact_List'][i]['image'],
                                                                     code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'][j]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                                    number: data[0]['Contact_List'][i]['number'],
+                                                                    // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                                    // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
                                                                     isLiked: 0
                                                                 };
                                                             }
@@ -1025,9 +1025,9 @@ client.connect((err, db) => {
                                                         name: data[0]['Contact_List'][i]['name'],
                                                         image: data[0]['Contact_List'][i]['image'],
                                                         code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                        number: data[0]['Contact_List'][i]['number'][j]['number'],
-                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                        isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                        number: data[0]['Contact_List'][i]['number'],
+                                                        // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                        // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
                                                         isLiked: 0
                                                     };
                                                 }
@@ -1089,7 +1089,7 @@ client.connect((err, db) => {
                                                                 name: data[0]['Contact_List'][i]['name'],
                                                                 image: data[0]['Contact_List'][i]['image'],
                                                                 code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                number: data[0]['Contact_List'][i]['number'][j]['number'],
+                                                                number: data[0]['Contact_List'][i]['number'],
                                                                 isLiked: 1
                                                             };
                                                             numberArray.push(myObj);
@@ -2646,9 +2646,10 @@ client.connect((err, db) => {
             //Set Notification Settings
             app.post('/api/SetNotificationadmin', (req, res) => {
                 console.log(req.body);
-                // var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
-                // dataNotification.then((result) => {
-                //     if (isEmpty(result)) {
+                var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
+                dataNotification.then((result) => {
+                    if (isEmpty(result)) {
+                        console.log(result);
                 //         var myObj = {
                 //             userID: new ObjectId(req.body.data["userID"]),
                 //             matcheek: {
@@ -2692,8 +2693,8 @@ client.connect((err, db) => {
                 //                 res.json({status: "1", message: "Notification set successfully"});
                 //             }
                 //         });
-                //     } else {
-                //
+                    } else {
+                            console.log(result);
                 //         dbo.collection(notification).updateOne(
                 //             {
                 //                 userID: new ObjectId(req.body.data["userID"])
@@ -2744,10 +2745,10 @@ client.connect((err, db) => {
                 //         }).catch((err) => {
                 //             res.json({status: "3 ", message: "notification updated failed"});
                 //         });
-                //     }
-                // }).catch((err) => {
-                //     res.json({status: "3 ", message: "Internal server error" + err});
-                // });
+                    }
+                }).catch((err) => {
+                    res.json({status: "3 ", message: "Internal server error" + err});
+                });
             });
             //--------------------------------------------------------------------------------------------------------------
 
