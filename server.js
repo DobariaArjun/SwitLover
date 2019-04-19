@@ -994,45 +994,75 @@ client.connect((err, db) => {
                                                 }
                                                 var myLikesArray = data[0]['Like'];
                                                 if (!isEmpty(myLikesArray)) {
+                                                    var isLiked = false;
                                                     for (var j = 0; j < myLikesArray.length; j++) {
                                                         if (myLikesArray[j].length < 15) {
                                                             if (myLikesArray[j] == number) {
-                                                                myObj = {
-                                                                    name: data[0]['Contact_List'][i]['name'],
-                                                                    image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'],
+                                                                isLiked = true;
+                                                                // myObj = {
+                                                                //     c_id: data[0]['Contact_List'][i]['c_id'],
+                                                                //     name: data[0]['Contact_List'][i]['name'],
+                                                                //     image: data[0]['Contact_List'][i]['image'],
+                                                                    // code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                    // number: data[0]['Contact_List'][i]['number'],
                                                                     // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
                                                                     // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
-                                                                    isLiked: 1
-                                                                };
+                                                                    // isLiked: 1
+                                                                // };
                                                                 break;
                                                             } else {
-                                                                myObj = {
-                                                                    name: data[0]['Contact_List'][i]['name'],
-                                                                    image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'],
+                                                                isLiked = false;
+                                                                // myObj = {
+                                                                //     c_id: data[0]['Contact_List'][i]['c_id'],
+                                                                //     name: data[0]['Contact_List'][i]['name'],
+                                                                //     image: data[0]['Contact_List'][i]['image'],
+                                                                    // code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                    // number: data[0]['Contact_List'][i]['number'],
                                                                     // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
                                                                     // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
-                                                                    isLiked: 0
-                                                                };
+                                                                    // isLiked: 0
+                                                                // };
                                                             }
                                                         }
                                                     }
+                                                    if(isLiked)
+                                                    {
+                                                        myObj = {
+                                                            c_id: data[0]['Contact_List'][i]['c_id'],
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            isLiked: 1
+                                                        };
+                                                    }
+                                                    else{
+                                                        myObj = {
+                                                            c_id: data[0]['Contact_List'][i]['c_id'],
+                                                            name: data[0]['Contact_List'][i]['name'],
+                                                            image: data[0]['Contact_List'][i]['image'],
+                                                            isLiked: 0
+                                                        };
+                                                    }
                                                 } else {
-                                                    myObj = {
-                                                        name: data[0]['Contact_List'][i]['name'],
-                                                        image: data[0]['Contact_List'][i]['image'],
-                                                        code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                        number: data[0]['Contact_List'][i]['number'],
+                                                    // myObj = {
+                                                    //     c_id: data[0]['Contact_List'][i]['c_id'],
+                                                    //     name: data[0]['Contact_List'][i]['name'],
+                                                    //     image: data[0]['Contact_List'][i]['image'],
+                                                        // code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                        // number: data[0]['Contact_List'][i]['number'],
                                                         // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
                                                         // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                        // isLiked: 0
+                                                    // };
+                                                    myObj = {
+                                                        c_id: data[0]['Contact_List'][i]['c_id'],
+                                                        name: data[0]['Contact_List'][i]['name'],
+                                                        image: data[0]['Contact_List'][i]['image'],
                                                         isLiked: 0
                                                     };
                                                 }
-                                                numberArray.push(myObj);
+
                                             }
+                                            numberArray.push(myObj);
                                         }
                                         res.json({
                                             status: "1",
