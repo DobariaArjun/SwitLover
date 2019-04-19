@@ -1463,6 +1463,7 @@ client.connect((err, db) => {
 
                                     var arrayContact = req.body.number;
                                     // var jsonObject = JSON.parse(arrayContact);
+                                    console.log(req.body)
                                     console.log(arrayContact);
 
                                     if (req.body.Username != null && req.body.Username && req.body.Email_Address != null && req.body.Email_Address && !isEmpty(arrayContact)) {
