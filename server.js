@@ -6,7 +6,6 @@ const isEmpty = require('is-empty');
 const randtoken = require('rand-token');
 // const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
 const app = express();
-const request = require('request');
 const ObjectId = require('mongodb').ObjectID;
 
 const nodemailer = require("nodemailer");
@@ -25,7 +24,6 @@ var smtpTransport = nodemailer.createTransport({
 });
 
 function paginate(array, page_size, page_number) {
-    // because pages logically start with 1, but technically with 0
     return array.slice(page_number * page_size, (page_number + 1) * page_size);
 }
 

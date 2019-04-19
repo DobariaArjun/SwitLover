@@ -1,7 +1,7 @@
 {
-  "name": "switlover",
+  "name": "matcheek",
   "version": "1.0.0",
-  "description": "SwitLover Backend App",
+  "description": "Matcheek Backend App",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -28,7 +28,7 @@
     "nodemailer": "^5.1.1",
     "nodemon": "^1.18.10",
     "promise": "^8.0.2",
-    "rand-token": "^0.4.0",
-    "request": "^2.88.0"
+    "rand-token": "^0.4.0"
+
   }
 }
