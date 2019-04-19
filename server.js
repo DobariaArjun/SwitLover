@@ -2002,7 +2002,10 @@ client.connect((err, db) => {
                                                     Auth_Token: Auth_Token,
                                                 },
                                                 {
-                                                    $set: {'Contact_List.$.number.$.isRemovedByUser': 0, updatedAt: new Date()}
+                                                    $set: {
+                                                        'Contact_List.$.number.$.isRemovedByUser': 0,
+                                                        updatedAt: new Date()
+                                                    }
                                                 }
                                             ).then((result) => {
                                                 if (result['result']['n'] == 1) {
@@ -2021,7 +2024,10 @@ client.connect((err, db) => {
                                                     Auth_Token: Auth_Token
                                                 },
                                                 {
-                                                    $set: {'Contact_List.$.number.$.isRemovedByUser': 1, updatedAt: new Date()}
+                                                    $set: {
+                                                        'Contact_List.$.number.$.isRemovedByUser': 1,
+                                                        updatedAt: new Date()
+                                                    }
                                                 }
                                             ).then((result) => {
                                                 if (result['result']['n'] == 1) {
@@ -2034,7 +2040,7 @@ client.connect((err, db) => {
                                                 res.json({status: "3", message: "Internal server error" + err});
                                             })
                                         }
-                                    }   
+                                    }
                                 }
                             }
                         }
@@ -2129,7 +2135,7 @@ client.connect((err, db) => {
                         delete dataresult.deletedAt;
 
 
-                        var dataArray1 = []; 
+                        var dataArray1 = [];
 
                         for (var i = 0; i < dataresult.Contact_List.length; i++) {
                             for (var j = 0; j < dataresult.Contact_List[i]['number'].length; j++) {
@@ -2155,7 +2161,7 @@ client.connect((err, db) => {
                                     isRemovedByAdmin,
                                     buttonAction
                                 ];
-                                dataArray1.push(data);   
+                                dataArray1.push(data);
                             }
                         }
                         res.json({
@@ -2309,6 +2315,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Block Full User
             app.post('/api/block_unblock', (req, res) => {
+                console.log(req.body)
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
@@ -2371,15 +2378,18 @@ client.connect((err, db) => {
                             for (var j = 0; j < result[0]["Contact_List"][i]['number'].length; j++) {
                                 if (result[0]["Contact_List"][i]['number'][j]["number"] == req.body.number) {
                                     if (result[0]["Contact_List"][i]['number'][j]["isRemovedByAdmin"] == 1) {
-
-
                                         dbo.collection(switlover).updateOne(
                                             {
                                                 _id: new ObjectId(req.body.id),
-                                                'Contact_List.number': req.body.number
+                                                'Contact_List.number.number': req.body.number
                                             },
                                             {
-                                                $set: {'Contact_List.$.number.$.isRemovedByAdmin': 0}
+                                                $set: {'Contact_List.$.number.$[j].isRemovedByAdmin': 0}
+                                            },
+                                            {
+                                                arrayFilters: [
+                                                    {"j.number": req.body.number}
+                                                ]
                                             }
                                         ).then((result) => {
                                             if (result['result']['n'] == 1) {
@@ -2396,10 +2406,15 @@ client.connect((err, db) => {
                                         dbo.collection(switlover).updateOne(
                                             {
                                                 _id: new ObjectId(req.body.id),
-                                                'Contact_List.number': req.body.number
+                                                'Contact_List.number.number': req.body.number
                                             },
                                             {
-                                                $set: {'Contact_List.$.number.$.isRemovedByAdmin': 1}
+                                                $set: {'Contact_List.$.number.$[j].isRemovedByAdmin': 1}
+                                            },
+                                            {
+                                                arrayFilters: [
+                                                    {"j.number": req.body.number}
+                                                ]
                                             }
                                         ).then((result) => {
                                             if (result['result']['n'] == 1) {
@@ -2424,7 +2439,7 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //Delete User from the database
-            app.post('/api/deleteUser', (req, res) => {
+            app.post('/api/deleteUserAdmin', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
@@ -2551,8 +2566,7 @@ client.connect((err, db) => {
                         }
                         if (isEmpty(numberArray)) {
                             res.json({status: "0", message: "Sorry there is no contact to display"});
-                        }
-                        else{
+                        } else {
                             res.json({data: numberArray});
                         }
                     }
