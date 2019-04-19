@@ -571,15 +571,15 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
-                    if (!req.body || isEmpty(req.body)) {
+                    if (!req.body.c_id || isEmpty(req.body.c_id)) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-                        var number;
-                        if ((req.body.number).includes(req.body.code)) {
-                            number = req.body.number;
-                        } else {
-                            number = req.body.code + "" + req.body.number;
-                        }
+                        // var number;
+                        // if ((req.body.number).includes(req.body.code)) {
+                        //     number = req.body.number;
+                        // } else {
+                        //     number = req.body.code + "" + req.body.number;
+                        // }
 
                         var isLiked1 = false;
                         var numberArray = [];
@@ -587,25 +587,22 @@ client.connect((err, db) => {
                             Auth_Token: Auth_Token
                         }).toArray();
                         dataArray.then((dataresult) => {
+                            let existingLikes;
                             if (dataresult[0]['is_Block'] == 0) {
-                                existingLikes = dataresult[0]['Like']
+                                existingLikes = dataresult[0]['Like'];
                                 if (!isEmpty(existingLikes)) {
                                     for (var j = 0; j < existingLikes.length; j++) {
-                                        if (existingLikes[j].length < 15) {
-                                            if (existingLikes[j] == number) {
-                                                isLiked1 = true;
-                                            } else {
-                                                numberArray.push(existingLikes[j])
-                                            }
+                                        if (existingLikes[j] == req.body.c_id) {
+                                            isLiked1 = true;
                                         } else {
                                             numberArray.push(existingLikes[j])
                                         }
                                     }
                                     if (!isLiked1) {
-                                        numberArray.push(number);
+                                        numberArray.push(req.body.c_id);
                                     }
                                 } else {
-                                    numberArray.push(number)
+                                    numberArray.push(req.body.c_id)
                                 }
                                 dbo.collection(switlover).updateOne({
                                         Auth_Token: Auth_Token,
@@ -1003,11 +1000,11 @@ client.connect((err, db) => {
                                                                 //     c_id: data[0]['Contact_List'][i]['c_id'],
                                                                 //     name: data[0]['Contact_List'][i]['name'],
                                                                 //     image: data[0]['Contact_List'][i]['image'],
-                                                                    // code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                    // number: data[0]['Contact_List'][i]['number'],
-                                                                    // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                                    // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
-                                                                    // isLiked: 1
+                                                                // code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                // number: data[0]['Contact_List'][i]['number'],
+                                                                // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                                // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                                // isLiked: 1
                                                                 // };
                                                                 break;
                                                             } else {
@@ -1016,25 +1013,23 @@ client.connect((err, db) => {
                                                                 //     c_id: data[0]['Contact_List'][i]['c_id'],
                                                                 //     name: data[0]['Contact_List'][i]['name'],
                                                                 //     image: data[0]['Contact_List'][i]['image'],
-                                                                    // code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                                    // number: data[0]['Contact_List'][i]['number'],
-                                                                    // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                                    // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
-                                                                    // isLiked: 0
+                                                                // code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                // number: data[0]['Contact_List'][i]['number'],
+                                                                // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                                // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                                // isLiked: 0
                                                                 // };
                                                             }
                                                         }
                                                     }
-                                                    if(isLiked)
-                                                    {
+                                                    if (isLiked) {
                                                         myObj = {
                                                             c_id: data[0]['Contact_List'][i]['c_id'],
                                                             name: data[0]['Contact_List'][i]['name'],
                                                             image: data[0]['Contact_List'][i]['image'],
                                                             isLiked: 1
                                                         };
-                                                    }
-                                                    else{
+                                                    } else {
                                                         myObj = {
                                                             c_id: data[0]['Contact_List'][i]['c_id'],
                                                             name: data[0]['Contact_List'][i]['name'],
@@ -1047,11 +1042,11 @@ client.connect((err, db) => {
                                                     //     c_id: data[0]['Contact_List'][i]['c_id'],
                                                     //     name: data[0]['Contact_List'][i]['name'],
                                                     //     image: data[0]['Contact_List'][i]['image'],
-                                                        // code: data[0]['Contact_List'][i]['number'][j]['code'],
-                                                        // number: data[0]['Contact_List'][i]['number'],
-                                                        // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                        // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
-                                                        // isLiked: 0
+                                                    // code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                    // number: data[0]['Contact_List'][i]['number'],
+                                                    // isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
+                                                    // isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                    // isLiked: 0
                                                     // };
                                                     myObj = {
                                                         c_id: data[0]['Contact_List'][i]['c_id'],
@@ -2680,101 +2675,101 @@ client.connect((err, db) => {
                 dataNotification.then((result) => {
                     if (isEmpty(result)) {
                         console.log(result);
-                //         var myObj = {
-                //             userID: new ObjectId(req.body.data["userID"]),
-                //             matcheek: {
-                //                 play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
-                //                 play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
-                //                 likes: req.body.data["matcheek"]["likes"],
-                //                 matches: req.body.data["matcheek"]["matches"],
-                //                 messages: req.body.data["matcheek"]["messages"],
-                //                 power_of_time: req.body.data["matcheek"]["power_of_time"],
-                //                 promotions: req.body.data["matcheek"]["promotions"]
-                //             },
-                //             phone: {
-                //                 play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
-                //                 play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
-                //                 likes: req.body.data["phone"]["likes"],
-                //                 matches: req.body.data["phone"]["matches"],
-                //                 messages: req.body.data["phone"]["messages"],
-                //                 power_of_time: req.body.data["phone"]["power_of_time"],
-                //                 promotions: req.body.data["phone"]["promotions"]
-                //             },
-                //             email: {
-                //                 frequency: {
-                //                     every_notification: req.body.data["email"]["frequency"]["every_notification"],
-                //                     twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
-                //                     once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
-                //                     once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
-                //                     once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
-                //                 },
-                //                 newsletter: req.body.data["email"]["newsletter"],
-                //                 promotions: req.body.data["email"]["promotions"],
-                //                 likes: req.body.data["email"]["likes"],
-                //                 matches: req.body.data["email"]["matches"],
-                //                 messages: req.body.data["email"]["messages"],
-                //                 power_of_time: req.body.data["email"]["power_of_time"]
-                //             }
-                //         }
-                //         dbo.collection(notification).insertOne(myObj, (err, result) => {
-                //             if (err)
-                //                 res.json({status: "3", message: "Inserting faild"});
-                //             else {
-                //                 res.json({status: "1", message: "Notification set successfully"});
-                //             }
-                //         });
+                        //         var myObj = {
+                        //             userID: new ObjectId(req.body.data["userID"]),
+                        //             matcheek: {
+                        //                 play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                        //                 play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                        //                 likes: req.body.data["matcheek"]["likes"],
+                        //                 matches: req.body.data["matcheek"]["matches"],
+                        //                 messages: req.body.data["matcheek"]["messages"],
+                        //                 power_of_time: req.body.data["matcheek"]["power_of_time"],
+                        //                 promotions: req.body.data["matcheek"]["promotions"]
+                        //             },
+                        //             phone: {
+                        //                 play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                        //                 play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                        //                 likes: req.body.data["phone"]["likes"],
+                        //                 matches: req.body.data["phone"]["matches"],
+                        //                 messages: req.body.data["phone"]["messages"],
+                        //                 power_of_time: req.body.data["phone"]["power_of_time"],
+                        //                 promotions: req.body.data["phone"]["promotions"]
+                        //             },
+                        //             email: {
+                        //                 frequency: {
+                        //                     every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                        //                     twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                        //                     once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                        //                     once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                        //                     once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                        //                 },
+                        //                 newsletter: req.body.data["email"]["newsletter"],
+                        //                 promotions: req.body.data["email"]["promotions"],
+                        //                 likes: req.body.data["email"]["likes"],
+                        //                 matches: req.body.data["email"]["matches"],
+                        //                 messages: req.body.data["email"]["messages"],
+                        //                 power_of_time: req.body.data["email"]["power_of_time"]
+                        //             }
+                        //         }
+                        //         dbo.collection(notification).insertOne(myObj, (err, result) => {
+                        //             if (err)
+                        //                 res.json({status: "3", message: "Inserting faild"});
+                        //             else {
+                        //                 res.json({status: "1", message: "Notification set successfully"});
+                        //             }
+                        //         });
                     } else {
-                            console.log(result);
-                //         dbo.collection(notification).updateOne(
-                //             {
-                //                 userID: new ObjectId(req.body.data["userID"])
-                //             },
-                //             {
-                //                 $set: {
-                //                     matcheek: {
-                //                         play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
-                //                         play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
-                //                         likes: req.body.data["matcheek"]["likes"],
-                //                         matches: req.body.data["matcheek"]["matches"],
-                //                         messages: req.body.data["matcheek"]["messages"],
-                //                         power_of_time: req.body.data["matcheek"]["power_of_time"],
-                //                         promotions: req.body.data["matcheek"]["promotions"]
-                //                     },
-                //                     phone: {
-                //                         play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
-                //                         play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
-                //                         likes: req.body.data["phone"]["likes"],
-                //                         matches: req.body.data["phone"]["matches"],
-                //                         messages: req.body.data["phone"]["messages"],
-                //                         power_of_time: req.body.data["phone"]["power_of_time"],
-                //                         promotions: req.body.data["phone"]["promotions"]
-                //                     },
-                //                     email: {
-                //                         frequency: {
-                //                             every_notification: req.body.data["email"]["frequency"]["every_notification"],
-                //                             twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
-                //                             once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
-                //                             once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
-                //                             once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
-                //                         },
-                //                         newsletter: req.body.data["email"]["newsletter"],
-                //                         promotions: req.body.data["email"]["promotions"],
-                //                         likes: req.body.data["email"]["likes"],
-                //                         matches: req.body.data["email"]["matches"],
-                //                         messages: req.body.data["email"]["messages"],
-                //                         power_of_time: req.body.data["email"]["power_of_time"]
-                //                     }
-                //                 },
-                //             }
-                //         ).then((result) => {
-                //
-                //             if (result['result']['n'] == 1)
-                //                 res.json({status: "1", message: "notification updated successfully"});
-                //             else
-                //                 res.json({status: "3", message: "notification updated failed"});
-                //         }).catch((err) => {
-                //             res.json({status: "3 ", message: "notification updated failed"});
-                //         });
+                        console.log(result);
+                        //         dbo.collection(notification).updateOne(
+                        //             {
+                        //                 userID: new ObjectId(req.body.data["userID"])
+                        //             },
+                        //             {
+                        //                 $set: {
+                        //                     matcheek: {
+                        //                         play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                        //                         play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                        //                         likes: req.body.data["matcheek"]["likes"],
+                        //                         matches: req.body.data["matcheek"]["matches"],
+                        //                         messages: req.body.data["matcheek"]["messages"],
+                        //                         power_of_time: req.body.data["matcheek"]["power_of_time"],
+                        //                         promotions: req.body.data["matcheek"]["promotions"]
+                        //                     },
+                        //                     phone: {
+                        //                         play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                        //                         play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                        //                         likes: req.body.data["phone"]["likes"],
+                        //                         matches: req.body.data["phone"]["matches"],
+                        //                         messages: req.body.data["phone"]["messages"],
+                        //                         power_of_time: req.body.data["phone"]["power_of_time"],
+                        //                         promotions: req.body.data["phone"]["promotions"]
+                        //                     },
+                        //                     email: {
+                        //                         frequency: {
+                        //                             every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                        //                             twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                        //                             once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                        //                             once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                        //                             once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                        //                         },
+                        //                         newsletter: req.body.data["email"]["newsletter"],
+                        //                         promotions: req.body.data["email"]["promotions"],
+                        //                         likes: req.body.data["email"]["likes"],
+                        //                         matches: req.body.data["email"]["matches"],
+                        //                         messages: req.body.data["email"]["messages"],
+                        //                         power_of_time: req.body.data["email"]["power_of_time"]
+                        //                     }
+                        //                 },
+                        //             }
+                        //         ).then((result) => {
+                        //
+                        //             if (result['result']['n'] == 1)
+                        //                 res.json({status: "1", message: "notification updated successfully"});
+                        //             else
+                        //                 res.json({status: "3", message: "notification updated failed"});
+                        //         }).catch((err) => {
+                        //             res.json({status: "3 ", message: "notification updated failed"});
+                        //         });
                     }
                 }).catch((err) => {
                     res.json({status: "3 ", message: "Internal server error" + err});
