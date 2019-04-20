@@ -8,6 +8,10 @@ const randtoken = require('rand-token');
 const app = express();
 const ObjectId = require('mongodb').ObjectID;
 
+// accessKeyId: "AKIAUPCF3FIA7CXJRKIV",
+// secretAccessKey: "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",
+// region: 'us-east-2',
+
 const nodemailer = require("nodemailer");
 app.use(bodyParser.json({limit: '50mb', extended: true}))
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
@@ -477,31 +481,42 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //Match prefereances
-            app.post('/api/MatchPreference',(req,res) => {
+            app.post('/api/MatchPreference', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
+                    if (!req.body || isEmpty(req.body)) {
 
-                    if(!req.body.chat || isEmpty(req))
-
-                    var dataArray = dbo.collection(switlover).find({
-                        Auth_Token: Auth_Token,
-                    }).toArray();
-                    dataArray.then((result) => {
-                        if(!isEmpty(result))
-                        {
-                            if(result[0]["is_BLock"] == 0)
-                            {
-
+                    } else {
+                        var dataArray = dbo.collection(switlover).find({
+                            Auth_Token: Auth_Token,
+                        }).toArray();
+                        dataArray.then((result) => {
+                            if (!isEmpty(result)) {
+                                if (result[0]["is_Block"] == 0) {
+                                    dbo.collection(switlover).updateOne({Auth_Token: Auth_Token}, {
+                                        $set: {
+                                            Match_Ratio: req.body,
+                                            updatedAt: new Date()
+                                        }
+                                    }).then((updatedata) => {
+                                        if (updatedata['result']['n'] == 1) {
+                                            res.json({status: "1", message: "success"});
+                                        } else {
+                                            res.json({status: "0", message: "not update"});
+                                        }
+                                    }).catch((errr) => {
+                                        res.json({status: "0", message: "err"});
+                                    })
+                                } else {
+                                    res.json({status: "7", message: "You have been blocked by Admin"})
+                                }
                             }
-                            else{
-                                res.json({status: "7", message: "You have been blocked by Admin"})
-                            }
-                        }
-                    }).catch((err) => {
-
-                    })
+                        }).catch((err) => {
+                            res.json({status: "0", message: "err" + err});
+                        })
+                    }
                 }
             });
             //--------------------------------------------------------------------------------------------------------------
@@ -516,69 +531,58 @@ client.connect((err, db) => {
                     var dataArray = dbo.collection(switlover).find({
                         Auth_Token: Auth_Token,
                     }).toArray()
-
                     dataArray.then((result) => {
-
                         if (result[0]["is_Block"] == 0) {
                             var likeArraybyMe = result[0]['Like'];
-
                             for (var i = 0; i < likeArraybyMe.length; i++) {
-
-                                var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': '9714470952'}).toArray()
+                                var number = likeArraybyMe[i].split("-")[1];
+                                var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': number}).toArray()
                                 numberArray.then((idresult) => {
-                                    var myObj1 = [];
-                                    var myObj;
                                     if (!isEmpty(idresult)) {
-
-                                        var username = idresult[0]['Username'];
-                                        var name = username[username.length - 1];
-                                        myObj = {
-                                            id: idresult[0]['_id'],
-                                            name: name,
-                                            image: idresult[0]['Profile_Pic'],
-                                            is_used: "false",
-                                            createdAt: new Date()
-                                        }
-
-                                        myObj1.push(myObj);
-                                        if (!isEmpty(myObj1)) {
-                                            var finalObj = {
-                                                currentUser: idresult[0]['_id'],
-                                                follobackUser: myObj1
-                                            }
-
-                                            var dataArray = dbo.collection(match).find({}).toArray()
-                                            dataArray.then((result) => {
-                                                if (!isEmpty(result)) {
-
-                                                    for (var j = 0; j < result.length; j++) {
-
-                                                        for (var k = 0; k < result[j]["follobackUser"].length; k++) {
-                                                            if (result[j]["follobackUser"][k]["name"] == name) {
-                                                                res.json({status: "0", message: "Already matched user"});
-                                                            } else {
-                                                                dbo.collection(match).insertOne(finalObj, (err, result) => {
-                                                                    if (err)
-                                                                        res.json({
-                                                                            status: "3",
-                                                                            message: "Error while inserting records"
-                                                                        });
-                                                                    else {
+                                        if (idresult[0]['is_Block'] == 0) {
+                                            var username = idresult[0]['Username'];
+                                            var name = username[username.length - 1];\
+                                            var idUserLikeArray = idresult[0]['Like'];
+                                            for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
+                                                for (var j = 0; j < idUserLikeArray.length; j++) {
+                                                    var num = idUserLikeArray[j].split("-")[1];
+                                                    if (num == result[0]['Phone_Number'][k]['Number']) {
+                                                        // console.log("Found : " + num);
+                                                        var myObj = {
+                                                            id: idresult[0]['_id'],
+                                                            name: name,
+                                                            number: idresult[0]['Phone_Number'],
+                                                            image: idresult[0]['Profile_Pic'],
+                                                            createdAt: new Date()
+                                                        }
+                                                        if (!isEmpty(myObj)) {
+                                                            var dataArray = dbo.collection(match).find(
+                                                                {
+                                                                    id: new ObjectId(idresult[0]['_id'])
+                                                                }).toArray()
+                                                            dataArray.then((result) => {
+                                                                if (!isEmpty(result)) {
+                                                                    console.log(result);
+                                                                    res.json({
+                                                                        status: "0",
+                                                                        message: "Already matched user"
+                                                                    });
+                                                                } else {
+                                                                    console.log("3")
+                                                                    dbo.collection(match).insertOne(myObj).then((result) => {
                                                                         res.json({status: "1", message: "success"});
-                                                                    }
-                                                                })
-                                                            }
+                                                                    }).catch((err) => {
+                                                                    })
+                                                                }
+                                                            }).catch((err) => {
+                                                            })
                                                         }
                                                     }
                                                 }
-                                            }).catch((err) => {
-                                                // res.json({status: "3", message: "1Internal server error"});
-                                            })
-
+                                            }
                                         }
-                                    } else {
-                                        res.json({status: "0", message: "Sorry, No Contacts found that like you...!!!"})
                                     }
+
                                 }).catch((error) => {
                                     res.json({status: "3", message: "2Internal server error"});
                                 })
@@ -604,10 +608,12 @@ client.connect((err, db) => {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
                         var number;
+                        var final_number;
                         if ((req.body.number).includes(req.body.code)) {
                             number = req.body.number;
                         } else {
                             number = req.body.code + "" + req.body.number;
+                            final_number = req.body.code + "-" + req.body.number;
                         }
 
                         var isLiked1 = false;
@@ -628,10 +634,10 @@ client.connect((err, db) => {
                                         }
                                     }
                                     if (!isLiked1) {
-                                        numberArray.push(number);
+                                        numberArray.push(final_number);
                                     }
                                 } else {
-                                    numberArray.push(number)
+                                    numberArray.push(final_number)
                                 }
                                 dbo.collection(switlover).updateOne({
                                         Auth_Token: Auth_Token,
@@ -1090,35 +1096,37 @@ client.connect((err, db) => {
                                     var numberArray = [];
                                     for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
                                         // for (var j = 0; j < (data[0]['Contact_List'][i]['number']).length; j++) {
-                                        if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                            var number;
-                                            var myObj;
-                                            if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                                number = data[0]['Contact_List'][i]['number'];
-                                            } else {
-                                                number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                            }
+                                        // if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 && data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                                        var number;
+                                        var myObj;
+                                        // if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
+                                        number = data[0]['Contact_List'][i]['number'];
+                                        // } else {
+                                        //     number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
+                                        // }
 
-                                            var myLikesArray = data[0]['Like'];
+                                        var myLikesArray = data[0]['Like'];
 
-                                            if (!isEmpty(myLikesArray)) {
-                                                for (var j = 0; j < myLikesArray.length; j++) {
-                                                    if (myLikesArray[j] == number) {
-                                                        myObj = {
-                                                            name: data[0]['Contact_List'][i]['name'],
-                                                            image: data[0]['Contact_List'][i]['image'],
-                                                            code: data[0]['Contact_List'][i]['code'],
-                                                            number: data[0]['Contact_List'][i]['number'],
-                                                            isLiked: 1
-                                                        };
-                                                        numberArray.push(myObj);
-                                                        break;
-                                                    }
+                                        if (!isEmpty(myLikesArray)) {
+                                            for (var j = 0; j < myLikesArray.length; j++) {
+                                                var num = myLikesArray[j].split("-")[1];
+                                                if (num == number) {
+                                                    myObj = {
+                                                        name: data[0]['Contact_List'][i]['name'],
+                                                        image: data[0]['Contact_List'][i]['image'],
+                                                        code: data[0]['Contact_List'][i]['code'],
+                                                        number: data[0]['Contact_List'][i]['number'],
+                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                        isLiked: 1
+                                                    };
+                                                    numberArray.push(myObj);
                                                 }
-                                            } else {
-                                                res.json({status: "1", message: "Sorry there is no likes to display"});
                                             }
+                                        } else {
+                                            res.json({status: "1", message: "Sorry there is no likes to display"});
                                         }
+                                        // }
                                         // }
                                     }
                                     res.json({status: "1", message: "Contact List", userdata: numberArray});
@@ -2577,49 +2585,50 @@ client.connect((err, db) => {
                     if (!isEmpty(data[0]['Contact_List'])) {
                         var numberArray = [];
                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                            if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 || data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
-                                var number;
-                                var myObj;
-                                if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                    number = data[0]['Contact_List'][i]['number'];
-                                } else {
-                                    number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                }
-                                var isRemovedByAdmin;
-                                var counter = 0;
-                                var isRemovedByUser;
-                                var myLikesArray = data[0]['Like'];
-                                if (!isEmpty(myLikesArray)) {
-                                    for (var j = 0; j < myLikesArray.length; j++) {
-                                        if (myLikesArray[j].length < 15) {
-                                            counter = counter + 1;
-                                            if (myLikesArray[j] == number) {
+                            // if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 || data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
+                            var number;
+                            var myObj;
+                            if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
+                                number = data[0]['Contact_List'][i]['number'];
+                            } else {
+                                number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
+                            }
+                            console.log(number)
+                            var isRemovedByAdmin;
+                            var counter = 0;
+                            var isRemovedByUser;
+                            var myLikesArray = data[0]['Like'];
+                            if (!isEmpty(myLikesArray)) {
+                                for (var j = 0; j < myLikesArray.length; j++) {
+                                    if (myLikesArray[j].length < 15) {
+                                        counter = counter + 1;
+                                        if (myLikesArray[j] == number) {
 
-                                                if (data[0]["Contact_List"][i]["isRemovedByAdmin"] == 0) {
-                                                    isRemovedByAdmin = "No";
-                                                } else {
-                                                    isRemovedByAdmin = "Yes";
-                                                }
-                                                if (data[0]["Contact_List"][i]["isRemovedByUser"] == 0) {
-                                                    isRemovedByUser = "No";
-                                                } else {
-                                                    isRemovedByUser = "Yes";
-                                                }
-                                                myObj = [
-                                                    counter,
-                                                    data[0]['Contact_List'][i]['code'],
-                                                    data[0]['Contact_List'][i]['number'],
-                                                    data[0]['Contact_List'][i]['name'],
-                                                    isRemovedByUser,
-                                                    isRemovedByAdmin
-                                                ];
-                                                numberArray.push(myObj);
-                                                break;
+                                            if (data[0]["Contact_List"][i]["isRemovedByAdmin"] == 0) {
+                                                isRemovedByAdmin = "No";
+                                            } else {
+                                                isRemovedByAdmin = "Yes";
                                             }
+                                            if (data[0]["Contact_List"][i]["isRemovedByUser"] == 0) {
+                                                isRemovedByUser = "No";
+                                            } else {
+                                                isRemovedByUser = "Yes";
+                                            }
+                                            myObj = [
+                                                counter,
+                                                data[0]['Contact_List'][i]['code'],
+                                                data[0]['Contact_List'][i]['number'],
+                                                data[0]['Contact_List'][i]['name'],
+                                                isRemovedByUser,
+                                                isRemovedByAdmin
+                                            ];
+                                            numberArray.push(myObj);
+                                            break;
                                         }
                                     }
                                 }
                             }
+                            // }
                         }
                         if (isEmpty(numberArray)) {
                             res.json({status: "0", message: "Sorry there is no contact to display"});
