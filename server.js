@@ -995,26 +995,26 @@ client.connect((err, db) => {
                                                             if (myLikesArray[j] == number) {
                                                                 // isLiked = true;
                                                                 myObj = {
-                                                                    c_id: data[0]['Contact_List'][i]['c_id'],
+                                                                    // c_id: data[0]['Contact_List'][i]['c_id'],
                                                                     name: data[0]['Contact_List'][i]['name'],
                                                                     image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                    code: data[0]['Contact_List'][i]['code'],
                                                                     number: data[0]['Contact_List'][i]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
                                                                     isLiked: 1
                                                                 };
                                                                 break;
                                                             } else {
                                                                 // isLiked = false;
                                                                 myObj = {
-                                                                    c_id: data[0]['Contact_List'][i]['c_id'],
+                                                                    // c_id: data[0]['Contact_List'][i]['c_id'],
                                                                     name: data[0]['Contact_List'][i]['name'],
                                                                     image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                                    code: data[0]['Contact_List'][i]['code'],
                                                                     number: data[0]['Contact_List'][i]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
                                                                     isLiked: 0
                                                                 };
                                                             }
@@ -1037,13 +1037,13 @@ client.connect((err, db) => {
                                                     // }
                                                 } else {
                                                     myObj = {
-                                                        c_id: data[0]['Contact_List'][i]['c_id'],
+                                                        // c_id: data[0]['Contact_List'][i]['c_id'],
                                                         name: data[0]['Contact_List'][i]['name'],
                                                         image: data[0]['Contact_List'][i]['image'],
-                                                        code: data[0]['Contact_List'][i]['number'][j]['code'],
+                                                        code: data[0]['Contact_List'][i]['code'],
                                                         number: data[0]['Contact_List'][i]['number'],
-                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['number'][j]['isRemovedByAdmin'],
-                                                        isRemovedByUser: data[0]['Contact_List'][i]['number'][j]['isRemovedByUser'],
+                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
                                                         isLiked: 0
                                                     };
                                                     // myObj = {
@@ -2776,7 +2776,6 @@ client.connect((err, db) => {
                 });
             });
             //--------------------------------------------------------------------------------------------------------------
-
 
         }
     }
