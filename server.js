@@ -541,7 +541,7 @@ client.connect((err, db) => {
                                     if (!isEmpty(idresult)) {
                                         if (idresult[0]['is_Block'] == 0) {
                                             var username = idresult[0]['Username'];
-                                            var name = username[username.length - 1];\
+                                            var name = username[username.length - 1];
                                             var idUserLikeArray = idresult[0]['Like'];
                                             for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
                                                 for (var j = 0; j < idUserLikeArray.length; j++) {
@@ -582,7 +582,6 @@ client.connect((err, db) => {
                                             }
                                         }
                                     }
-
                                 }).catch((error) => {
                                     res.json({status: "3", message: "2Internal server error"});
                                 })
