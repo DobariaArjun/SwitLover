@@ -476,6 +476,37 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
+            //Match prefereances
+            app.post('/api/MatchPreference',(req,res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+
+                    if(!req.body.chat || isEmpty(req))
+
+                    var dataArray = dbo.collection(switlover).find({
+                        Auth_Token: Auth_Token,
+                    }).toArray();
+                    dataArray.then((result) => {
+                        if(!isEmpty(result))
+                        {
+                            if(result[0]["is_BLock"] == 0)
+                            {
+
+                            }
+                            else{
+                                res.json({status: "7", message: "You have been blocked by Admin"})
+                            }
+                        }
+                    }).catch((err) => {
+
+                    })
+                }
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
             //Match Logic
             app.post('/api/match', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
@@ -2404,7 +2435,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             // Block particuler number from the contact list
             app.post('/api/blockNumber', (req, res) => {
-                console.log(req.body);
+                // console.log(req.body.number);
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
@@ -2412,8 +2443,10 @@ client.connect((err, db) => {
                     if (!isEmpty(result)) {
                         for (var i = 0; i < result[0]["Contact_List"].length; i++) {
                             // for (var j = 0; j < result[0]["Contact_List"][i]['number'].length; j++) {
+
                             if (result[0]["Contact_List"][i]["number"] == req.body.number) {
                                 if (result[0]["Contact_List"][i]["isRemovedByAdmin"] == 1) {
+
                                     dbo.collection(switlover).updateOne(
                                         {
                                             _id: new ObjectId(req.body.id),
@@ -2421,11 +2454,6 @@ client.connect((err, db) => {
                                         },
                                         {
                                             $set: {'Contact_List.$.isRemovedByAdmin': 0}
-                                        },
-                                        {
-                                            arrayFilters: [
-                                                {"j.number": req.body.number}
-                                            ]
                                         }
                                     ).then((result) => {
                                         if (result['result']['n'] == 1) {
@@ -2442,15 +2470,10 @@ client.connect((err, db) => {
                                     dbo.collection(switlover).updateOne(
                                         {
                                             _id: new ObjectId(req.body.id),
-                                            'Contact_List.number.number': req.body.number
+                                            'Contact_List.number': req.body.number
                                         },
                                         {
                                             $set: {'Contact_List.$.isRemovedByAdmin': 1}
-                                        },
-                                        {
-                                            arrayFilters: [
-                                                {"j.number": req.body.number}
-                                            ]
                                         }
                                     ).then((result) => {
                                         if (result['result']['n'] == 1) {
