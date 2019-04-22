@@ -370,14 +370,14 @@ client.connect((err, db) => {
                                         dataArray.then((currentUserResult) => {
                                             var userPhone_Number = currentUserResult[0]["Phone_Number"];
                                             userPhone_Number.push(myObj);
-                                            console.log(userPhone_Number);
+
                                             dbo.collection(switlover).updateOne(
                                                 {Auth_Token: Auth_Token},
                                                 {$set: {Phone_Number: userPhone_Number}})
                                                 .then((updateResult) => {
                                                     //Delete this account permenantly with notification and all that
                                                     dbo.collection(switlover).removeOne({_id: new ObjectId(result[0]["_id"])}).then((dataresult) => {
-                                                        console.log(dataresult);
+
                                                         dbo.collection(notification).removeOne({userID: new ObjectId(result[0]["_id"])}).then((data) => {
                                                             res.json({status: "1", message: "success"});
                                                         }).catch((dataerr) => {
@@ -524,6 +524,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Match Logic
             app.post('/api/match', (req, res) => {
+                var matchIDArray = [];
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -540,48 +541,72 @@ client.connect((err, db) => {
                                 numberArray.then((idresult) => {
                                     if (!isEmpty(idresult)) {
                                         if (idresult[0]['is_Block'] == 0) {
-                                            var username = idresult[0]['Username'];
-                                            var name = username[username.length - 1];
                                             var idUserLikeArray = idresult[0]['Like'];
                                             for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
                                                 for (var j = 0; j < idUserLikeArray.length; j++) {
                                                     var num = idUserLikeArray[j].split("-")[1];
                                                     if (num == result[0]['Phone_Number'][k]['Number']) {
-                                                        // console.log("Found : " + num);
-                                                        var myObj = {
-                                                            id: idresult[0]['_id'],
-                                                            name: name,
-                                                            number: idresult[0]['Phone_Number'],
-                                                            image: idresult[0]['Profile_Pic'],
-                                                            createdAt: new Date()
+                                                        var my_obj = {
+                                                            matchID: idresult[0]["_id"],
+                                                            isUsed: false
                                                         }
-                                                        if (!isEmpty(myObj)) {
-                                                            var dataArray = dbo.collection(match).find(
-                                                                {
-                                                                    id: new ObjectId(idresult[0]['_id'])
-                                                                }).toArray()
-                                                            dataArray.then((result) => {
-                                                                if (!isEmpty(result)) {
-                                                                    console.log(result);
-                                                                    res.json({
-                                                                        status: "0",
-                                                                        message: "Already matched user"
-                                                                    });
-                                                                } else {
-                                                                    console.log("3")
-                                                                    dbo.collection(match).insertOne(myObj).then((result) => {
-                                                                        res.json({status: "1", message: "success"});
-                                                                    }).catch((err) => {
-                                                                    })
-                                                                }
-                                                            }).catch((err) => {
-                                                            })
-                                                        }
+                                                        matchIDArray.push(my_obj);
                                                     }
                                                 }
                                             }
                                         }
                                     }
+                                    var dataA = dbo.collection(match).find({}).toArray();
+                                    dataA.then((resu) => {
+                                        if (!isEmpty(resu)) {
+                                            var dataArray = dbo.collection(match).find(
+                                                {
+                                                    currentUserID: new ObjectId(result[0]['_id'])
+                                                }).toArray();
+                                            dataArray.then((result1) => {
+                                                if (!isEmpty(result1)) {
+                                                    dbo.collection(match).updateOne(
+                                                        {currentUserID: new ObjectId(result[0]['_id'])},
+                                                        {$set: {matchUser: matchIDArray}}
+                                                    ).then((resu) => {
+                                                        if (resu['result']['n'] == 1) {
+                                                            //success
+                                                            console.log("update success")
+                                                        } else {
+                                                            //already up to date
+                                                            console.log("already up to date")
+                                                        }
+                                                    }).catch((err) => {
+
+                                                    });
+                                                } else {
+                                                    var myObj = {
+                                                        currentUserID: result[0]['_id'],
+                                                        matchUser: matchIDArray,
+                                                        createdAt: new Date()
+                                                    }
+                                                    dbo.collection(match).insertOne(myObj).then((result) => {
+                                                        console.log("new success")
+                                                    }).catch((err) => {
+                                                    })
+                                                }
+                                            }).catch((err) => {
+                                            })
+                                        } else {
+                                            var myObj = {
+                                                currentUserID: result[0]['_id'],
+                                                matchUser: matchIDArray,
+                                                createdAt: new Date()
+                                            }
+                                            dbo.collection(match).insertOne(myObj).then((result) => {
+                                                console.log("ekdum new success")
+                                            }).catch((err) => {
+                                            })
+                                        }
+                                    }).catch((err) => {
+
+                                    })
+
                                 }).catch((error) => {
                                     res.json({status: "3", message: "2Internal server error"});
                                 })
@@ -1206,9 +1231,6 @@ client.connect((err, db) => {
                             } else {
                                 if (result[0]["is_Block"] == 0) {
                                     var currentEmail = result[0]['Email']['EmailAddress'];
-                                    console.log(currentEmail);
-
-
                                     var UsernameArray = [];
                                     UsernameArray = result[0]['Username'];
 
@@ -1352,7 +1374,7 @@ client.connect((err, db) => {
                                             {
                                                 $set: {Username: UsernameArray, updatedAt: new Date()}
                                             }).then((data) => {
-                                            console.log(data);
+
                                             if (data['result']['n'] == 1) {
                                                 res.json({status: "1", message: "Profile updated successfully"});
                                             } else {
@@ -1658,7 +1680,7 @@ client.connect((err, db) => {
                                             {
                                                 $set: {Username: UsernameArray, updatedAt: new Date()}
                                             }).then((data) => {
-                                            console.log(data);
+
                                             if (data['result']['n'] == 1) {
                                                 res.json({status: "1", message: "Profile updated successfully"});
                                             } else {
@@ -2009,13 +2031,13 @@ client.connect((err, db) => {
                     subject: "Please confirm your Email account",
                     html: "Hello,<br> Please Click on the link to verify your email.<br><a href=" + link + ">Click here to verify</a>"
                 }
-                console.log(mailOptions);
+
                 smtpTransport.sendMail(mailOptions, function (error, response) {
                     if (error) {
-                        console.log(error);
+
                         res.end("error" + error);
                     } else {
-                        console.log("Message sent: " + response);
+
                         res.end("sent" + response);
                     }
                 });
@@ -2025,11 +2047,11 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Email Verification
             app.get('/verify', (req, res) => {
-                console.log(req.protocol + ":/" + req.get('host'));
+
                 if ((req.protocol + "://" + req.get('host')) == ("http://" + host)) {
-                    console.log("Domain is matched. Information is from Authentic email");
+
                     if (req.query.id == rand) {
-                        console.log("email is verified");
+
                         res.end("<h1>Email " + mailOptions.to + " is been Successfully verified");
                         dbo.collection(switlover).updateOne(
                             {
@@ -2301,8 +2323,6 @@ client.connect((err, db) => {
                             ];
                             dataArray1.push(data);
                         }
-
-                        console.log(dataArray1)
                         res.json({
                             data: dataArray1
                         });
@@ -2389,7 +2409,6 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Block Full User
             app.post('/api/block_unblock', (req, res) => {
-                console.log(req.body)
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
@@ -2442,7 +2461,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             // Block particuler number from the contact list
             app.post('/api/blockNumber', (req, res) => {
-                // console.log(req.body.number);
+
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
                 }).toArray();
@@ -2584,7 +2603,6 @@ client.connect((err, db) => {
                     if (!isEmpty(data[0]['Contact_List'])) {
                         var numberArray = [];
                         for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
-                            // if (data[0]['Contact_List'][i]['isRemovedByAdmin'] == 0 || data[0]['Contact_List'][i]['isRemovedByUser'] == 0) {
                             var number;
                             var myObj;
                             if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
@@ -2592,17 +2610,18 @@ client.connect((err, db) => {
                             } else {
                                 number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
                             }
-                            console.log(number)
                             var isRemovedByAdmin;
                             var counter = 0;
                             var isRemovedByUser;
                             var myLikesArray = data[0]['Like'];
                             if (!isEmpty(myLikesArray)) {
                                 for (var j = 0; j < myLikesArray.length; j++) {
-                                    if (myLikesArray[j].length < 15) {
+                                    var numb = myLikesArray[j].split("-")[1];
+                                    var code = myLikesArray[j].split("-")[0];
+                                    var num = code + "" + numb;
+                                    if (num.length < 15) {
                                         counter = counter + 1;
-                                        if (myLikesArray[j] == number) {
-
+                                        if (num == number) {
                                             if (data[0]["Contact_List"][i]["isRemovedByAdmin"] == 0) {
                                                 isRemovedByAdmin = "No";
                                             } else {
@@ -2627,7 +2646,6 @@ client.connect((err, db) => {
                                     }
                                 }
                             }
-                            // }
                         }
                         if (isEmpty(numberArray)) {
                             res.json({status: "0", message: "Sorry there is no contact to display"});
@@ -2662,11 +2680,11 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Set Notification Settings
             app.post('/api/SetNotificationadmin', (req, res) => {
-                console.log(req.body);
+
                 var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
                 dataNotification.then((result) => {
                     if (isEmpty(result)) {
-                        console.log(result);
+
                         //         var myObj = {
                         //             userID: new ObjectId(req.body.data["userID"]),
                         //             matcheek: {
@@ -2711,7 +2729,7 @@ client.connect((err, db) => {
                         //             }
                         //         });
                     } else {
-                        console.log(result);
+
                         //         dbo.collection(notification).updateOne(
                         //             {
                         //                 userID: new ObjectId(req.body.data["userID"])
