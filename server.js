@@ -1069,7 +1069,8 @@ client.connect((err, db) => {
                                         if (!isEmpty(myLikesArray)) {
                                             for (var j = 0; j < myLikesArray.length; j++) {
                                                 if (myLikesArray[j].length < 15) {
-                                                    if (myLikesArray[j] == number) {
+                                                    var numbe = existingLikes[j].split("-")[1];
+                                                    if (numbe == number) {
                                                         myObj = {
                                                             name: data[0]['Contact_List'][i]['name'],
                                                             image: data[0]['Contact_List'][i]['image'],
