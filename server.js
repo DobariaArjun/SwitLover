@@ -530,93 +530,116 @@ client.connect((err, db) => {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
                     var dataArray = dbo.collection(switlover).find({
-                        Auth_Token: Auth_Token,
-                    }).toArray()
-                    dataArray.then((result) => {
-                        if (result[0]["is_Block"] == 0) {
-                            var likeArraybyMe = result[0]['Like'];
-                            for (var i = 0; i < likeArraybyMe.length; i++) {
-                                var number = likeArraybyMe[i].split("-")[1];
-                                var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': number}).toArray()
-                                numberArray.then((idresult) => {
-                                    if (!isEmpty(idresult)) {
-                                        if (idresult[0]['is_Block'] == 0) {
-                                            var idUserLikeArray = idresult[0]['Like'];
-                                            for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
-                                                for (var j = 0; j < idUserLikeArray.length; j++) {
-                                                    var num = idUserLikeArray[j].split("-")[1];
-                                                    if (num == result[0]['Phone_Number'][k]['Number']) {
-                                                        var my_obj = {
-                                                            matchID: idresult[0]["_id"],
-                                                            isUsed: false
+                        // Auth_Token: Auth_Token,
+                    }).toArray((errresult, result) => {
+                        for (var a = 0; a < result.length; a++) {
+                            if (result[a]["is_Block"] == 0) {
+                                var likeArraybyMe = result[a]['Like'];
+                                for (var i = 0; i < likeArraybyMe.length; i++) {
+                                    var number = likeArraybyMe[i].split("-")[1];
+                                    var numberArray = dbo.collection(switlover).find({'Phone_Number.Number': number}).toArray((iderr, idresult) => {
+                                        if (!isEmpty(idresult)) {
+                                            if (idresult[0]['is_Block'] == 0) {
+                                                var idUserLikeArray = idresult[0]['Like'];
+                                                for (var k = 0; k < result[a]['Phone_Number'].length; k++) {
+                                                    for (var j = 0; j < idUserLikeArray.length; j++) {
+                                                        var num = idUserLikeArray[j].split("-")[1];
+                                                        if (num == result[a]['Phone_Number'][k]['Number']) {
+                                                            var my_obj = {
+                                                                matchID: idresult[0]["_id"],
+                                                                isUsed: false
+                                                            }
+                                                            matchIDArray.push(my_obj);
+                                                            // console.log(matchIDArray)
+                                                            var dataA = dbo.collection(match).find({}).toArray((errresu, resul) => {
+                                                                if (!isEmpty(resul)) {
+                                                                    var dataArray = dbo.collection(match).find(
+                                                                        {
+                                                                            currentUserID: new ObjectId(result[a]['_id'])
+                                                                        }).toArray((result1err, result1) => {
+                                                                        if (!isEmpty(result1)) {
+                                                                            console.log(matchIDArray)
+                                                                            dbo.collection(match).updateOne(
+                                                                                {currentUserID: new ObjectId(result[a]['_id'])},
+                                                                                {$set: {matchUser: matchIDArray}}
+                                                                            ).then((resu) => {
+                                                                                if (resu['result']['n'] == 1) {
+                                                                                    //success
+                                                                                    console.log("update success")
+                                                                                } else {
+                                                                                    //already up to date
+                                                                                    console.log("already up to date")
+                                                                                }
+                                                                            }).catch((err) => {
+
+                                                                            });
+                                                                        } else {
+                                                                            console.log(matchIDArray)
+                                                                            var myObj = {
+                                                                                currentUserID: result[a]['_id'],
+                                                                                matchUser: matchIDArray,
+                                                                                createdAt: new Date()
+                                                                            }
+                                                                            dbo.collection(match).insertOne(myObj).then((result) => {
+                                                                                console.log("new success")
+                                                                            }).catch((err) => {
+                                                                            })
+                                                                        }
+                                                                    });
+                                                                    // dataArray.then((result1) => {
+                                                                    // }).catch((err) => {
+                                                                    // })
+                                                                } else {
+                                                                    console.log(matchIDArray)
+                                                                    var myObj = {
+                                                                        currentUserID: result[a]['_id'],
+                                                                        matchUser: matchIDArray,
+                                                                        createdAt: new Date()
+                                                                    }
+                                                                    dbo.collection(match).insertOne(myObj).then((result) => {
+                                                                        console.log("ekdum new success")
+                                                                    }).catch((err) => {
+                                                                    })
+                                                                }
+                                                            });
+                                                            // dataA.then((resu) => {
+                                                            // }).catch((err) => {
+                                                            //
+                                                            // })
                                                         }
-                                                        matchIDArray.push(my_obj);
                                                     }
                                                 }
                                             }
                                         }
-                                    }
-                                    var dataA = dbo.collection(match).find({}).toArray();
-                                    dataA.then((resu) => {
-                                        if (!isEmpty(resu)) {
-                                            var dataArray = dbo.collection(match).find(
-                                                {
-                                                    currentUserID: new ObjectId(result[0]['_id'])
-                                                }).toArray();
-                                            dataArray.then((result1) => {
-                                                if (!isEmpty(result1)) {
-                                                    dbo.collection(match).updateOne(
-                                                        {currentUserID: new ObjectId(result[0]['_id'])},
-                                                        {$set: {matchUser: matchIDArray}}
-                                                    ).then((resu) => {
-                                                        if (resu['result']['n'] == 1) {
-                                                            //success
-                                                            console.log("update success")
-                                                        } else {
-                                                            //already up to date
-                                                            console.log("already up to date")
-                                                        }
-                                                    }).catch((err) => {
-
-                                                    });
-                                                } else {
-                                                    var myObj = {
-                                                        currentUserID: result[0]['_id'],
-                                                        matchUser: matchIDArray,
-                                                        createdAt: new Date()
-                                                    }
-                                                    dbo.collection(match).insertOne(myObj).then((result) => {
-                                                        console.log("new success")
-                                                    }).catch((err) => {
-                                                    })
-                                                }
-                                            }).catch((err) => {
-                                            })
-                                        } else {
-                                            var myObj = {
-                                                currentUserID: result[0]['_id'],
-                                                matchUser: matchIDArray,
-                                                createdAt: new Date()
-                                            }
-                                            dbo.collection(match).insertOne(myObj).then((result) => {
-                                                console.log("ekdum new success")
-                                            }).catch((err) => {
-                                            })
-                                        }
-                                    }).catch((err) => {
-
                                     })
-
-                                }).catch((error) => {
-                                    res.json({status: "3", message: "2Internal server error"});
-                                })
+                                    // numberArray.then((idresult) => {
+                                    //
+                                    // }).catch((error) => {
+                                    //     res.json({status: "3", message: "2Internal server error" + error});
+                                    // })
+                                }
+                            } else {
+                                res.json({status: "7", message: "You have been blocked by Admin"})
                             }
-                        } else {
-                            res.json({status: "7", message: "You have been blocked by Admin"})
                         }
-                    }).catch((err) => {
-                        res.json({status: "3", message: "3Internal server error"});
                     })
+                    // dataArray.then((result) => {
+                    //
+                    // }).catch((err) => {
+                    //     res.json({status: "3", message: "3Internal server error"});
+                    // })
+                }
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Get Match
+            app.post('/api/getMatch', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+
                 }
             })
             //--------------------------------------------------------------------------------------------------------------
@@ -651,7 +674,8 @@ client.connect((err, db) => {
                                 existingLikes = dataresult[0]['Like'];
                                 if (!isEmpty(existingLikes)) {
                                     for (var j = 0; j < existingLikes.length; j++) {
-                                        if (existingLikes[j] == number) {
+                                        var numbe = existingLikes[j].split("-")[1];
+                                        if (numbe == number) {
                                             isLiked1 = true;
                                         } else {
                                             numberArray.push(existingLikes[j])
