@@ -29,6 +29,7 @@
     "nodemailer": "^5.1.1",
     "nodemon": "^1.18.11",
     "promise": "^8.0.3",
-    "rand-token": "^0.4.0"
+    "rand-token": "^0.4.0",
+    "request": "^2.88.0"
   }
 }
