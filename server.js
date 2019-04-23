@@ -537,7 +537,7 @@ client.connect((err, db) => {
                                 var likeArraybyMe = result[a]['Like'];
                                 for (var i = 0; i < likeArraybyMe.length; i++) {
                                     var number = likeArraybyMe[i].split("-")[1];
-                                    findNumberInSwitLover(number, a, matchIDArray,result);
+                                    findNumberInSwitLover(number, a, matchIDArray, result);
                                 }
                             } else {
                                 res.json({status: "7", message: "You have been blocked by Admin"})
@@ -1069,11 +1069,11 @@ client.connect((err, db) => {
                                     for (var i = 0; i < (data[0]['Contact_List']).length; i++) {
                                         var number;
                                         var myObj;
-                                        if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
-                                            number = data[0]['Contact_List'][i]['number'];
-                                        } else {
-                                            number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
-                                        }
+                                        // if ((data[0]['Contact_List'][i]['number']).includes(data[0]['Contact_List'][i]['code'])) {
+                                        number = data[0]['Contact_List'][i]['number'];
+                                        // } else {
+                                        //     number = data[0]['Contact_List'][i]['code'] + "" + data[0]['Contact_List'][i]['number'];
+                                        // }
                                         var myLikesArray = data[0]['Like'];
                                         if (!isEmpty(myLikesArray)) {
                                             for (var j = 0; j < myLikesArray.length; j++) {
