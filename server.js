@@ -447,34 +447,40 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
-                    var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
-                    dataArray.then((result) => {
-                        if (!isEmpty(result)) {
-                            if (result[0]["is_Deleted"] == 1) {
-                                res.json({status: "0", message: "User is already deleted"});
-                            } else {
-                                dbo.collection(switlover).updateOne(
-                                    {Auth_Token: Auth_Token},
-                                    {$set: {is_Deleted: 1, updatedAt: new Date()}}
-                                ).then((updateresult) => {
-                                    if (updateresult['result']['n'] == 1) {
-                                        var updateData = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
-                                        updateData.then((updateDataResult) => {
-                                            res.json({status: "1", message: "success"});
-                                        }).catch((updateDateErr) => {
-                                            res.json({status: "0", message: "err" + updateDateErr})
-                                        })
-                                    } else {
-                                        res.json({status: "0", message: "err"})
-                                    }
-                                }).catch((updateerr) => {
-                                    res.json({status: "0", message: "err" + updateerr})
-                                })
+                    if(!req.body.reason || !isEmpty(req.body.reason))
+                    {
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
+                    }
+                    else{
+                        var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                        dataArray.then((result) => {
+                            if (!isEmpty(result)) {
+                                if (result[0]["is_Deleted"] == 1) {
+                                    res.json({status: "0", message: "User is already deleted"});
+                                } else {
+                                    dbo.collection(switlover).updateOne(
+                                        {Auth_Token: Auth_Token},
+                                        {$set: {is_Deleted: 1, Delete_Reason: req.body.reason, updatedAt: new Date()}}
+                                    ).then((updateresult) => {
+                                        if (updateresult['result']['n'] == 1) {
+                                            var updateData = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
+                                            updateData.then((updateDataResult) => {
+                                                res.json({status: "1", message: "success"});
+                                            }).catch((updateDateErr) => {
+                                                res.json({status: "0", message: "err" + updateDateErr})
+                                            })
+                                        } else {
+                                            res.json({status: "0", message: "err"})
+                                        }
+                                    }).catch((updateerr) => {
+                                        res.json({status: "0", message: "err" + updateerr})
+                                    })
+                                }
                             }
-                        }
-                    }).catch((err) => {
+                        }).catch((err) => {
 
-                    })
+                        })
+                    }
                 }
             })
             //--------------------------------------------------------------------------------------------------------------
@@ -826,6 +832,7 @@ client.connect((err, db) => {
                                                     delete finalresult[0].updatedAt;
                                                     delete finalresult[0].deletedAt;
                                                     delete finalresult[0].is_Online;
+                                                    delete finalresult[0].Delete_Reason;
                                                     res.json({
                                                         status: "1",
                                                         message: "User is available",
@@ -866,6 +873,7 @@ client.connect((err, db) => {
                                     },
                                     Not_In_App_Purchase: 0,
                                     PowerID: {Power_Of_Match: 0, Power_Of_Time: 0, Golden_Power: 0},
+                                    Delete_Reason: "",
                                     language: "en",
                                     Device: 0,
                                     is_Deleted: 0,
