@@ -41,6 +41,11 @@ var switlover = "switlover";
 var notification = "notification";
 var match = "match";
 var AllUserArray = [];
+var CounterVariableForAllUserArray = 0;
+var CounterVariableForLikeArray = 0;
+var CounterVariableForFindNumber = 0;
+var CounterVariableForNumber = 0;
+var CounterVariableForLikeNumber = 0;
 //--------------------------------------------------------------------------------------------------------------
 
 
@@ -529,128 +534,115 @@ client.connect((err, db) => {
 
             //--------------------------------------------------------------------------------------------------------------
             //Match Logic
-
             app.post('/api/match', (req, res) => {
-                var matchIDArray = [];
-                var dataArray = dbo.collection(switlover).find({
-                    _id: new ObjectId(req.body.id),
-                }).toArray((errresult, result) => {
-                    if (result[0]["is_Block"] == 0) {
-                        var likeArraybyMe = result[0]['Like'];
-                        if (!isEmpty(likeArraybyMe)) {
-                            for (var i = 0; i < likeArraybyMe.length; i++) {
-                                var number = likeArraybyMe[i].split("-")[1];
-                                dbo.collection(switlover).find({'Phone_Number.Number': number}).toArray((iderr, idresult) => {
-                                    if (!isEmpty(idresult)) {
-                                        if (idresult[0]['is_Block'] == 0) {
-                                            var idUserLikeArray = idresult[0]['Like'];
-                                            if (!isEmpty(idUserLikeArray)) {
-                                                for (var k = 0; k < result[0]['Phone_Number'].length; k++) {
-                                                    for (var j = 0; j < idUserLikeArray.length; j++) {
-                                                        var num = idUserLikeArray[j].split("-")[1];
-                                                        if (num == result[0]['Phone_Number'][k]['Number']) {
-                                                            var my_obj = {
-                                                                matchID: idresult[0]["_id"],
-                                                                isUsed: false
+                var myArray = [];
+                var finalArray;
+                dbo.collection(switlover).find({
+                    _id: new ObjectId(req.body.userID)
+                }).toArray((error, AllUserArray) => {
+                    if (!isEmpty(AllUserArray)) {
+                        if (AllUserArray[0]["is_Block"] == 0) {
+                            var myNumber = AllUserArray[0]['Phone_Number'];
+                            var likeByMeArray = AllUserArray[0]['Like'];
+                            if (!isEmpty(likeByMeArray)) {
+                                for (var i = 0; i < likeByMeArray.length; i++) {
+                                    var num = likeByMeArray[i].split("-")[1]
+                                    dbo.collection(switlover).find({'Phone_Number.Number': num}).toArray((err, result) => {
+                                        if (err) console.log(err)
+                                        else {
+                                            if (!isEmpty(result)) {
+                                                if (result[0]["is_Block"] == 0) {
+                                                    var likeByHim = result[0]['Like']
+                                                    if (!isEmpty(likeByHim)) {
+                                                        for (var j = 0; j < likeByHim.length; j++) {
+                                                            var numb = likeByHim[j].split("-")[1]
+                                                            for (var k = 0; k < myNumber.length; k++) {
+                                                                if (myNumber[k]['Number'] == numb) {
+                                                                    var myObj = {
+                                                                        matchUserID: result[0]['_id'],
+                                                                        isUsed: false
+                                                                    }
+                                                                    myArray.push(myObj)
+                                                                }
                                                             }
-                                                            matchIDArray.push(my_obj);
-                                                            console.log(matchIDArray)
                                                         }
                                                     }
                                                 }
                                             }
                                         }
+                                    })
+                                }
+                                setTimeout(function () {
+                                    console.log(myArray)
+                                    if(!isEmpty(myArray))
+                                    {
+                                        if(myArray.length > 1)
+                                        {
+                                            for(var a = 0; a < myArray.length; a++)
+                                            {
+                                                for(var b = myArray.length - 1; b >= 0; b--)
+                                                {
+                                                    if(myArray[a]['matchUserID'].equals(myArray[b]['matchUserID']))
+                                                    {
+                                                        console.log("True")
+                                                        console.log(myArray[a]['matchUserID'])
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                })
+                                    // var dataA = dbo.collection(match).find({}).toArray((errresu, resul) => {
+                                    //     if (!isEmpty(resul)) {
+                                    //         var dataArray = dbo.collection(match).find(
+                                    //             {
+                                    //                 currentUserID: new ObjectId(AllUserArray[0]['_id'])
+                                    //             }).toArray((result1err, result1) => {
+                                    //             if (!isEmpty(result1)) {
+                                    //                 dbo.collection(match).updateOne(
+                                    //                     {currentUserID: new ObjectId(AllUserArray[0]['_id'])},
+                                    //                     {$set: {matchUser: myArray}}
+                                    //                 ).then((resu) => {
+                                    //                     if (resu['result']['n'] == 1) {
+                                    //                         //success
+                                    //                         console.log("update success")
+                                    //                     } else {
+                                    //                         //already up to date
+                                    //                         console.log("already up to date")
+                                    //                     }
+                                    //                 }).catch((err) => {
+                                    //
+                                    //                 });
+                                    //             } else {
+                                    //                 console.log(matchIDArray)
+                                    //                 var myObj = {
+                                    //                     currentUserID: AllUserArray[0]['_id'],
+                                    //                     matchUser: myArray,
+                                    //                     createdAt: new Date()
+                                    //                 }
+                                    //                 dbo.collection(match).insertOne(myObj).then((result) => {
+                                    //                     console.log("new success")
+                                    //                 }).catch((err) => {
+                                    //                 })
+                                    //             }
+                                    //         });
+                                    //     } else {
+                                    //         var myObj = {
+                                    //             currentUserID: AllUserArray[0]['_id'],
+                                    //             matchUser: myArray,
+                                    //             createdAt: new Date()
+                                    //         }
+                                    //         dbo.collection(match).insertOne(myObj).then((result) => {
+                                    //             console.log("ekdum new success")
+                                    //         }).catch((err) => {
+                                    //         })
+                                    //     }
+                                    // });
+                                }, 5000);
                             }
                         }
                     }
                 })
             });
-
-            // function findNumberInSwitLover(number, a, matchIDArray, result) {
-            //
-            //     dbo.collection(switlover).find({'Phone_Number.Number': number}).toArray((iderr, idresult) => {
-            //         if (!isEmpty(idresult)) {
-            //             var matchIDArray = [];
-            //             if (idresult[0]['is_Block'] == 0) {
-            //                 var idUserLikeArray = idresult[0]['Like'];
-            //                 if (!isEmpty(idUserLikeArray)) {
-            //                     for (var k = 0; k < result[a]['Phone_Number'].length; k++) {
-            //                         for (var j = 0; j < idUserLikeArray.length; j++) {
-            //                             var num = idUserLikeArray[j].split("-")[1];
-            //                             if (num == result[a]['Phone_Number'][k]['Number']) {
-            //                                 var my_obj = {
-            //                                     matchID: idresult[0]["_id"],
-            //                                     isUsed: false
-            //                                 }
-            //                                 matchIDArray.push(my_obj);
-            //
-            //                                 findInMatch(a, matchIDArray, result)
-            //                             }
-            //                         }
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     })
-            // }
-            //
-            // function findInMatch(a, matchIDArray, result) {
-            //     var dataA = dbo.collection(match).find({}).toArray((errresu, resul) => {
-            //         if (!isEmpty(resul)) {
-            //             particulerIdFindInMatch(a, matchIDArray, result)
-            //         } else {
-            //             console.log(matchIDArray)
-            //             var myObj = {
-            //                 currentUserID: result[a]['_id'],
-            //                 matchUser: matchIDArray,
-            //                 createdAt: new Date()
-            //             }
-            //             dbo.collection(match).insertOne(myObj).then((result) => {
-            //                 console.log("ekdum new success")
-            //             }).catch((err) => {
-            //             })
-            //         }
-            //     });
-            // }
-            //
-            // function particulerIdFindInMatch(a, matchIDArray, result) {
-            //     var dataArray = dbo.collection(match).find(
-            //         {
-            //             currentUserID: new ObjectId(result[a]['_id'])
-            //         }).toArray((result1err, result1) => {
-            //         if (!isEmpty(result1)) {
-            //             console.log(matchIDArray)
-            //             dbo.collection(match).updateOne(
-            //                 {currentUserID: new ObjectId(result[a]['_id'])},
-            //                 {$set: {matchUser: matchIDArray}}
-            //             ).then((resu) => {
-            //                 if (resu['result']['n'] == 1) {
-            //                     //success
-            //                     console.log("update success")
-            //                 } else {
-            //                     //already up to date
-            //                     console.log("already up to date")
-            //                 }
-            //             }).catch((err) => {
-            //
-            //             });
-            //         } else {
-            //             console.log(matchIDArray)
-            //             var myObj = {
-            //                 currentUserID: result[a]['_id'],
-            //                 matchUser: matchIDArray,
-            //                 createdAt: new Date()
-            //             }
-            //             dbo.collection(match).insertOne(myObj).then((result) => {
-            //                 console.log("new success")
-            //             }).catch((err) => {
-            //             })
-            //         }
-            //     });
-            // }
-
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
