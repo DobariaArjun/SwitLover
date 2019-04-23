@@ -568,23 +568,6 @@ client.connect((err, db) => {
                                 }
                                 setTimeout(function () {
                                     console.log(myArray)
-                                    if(!isEmpty(myArray))
-                                    {
-                                        if(myArray.length > 1)
-                                        {
-                                            for(var a = 0; a < myArray.length; a++)
-                                            {
-                                                for(var b = myArray.length - 1; b >= 0; b--)
-                                                {
-                                                    if(myArray[a]['matchUserID'].equals(myArray[b]['matchUserID']))
-                                                    {
-                                                        console.log("True")
-                                                        console.log(myArray[a]['matchUserID'])
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
                                     // var dataA = dbo.collection(match).find({}).toArray((errresu, resul) => {
                                     //     if (!isEmpty(resul)) {
                                     //         var dataArray = dbo.collection(match).find(
