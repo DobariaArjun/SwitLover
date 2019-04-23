@@ -40,12 +40,6 @@ var counter = "counters";
 var switlover = "switlover";
 var notification = "notification";
 var match = "match";
-var AllUserArray = [];
-var CounterVariableForAllUserArray = 0;
-var CounterVariableForLikeArray = 0;
-var CounterVariableForFindNumber = 0;
-var CounterVariableForNumber = 0;
-var CounterVariableForLikeNumber = 0;
 //--------------------------------------------------------------------------------------------------------------
 
 
