@@ -494,7 +494,7 @@ client.connect((err, db) => {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
                     if (!req.body || isEmpty(req.body)) {
-
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
                         var dataArray = dbo.collection(switlover).find({
                             Auth_Token: Auth_Token,
@@ -645,7 +645,7 @@ client.connect((err, db) => {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
                     if (!req.body.userID || isEmpty(req.body.userID)) {
-                        return res.send("No hale")
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
                         dbo.collection(match).find({currentUserID: new ObjectId(req.body.userID)}).toArray((err, result) => {
                             if (err) return res.send("Error")
@@ -669,13 +669,11 @@ client.connect((err, db) => {
                                                 if (err3) return res.send("Error")
                                                 if (!isEmpty(result3)) {
                                                     if (result3[0]["is_Block"] == 0) {
-                                                        var randomNumbers = randomNumber(result3[0]['Like'],result[0]);
+                                                        var randomNumbers = randomNumber(result3[0]['Like'], result[0]);
                                                         if (!isEmpty(randomNumbers)) {
 
                                                             var numb0 = randomNumbers[0].split("-")[1]
                                                             var numb1 = randomNumbers[1].split("-")[1]
-                                                            console.log(numb0)
-                                                            console.log(numb1)
                                                             dbo.collection(switlover).find({"Phone_Number.Number": numb0}).toArray((err2, result2) => {
                                                                 if (err2) return res.send("Error")
                                                                 if (!isEmpty(result2)) {
@@ -711,54 +709,49 @@ client.connect((err, db) => {
                                                             })
 
                                                             setTimeout(function () {
-                                                                res.send(arrTempMatch)
+                                                                res.json({
+                                                                    status: "1",
+                                                                    message: "Success",
+                                                                    user_data: arrTempMatch
+                                                                });
                                                             }, 7000);
-
                                                         }
-
-
-                                                    } else {
-                                                        //Block user
                                                     }
                                                 }
                                             });
-                                        } else {
-                                            //Block user
                                         }
                                     }
                                 })
                             } else {
-                                return res.send("No Match found yet")
+                                res.json({status: "0", message: "No match found yet"})
                             }
                         })
                     }
                 }
             });
 
-
-            function randomNumber(array,arr1) {
+            function randomNumber(array, arr1) {
                 var item = array[Math.floor(Math.random() * array.length)];
                 var num = item.split("-")[1]
                 for (var k = 0; k < arr1["matchUser"].length; k++) {
                     for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
                         if (num == arr1["matchUser"][k]["number"][l]['Number']) {
                             isMatch = true
-                            randomNumber(array,arr1)
+                            randomNumber(array, arr1)
                         } else {
                             isMatch = false
                         }
                     }
                 }
-                if(!isMatch)
-                {
+                if (!isMatch) {
                     if (isEmpty(tempNumberArray)) {
                         tempNumberArray.push(item);
-                        randomNumber(array,arr1);
+                        randomNumber(array, arr1);
                     } else {
                         if (tempNumberArray[0] != item) {
                             tempNumberArray.push(item);
                         } else {
-                            randomNumber(array,arr1);
+                            randomNumber(array, arr1);
                         }
                     }
                 }
