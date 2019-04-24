@@ -40,6 +40,8 @@ var counter = "counters";
 var switlover = "switlover";
 var notification = "notification";
 var match = "match";
+var tempNumberArray = [];
+var isMatch = false;
 //--------------------------------------------------------------------------------------------------------------
 
 
@@ -530,7 +532,6 @@ client.connect((err, db) => {
             //Match Logic
             app.post('/api/match', (req, res) => {
                 var myArray = [];
-                var finalArray;
                 dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.userID)
                 }).toArray((error, AllUserArray) => {
@@ -554,6 +555,7 @@ client.connect((err, db) => {
                                                                 if (myNumber[k]['Number'] == numb) {
                                                                     var myObj = {
                                                                         matchUserID: result[0]['_id'],
+                                                                        number: result[0]['Phone_Number'],
                                                                         isUsed: false
                                                                     }
                                                                     myArray.push(myObj)
@@ -567,53 +569,64 @@ client.connect((err, db) => {
                                     })
                                 }
                                 setTimeout(function () {
-                                    console.log(myArray)
-                                    // var dataA = dbo.collection(match).find({}).toArray((errresu, resul) => {
-                                    //     if (!isEmpty(resul)) {
-                                    //         var dataArray = dbo.collection(match).find(
-                                    //             {
-                                    //                 currentUserID: new ObjectId(AllUserArray[0]['_id'])
-                                    //             }).toArray((result1err, result1) => {
-                                    //             if (!isEmpty(result1)) {
-                                    //                 dbo.collection(match).updateOne(
-                                    //                     {currentUserID: new ObjectId(AllUserArray[0]['_id'])},
-                                    //                     {$set: {matchUser: myArray}}
-                                    //                 ).then((resu) => {
-                                    //                     if (resu['result']['n'] == 1) {
-                                    //                         //success
-                                    //                         console.log("update success")
-                                    //                     } else {
-                                    //                         //already up to date
-                                    //                         console.log("already up to date")
-                                    //                     }
-                                    //                 }).catch((err) => {
-                                    //
-                                    //                 });
-                                    //             } else {
-                                    //                 console.log(matchIDArray)
-                                    //                 var myObj = {
-                                    //                     currentUserID: AllUserArray[0]['_id'],
-                                    //                     matchUser: myArray,
-                                    //                     createdAt: new Date()
-                                    //                 }
-                                    //                 dbo.collection(match).insertOne(myObj).then((result) => {
-                                    //                     console.log("new success")
-                                    //                 }).catch((err) => {
-                                    //                 })
-                                    //             }
-                                    //         });
-                                    //     } else {
-                                    //         var myObj = {
-                                    //             currentUserID: AllUserArray[0]['_id'],
-                                    //             matchUser: myArray,
-                                    //             createdAt: new Date()
-                                    //         }
-                                    //         dbo.collection(match).insertOne(myObj).then((result) => {
-                                    //             console.log("ekdum new success")
-                                    //         }).catch((err) => {
-                                    //         })
-                                    //     }
-                                    // });
+                                    var arr = myArray;
+                                    var tempAray = myArray
+                                    for (var z = 0; z < tempAray.length; z++) {
+                                        for (var y = 0; y < myArray.length; y++) {
+                                            if (z != y) {
+                                                if (tempAray[z]['matchUserID'].equals(myArray[y]['matchUserID'])) {
+                                                    arr.splice(y, 1);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    var dataA = dbo.collection(match).find({}).toArray((errresu, resul) => {
+                                        if (!isEmpty(resul)) {
+                                            var dataArray = dbo.collection(match).find(
+                                                {
+                                                    currentUserID: new ObjectId(AllUserArray[0]['_id'])
+                                                }).toArray((result1err, result1) => {
+                                                if (!isEmpty(result1)) {
+                                                    dbo.collection(match).updateOne(
+                                                        {currentUserID: new ObjectId(AllUserArray[0]['_id'])},
+                                                        {$set: {matchUser: arr}}
+                                                    ).then((resu) => {
+                                                        if (resu['result']['n'] == 1) {
+                                                            //success
+                                                            console.log("update success")
+                                                        } else {
+                                                            //already up to date
+                                                            console.log("already up to date")
+                                                        }
+                                                    }).catch((err) => {
+
+                                                    });
+                                                } else {
+                                                    console.log(matchIDArray)
+                                                    var myObj = {
+                                                        currentUserID: AllUserArray[0]['_id'],
+                                                        matchUser: arr,
+                                                        createdAt: new Date()
+                                                    }
+                                                    dbo.collection(match).insertOne(myObj).then((result) => {
+                                                        console.log("new success")
+                                                    }).catch((err) => {
+                                                    })
+                                                }
+                                            });
+                                        } else {
+                                            var myObj = {
+                                                currentUserID: AllUserArray[0]['_id'],
+                                                matchUser: arr,
+                                                createdAt: new Date()
+                                            }
+                                            dbo.collection(match).insertOne(myObj).then((result) => {
+                                                console.log("ekdum new success")
+                                            }).catch((err) => {
+                                            })
+                                        }
+                                    });
                                 }, 5000);
                             }
                         }
@@ -625,13 +638,133 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Get Match
             app.post('/api/getMatch', (req, res) => {
+                tempNumberArray = [];
+                var arrTempMatch = [];
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
+                    if (!req.body.userID || isEmpty(req.body.userID)) {
+                        return res.send("No hale")
+                    } else {
+                        dbo.collection(match).find({currentUserID: new ObjectId(req.body.userID)}).toArray((err, result) => {
+                            if (err) return res.send("Error")
+                            if (!isEmpty(result)) {
+                                var myArray = [];
+                                for (var i = 0; i < result[0]["matchUser"].length; i++) {
+                                    if (result[0]["matchUser"][i]["isUsed"] == false) {
+                                        myArray.push(result[0]["matchUser"][i])
+                                    }
+                                }
+                                dbo.collection(switlover).find({_id: new ObjectId(myArray[0]["matchUserID"])}).toArray((err1, result1) => {
+                                    if (err1) return res.send("Error")
+                                    if (!isEmpty(result1)) {
+                                        if (result1[0]['is_Block'] == 0) {
+                                            var matchObj = {
+                                                name1: result1[0]['Username'][result1[0]['Username'].length - 1],
+                                                profile_pic1: result1[0]['Profile_Pic']
+                                            }
+                                            arrTempMatch.push(matchObj);
+                                            dbo.collection(switlover).find({_id: new ObjectId(req.body.userID)}).toArray((err3, result3) => {
+                                                if (err3) return res.send("Error")
+                                                if (!isEmpty(result3)) {
+                                                    if (result3[0]["is_Block"] == 0) {
+                                                        var randomNumbers = randomNumber(result3[0]['Like'],result[0]);
+                                                        if (!isEmpty(randomNumbers)) {
 
+                                                            var numb0 = randomNumbers[0].split("-")[1]
+                                                            var numb1 = randomNumbers[1].split("-")[1]
+                                                            console.log(numb0)
+                                                            console.log(numb1)
+                                                            dbo.collection(switlover).find({"Phone_Number.Number": numb0}).toArray((err2, result2) => {
+                                                                if (err2) return res.send("Error")
+                                                                if (!isEmpty(result2)) {
+                                                                    var myObj = {
+                                                                        name: result2[0]['Username'][result2[0]['Username'].length - 1],
+                                                                        profile_pic: result2[0]['Profile_Pic']
+                                                                    }
+                                                                    arrTempMatch.push(myObj)
+                                                                } else {
+                                                                    var myObj = {
+                                                                        name: numb0,
+                                                                        profile_pic: ""
+                                                                    }
+                                                                    arrTempMatch.push(myObj)
+                                                                }
+                                                            })
+
+                                                            dbo.collection(switlover).find({"Phone_Number.Number": numb1}).toArray((err4, result4) => {
+                                                                if (err4) return res.send("Error")
+                                                                if (!isEmpty(result4)) {
+                                                                    var myObj = {
+                                                                        name: result4[0]['Username'][result4[0]['Username'].length - 1],
+                                                                        profile_pic: result4[0]['Profile_Pic']
+                                                                    }
+                                                                    arrTempMatch.push(myObj)
+                                                                } else {
+                                                                    var myObj = {
+                                                                        name: numb1,
+                                                                        profile_pic: ""
+                                                                    }
+                                                                    arrTempMatch.push(myObj)
+                                                                }
+                                                            })
+
+                                                            setTimeout(function () {
+                                                                res.send(arrTempMatch)
+                                                            }, 7000);
+
+                                                        }
+
+
+                                                    } else {
+                                                        //Block user
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            //Block user
+                                        }
+                                    }
+                                })
+                            } else {
+                                return res.send("No Match found yet")
+                            }
+                        })
+                    }
                 }
-            })
+            });
+
+
+            function randomNumber(array,arr1) {
+                var item = array[Math.floor(Math.random() * array.length)];
+                var num = item.split("-")[1]
+                for (var k = 0; k < arr1["matchUser"].length; k++) {
+                    for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
+                        if (num == arr1["matchUser"][k]["number"][l]['Number']) {
+                            isMatch = true
+                            randomNumber(array,arr1)
+                        } else {
+                            isMatch = false
+                        }
+                    }
+                }
+                if(!isMatch)
+                {
+                    if (isEmpty(tempNumberArray)) {
+                        tempNumberArray.push(item);
+                        randomNumber(array,arr1);
+                    } else {
+                        if (tempNumberArray[0] != item) {
+                            tempNumberArray.push(item);
+                        } else {
+                            randomNumber(array,arr1);
+                        }
+                    }
+                }
+                return tempNumberArray
+            }
+
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
