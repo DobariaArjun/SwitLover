@@ -2475,7 +2475,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //get single user based on ID
+            //get single user contact list based on ID
             app.post('/api/singleUserNumber', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
@@ -2514,7 +2514,6 @@ client.connect((err, db) => {
                         var dataArray1 = [];
 
                         for (var i = 0; i < dataresult.Contact_List.length; i++) {
-                            // for (var j = 0; j < dataresult.Contact_List[i]['number'].length; j++) {
                             if (dataresult["Contact_List"][i]["isRemovedByAdmin"] == 0) {
                                 isRemovedByAdmin = "No";
                                 buttonAction = "<button id='remove' class='btn btn-outline-danger btn-sm'>Remove</button>"
@@ -2542,6 +2541,11 @@ client.connect((err, db) => {
                         }
                         res.json({
                             data: dataArray1
+                        });
+                    }
+                    else {
+                        res.json({
+                            status: "0"
                         });
                     }
                 }).catch((err) => {
