@@ -2946,11 +2946,12 @@ client.connect((err, db) => {
                 dataNotification.then((result) => {
                     if (isEmpty(result))
                         res.json({status: "0", message: "No notification settings found"});
-                    else
+                    else{
                         var dataresult = result[0];
-                    delete dataresult._id;
-                    delete dataresult.userID;
-                    res.json({status: "1", message: "success", userdata: result});
+                        delete dataresult._id;
+                        delete dataresult.userID;
+                        res.json({status: "1", message: "success", userdata: result});
+                    }
                 }).catch((err) => {
                     res.json({status: "3 ", message: "notification updated failed"});
                 });
