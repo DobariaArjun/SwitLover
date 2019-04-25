@@ -440,7 +440,7 @@ client.connect((err, db) => {
                         }
                     })
                 }
-            })
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -483,48 +483,104 @@ client.connect((err, db) => {
                         })
                     }
                 }
-            })
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //Match prefereances 
+            //Match prefereances
             app.post('/api/MatchPreference', (req, res) => {
-                // var Auth_Token = req.header('Auth_Token');
-                // if (!Auth_Token || Auth_Token == null) {
-                //     res.json({status: "6", message: "Auth token missing"});
-                // } else {
-                //     if (!req.body || isEmpty(req.body)) {
-                //         res.json({status: "4", message: "Parameter missing or Invalid"});
-                //     } else {
-                //         var dataArray = dbo.collection(switlover).find({
-                //             Auth_Token: Auth_Token,
-                //         }).toArray();
-                //         dataArray.then((result) => {
-                //             if (!isEmpty(result)) {
-                //                 if (result[0]["is_Block"] == 0) {
-                //                     dbo.collection(switlover).updateOne({Auth_Token: Auth_Token}, {
-                //                         $set: {
-                //                             Match_Ratio: req.body,
-                //                             updatedAt: new Date()
-                //                         }
-                //                     }).then((updatedata) => {
-                //                         if (updatedata['result']['n'] == 1) {
-                //                             res.json({status: "1", message: "success"});
-                //                         } else {
-                //                             res.json({status: "0", message: "not update"});
-                //                         }
-                //                     }).catch((errr) => {
-                //                         res.json({status: "0", message: "err"});
-                //                     })
-                //                 } else {
-                //                     res.json({status: "7", message: "You have been blocked by Admin"})
-                //                 }
-                //             }
-                //         }).catch((err) => {
-                //             res.json({status: "0", message: "err" + err});
-                //         })
-                //     }
-                // }
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    if (!req.body || isEmpty(req.body)) {
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
+                    } else {
+                        var mid = new ObjectId(req.body.mid);
+                        var ah = dbo.collection(match).find({
+                            currentUserID: new ObjectId(req.body.cid),
+                            'matchUser.matchUserID': new ObjectId(req.body.mid)
+                        }).toArray();
+                        ah.then((result) => {
+                            if (!isEmpty(result)) {
+                                for (var a = 0; a < result[0]["matchUser"].length; a++) {
+                                    if ((mid).equals(result[0]["matchUser"][a]["matchUserID"])) {
+                                        if (result[0]['matchUser'][a]['isUsed'] == true) {
+                                            if (result[0]['matchUser'][a]['currentUserPreferenace']['is_Set'] == false || result[0]['matchUser'][a]['matchUserPreferenace']['is_Set'] == false) {
+                                                dbo.collection(match).updateOne({
+                                                        currentUserID: new ObjectId(req.body.cid),
+                                                        'matchUser.matchUserID': new ObjectId(req.body.mid)
+                                                    },
+                                                    {
+                                                        $set: {
+                                                            'matchUser.$.currentUserPreferenace.is_Set': true,
+                                                            'matchUser.$.currentUserPreferenace.out_1': req.body.out_1,
+                                                            'matchUser.$.currentUserPreferenace.out_2': req.body.out_2,
+                                                            'matchUser.$.currentUserPreferenace.anonymas_chat': req.body.chat
+                                                        }
+                                                    }).then((responce) => {
+                                                    if (responce['result']['n'] == 1) {
+                                                        var ha = dbo.collection(match).find({
+                                                            currentUserID: new ObjectId(req.body.cid),
+                                                            'matchUser.matchUserID': new ObjectId(req.body.mid)
+                                                        }).toArray();
+                                                        ha.then((result1) => {
+                                                            if (!isEmpty(result1)) {
+                                                                console.log(result1)
+                                                                for (var h = 0; h < result1[0]["matchUser"].length; h++) {
+                                                                    if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
+                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
+                                                                            res.json({
+                                                                                status: "1",
+                                                                                type: "1",
+                                                                                message: "success",
+                                                                                user_data: result1
+                                                                            });
+                                                                        } else {
+                                                                            dbo.collection(match).updateOne({
+                                                                                    'currentUserID': new ObjectId(req.body.mid),
+                                                                                    'matchUser.matchUserID': new ObjectId(req.body.cid)
+                                                                                },
+                                                                                {
+                                                                                    $set: {
+                                                                                        'matchUser.$.matchUserPreferenace.is_Set': true,
+                                                                                        'matchUser.$.matchUserPreferenace.out_1': req.body.out_1,
+                                                                                        'matchUser.$.matchUserPreferenace.out_2': req.body.out_2,
+                                                                                        'matchUser.$.matchUserPreferenace.anonymas_chat': req.body.chat
+                                                                                    }
+                                                                                }).then((re) => {
+                                                                                if (re['result']['n'] == 1) {
+                                                                                    res.json({
+                                                                                        status: "1",
+                                                                                        type: "0",
+                                                                                        message: "success",
+                                                                                        user_data: result1
+                                                                                    });
+                                                                                }
+                                                                            })
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }).catch();
+                                                    } else {
+                                                        res.json({status: "0", message: "Error : " + responce});
+                                                    }
+                                                }).catch((e) => {
+                                                    res.json({status: "0", message: "Error" + e});
+                                                })
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                res.json({status: "0", message: "No user found with this ID"});
+                            }
+                        }).catch((er) => {
+                            res.json({status: "0", message: "Error" + er});
+                        });
+                    }
+                }
             });
             //--------------------------------------------------------------------------------------------------------------
 
@@ -535,6 +591,7 @@ client.connect((err, db) => {
                 dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.userID)
                 }).toArray((error, AllUserArray) => {
+                    if (error) res.json({status: "0", message: "Error"});
                     if (!isEmpty(AllUserArray)) {
                         if (AllUserArray[0]["is_Block"] == 0) {
                             var myNumber = AllUserArray[0]['Phone_Number'];
@@ -553,8 +610,22 @@ client.connect((err, db) => {
                                                             var numb = likeByHim[j].split("-")[1]
                                                             for (var k = 0; k < myNumber.length; k++) {
                                                                 if (myNumber[k]['Number'] == numb) {
+                                                                    var Current_User_Preferance = {
+                                                                        out_1: 0,
+                                                                        out_2: 0,
+                                                                        anonymas_chat: 0,
+                                                                        is_Set: false
+                                                                    }
+                                                                    var Match_User_Preferance = {
+                                                                        out_1: 0,
+                                                                        out_2: 0,
+                                                                        anonymas_chat: 0,
+                                                                        is_Set: false
+                                                                    }
                                                                     var myObj = {
                                                                         matchUserID: result[0]['_id'],
+                                                                        currentUserPreferenace: Current_User_Preferance,
+                                                                        matchUserPreferenace: Match_User_Preferance,
                                                                         number: result[0]['Phone_Number'],
                                                                         isUsed: false
                                                                     }
@@ -586,11 +657,40 @@ client.connect((err, db) => {
 
                                         dbo.collection(match).find({}).toArray((errresu, resul) => {
                                             if (!isEmpty(resul)) {
-                                                dbo.collection(match).find(
-                                                    {
-                                                        currentUserID: new ObjectId(AllUserArray[0]['_id'])
-                                                    }).toArray((result1err, result1) => {
+                                                dbo.collection(match).find({
+                                                    currentUserID: new ObjectId(AllUserArray[0]['_id'])
+                                                }).toArray((result1err, result1) => {
                                                     if (!isEmpty(result1)) {
+                                                        for (var h = 0; h < arr.length; h++) {
+                                                            for (var a = 0; a < result1[0]["matchUser"].length; a++) {
+                                                                if (arr[h]["matchUserID"].equals(result1[0]["matchUser"][a]["matchUserID"])) {
+                                                                    if (arr[h]["isUsed"] != result1[0]["matchUser"][a]["isUsed"]) {
+                                                                        var Current_User_Preferance1 = {
+                                                                            out_1: 0,
+                                                                            out_2: 0,
+                                                                            anonymas_chat: 0,
+                                                                            is_Set: false
+                                                                        }
+                                                                        var Match_User_Preferance1 = {
+                                                                            out_1: 0,
+                                                                            out_2: 0,
+                                                                            anonymas_chat: 0,
+                                                                            is_Set: false
+                                                                        }
+                                                                        arr.push({
+                                                                            matchUserID: arr[h]["matchUserID"],
+                                                                            currentUserPreferenace: Current_User_Preferance1,
+                                                                            matchUserPreferenace: Match_User_Preferance1,
+                                                                            number: arr[h]["number"],
+                                                                            isUsed: true
+                                                                        })
+                                                                        arr.splice(h, 1);
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        }
+
                                                         dbo.collection(match).updateOne(
                                                             {currentUserID: new ObjectId(AllUserArray[0]['_id'])},
                                                             {$set: {matchUser: arr}}
@@ -609,8 +709,7 @@ client.connect((err, db) => {
 
                                                         var myObj = {
                                                             currentUserID: AllUserArray[0]['_id'],
-                                                            matchUser: arr,
-                                                            createdAt: new Date()
+                                                            matchUser: arr
                                                         }
                                                         dbo.collection(match).insertOne(myObj).then((result) => {
                                                             res.json({status: "1", message: "success"});
@@ -621,8 +720,7 @@ client.connect((err, db) => {
                                             } else {
                                                 var myObj = {
                                                     currentUserID: AllUserArray[0]['_id'],
-                                                    matchUser: arr,
-                                                    createdAt: new Date()
+                                                    matchUser: arr
                                                 }
                                                 dbo.collection(match).insertOne(myObj).then((result) => {
                                                     res.json({status: "1", message: "success"});
@@ -668,8 +766,10 @@ client.connect((err, db) => {
                                         if (!isEmpty(result1)) {
                                             if (result1[0]['is_Block'] == 0) {
                                                 var matchObj = {
-                                                    name1: result1[0]['Username'][result1[0]['Username'].length - 1],
-                                                    profile_pic1: result1[0]['Profile_Pic']
+                                                    id: result1[0]['_id'],
+                                                    name: result1[0]['Username'][result1[0]['Username'].length - 1],
+                                                    profile_pic: result1[0]['Profile_Pic'],
+                                                    isMatch: true
                                                 }
                                                 arrTempMatch.push(matchObj);
                                                 dbo.collection(switlover).find({_id: new ObjectId(req.body.userID)}).toArray((err3, result3) => {
@@ -685,14 +785,18 @@ client.connect((err, db) => {
                                                                     if (err2) res.json({status: "0", message: "Error"});
                                                                     if (!isEmpty(result2)) {
                                                                         var myObj = {
+                                                                            id: "",
                                                                             name: result2[0]['Username'][result2[0]['Username'].length - 1],
-                                                                            profile_pic: result2[0]['Profile_Pic']
+                                                                            profile_pic: result2[0]['Profile_Pic'],
+                                                                            isMatch: false
                                                                         }
                                                                         arrTempMatch.push(myObj)
                                                                     } else {
                                                                         var myObj = {
+                                                                            id: "",
                                                                             name: numb0,
-                                                                            profile_pic: ""
+                                                                            profile_pic: "",
+                                                                            isMatch: false
                                                                         }
                                                                         arrTempMatch.push(myObj)
                                                                     }
@@ -702,14 +806,18 @@ client.connect((err, db) => {
                                                                     if (err4) res.json({status: "0", message: "Error"});
                                                                     if (!isEmpty(result4)) {
                                                                         var myObj = {
+                                                                            id: "",
                                                                             name: result4[0]['Username'][result4[0]['Username'].length - 1],
-                                                                            profile_pic: result4[0]['Profile_Pic']
+                                                                            profile_pic: result4[0]['Profile_Pic'],
+                                                                            isMatch: false
                                                                         }
                                                                         arrTempMatch.push(myObj)
                                                                     } else {
                                                                         var myObj = {
+                                                                            id: "",
                                                                             name: numb1,
-                                                                            profile_pic: ""
+                                                                            profile_pic: "",
+                                                                            isMatch: false
                                                                         }
                                                                         arrTempMatch.push(myObj)
                                                                     }
@@ -786,7 +894,6 @@ client.connect((err, db) => {
                 }
                 return tempNumberArray
             }
-
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
