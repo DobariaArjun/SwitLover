@@ -2513,7 +2513,7 @@ client.connect((err, db) => {
 
                         var dataArray1 = [];
 
-                        for (var i = 0; i < dataresult.Contact_List.length; i++) {
+                        for (var i = 0; i < dataresult['Contact_List'].length; i++) {
                             if (dataresult["Contact_List"][i]["isRemovedByAdmin"] == 0) {
                                 isRemovedByAdmin = "No";
                                 buttonAction = "<button id='remove' class='btn btn-outline-danger btn-sm'>Remove</button>"
