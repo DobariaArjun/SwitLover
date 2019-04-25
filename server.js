@@ -894,6 +894,7 @@ client.connect((err, db) => {
                 }
                 return tempNumberArray
             }
+
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -978,7 +979,7 @@ client.connect((err, db) => {
                         if (result[0]["is_Block"] == 0) {
                             var userNumber;
                             for (var i = 0; i < result[0]["Phone_Number"].length; i++) {
-                                userNumber = result[0]["Phone_Number"][i]["Contry_Code"] + "" + result[0]["Phone_Number"][i]["Number"];
+                                userNumber = result[0]["Phone_Number"][i]["Contry_Code"] + "-" + result[0]["Phone_Number"][i]["Number"];
                                 var idArray = dbo.collection(switlover).find({
                                     Like: userNumber,
                                 }).toArray()
@@ -1138,37 +1139,37 @@ client.connect((err, db) => {
                                                             var myObj = {
                                                                 userID: new ObjectId(dataresult[0]["_id"]),
                                                                 matcheek: {
-                                                                    play_sound_for_every_notification: 1,
-                                                                    play_sound_for_every_message: 1,
-                                                                    likes: 1,
-                                                                    matches: 1,
-                                                                    messages: 1,
-                                                                    power_of_time: 1,
-                                                                    promotions: 1
+                                                                    play_sound_for_every_notification: "1",
+                                                                    play_sound_for_every_message: "1",
+                                                                    likes: "1",
+                                                                    matches: "1",
+                                                                    messages: "1",
+                                                                    power_of_time: "1",
+                                                                    promotions: "1"
                                                                 },
                                                                 phone: {
-                                                                    play_sound_for_every_notification: 1,
-                                                                    play_sound_for_every_message: 1,
-                                                                    likes: 1,
-                                                                    matches: 1,
-                                                                    messages: 1,
-                                                                    power_of_time: 1,
-                                                                    promotions: 1
+                                                                    play_sound_for_every_notification: "1",
+                                                                    play_sound_for_every_message: "1",
+                                                                    likes: "1",
+                                                                    matches: "1",
+                                                                    messages: "1",
+                                                                    power_of_time: "1",
+                                                                    promotions: "1"
                                                                 },
                                                                 email: {
                                                                     frequency: {
-                                                                        every_notification: 0,
-                                                                        twice_a_day: 0,
-                                                                        once_a_day: 1,
-                                                                        once_a_week: 0,
-                                                                        once_a_month: 0
+                                                                        every_notification: "0",
+                                                                        twice_a_day: "0",
+                                                                        once_a_day: "1",
+                                                                        once_a_week: "0",
+                                                                        once_a_month: "0"
                                                                     },
-                                                                    newsletter: 1,
-                                                                    promotions: 1,
-                                                                    likes: 1,
-                                                                    matches: 1,
-                                                                    messages: 1,
-                                                                    power_of_time: 1
+                                                                    newsletter: "1",
+                                                                    promotions: "1",
+                                                                    likes: "1",
+                                                                    matches: "1",
+                                                                    messages: "1",
+                                                                    power_of_time: "1"
                                                                 }
                                                             }
                                                             dbo.collection(notification).insertOne(myObj, (err, resu) => {
@@ -3008,57 +3009,58 @@ client.connect((err, db) => {
                         //             }
                         //         });
                     } else {
+                        console.log(req.body);
 
-                        //         dbo.collection(notification).updateOne(
-                        //             {
-                        //                 userID: new ObjectId(req.body.data["userID"])
-                        //             },
-                        //             {
-                        //                 $set: {
-                        //                     matcheek: {
-                        //                         play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
-                        //                         play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
-                        //                         likes: req.body.data["matcheek"]["likes"],
-                        //                         matches: req.body.data["matcheek"]["matches"],
-                        //                         messages: req.body.data["matcheek"]["messages"],
-                        //                         power_of_time: req.body.data["matcheek"]["power_of_time"],
-                        //                         promotions: req.body.data["matcheek"]["promotions"]
-                        //                     },
-                        //                     phone: {
-                        //                         play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
-                        //                         play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
-                        //                         likes: req.body.data["phone"]["likes"],
-                        //                         matches: req.body.data["phone"]["matches"],
-                        //                         messages: req.body.data["phone"]["messages"],
-                        //                         power_of_time: req.body.data["phone"]["power_of_time"],
-                        //                         promotions: req.body.data["phone"]["promotions"]
-                        //                     },
-                        //                     email: {
-                        //                         frequency: {
-                        //                             every_notification: req.body.data["email"]["frequency"]["every_notification"],
-                        //                             twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
-                        //                             once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
-                        //                             once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
-                        //                             once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
-                        //                         },
-                        //                         newsletter: req.body.data["email"]["newsletter"],
-                        //                         promotions: req.body.data["email"]["promotions"],
-                        //                         likes: req.body.data["email"]["likes"],
-                        //                         matches: req.body.data["email"]["matches"],
-                        //                         messages: req.body.data["email"]["messages"],
-                        //                         power_of_time: req.body.data["email"]["power_of_time"]
-                        //                     }
-                        //                 },
-                        //             }
-                        //         ).then((result) => {
-                        //
-                        //             if (result['result']['n'] == 1)
-                        //                 res.json({status: "1", message: "notification updated successfully"});
-                        //             else
-                        //                 res.json({status: "3", message: "notification updated failed"});
-                        //         }).catch((err) => {
-                        //             res.json({status: "3 ", message: "notification updated failed"});
-                        //         });
+                        dbo.collection(notification).updateOne(
+                            {
+                                userID: new ObjectId(req.body.data["userID"])
+                            },
+                            {
+                                $set: {
+                                    matcheek: {
+                                        play_sound_for_every_notification: req.body.data["matcheek"]["play_sound_for_every_notification"],
+                                        play_sound_for_every_message: req.body.data["matcheek"]["play_sound_for_every_message"],
+                                        likes: req.body.data["matcheek"]["likes"],
+                                        matches: req.body.data["matcheek"]["matches"],
+                                        messages: req.body.data["matcheek"]["messages"],
+                                        power_of_time: req.body.data["matcheek"]["power_of_time"],
+                                        promotions: req.body.data["matcheek"]["promotions"]
+                                    },
+                                    phone: {
+                                        play_sound_for_every_notification: req.body.data["phone"]["play_sound_for_every_notification"],
+                                        play_sound_for_every_message: req.body.data["phone"]["play_sound_for_every_message"],
+                                        likes: req.body.data["phone"]["likes"],
+                                        matches: req.body.data["phone"]["matches"],
+                                        messages: req.body.data["phone"]["messages"],
+                                        power_of_time: req.body.data["phone"]["power_of_time"],
+                                        promotions: req.body.data["phone"]["promotions"]
+                                    },
+                                    email: {
+                                        frequency: {
+                                            every_notification: req.body.data["email"]["frequency"]["every_notification"],
+                                            twice_a_day: req.body.data["email"]["frequency"]["twice_a_day"],
+                                            once_a_day: req.body.data["email"]["frequency"]["once_a_day"],
+                                            once_a_week: req.body.data["email"]["frequency"]["once_a_week"],
+                                            once_a_month: req.body.data["email"]["frequency"]["once_a_month"]
+                                        },
+                                        newsletter: req.body.data["email"]["newsletter"],
+                                        promotions: req.body.data["email"]["promotions"],
+                                        likes: req.body.data["email"]["likes"],
+                                        matches: req.body.data["email"]["matches"],
+                                        messages: req.body.data["email"]["messages"],
+                                        power_of_time: req.body.data["email"]["power_of_time"]
+                                    }
+                                },
+                            }
+                        ).then((result) => {
+
+                            if (result['result']['n'] == 1)
+                                res.json({status: "1", message: "notification updated successfully"});
+                            else
+                                res.json({status: "3", message: "notification updated failed"});
+                        }).catch((err) => {
+                            res.json({status: "3 ", message: "notification updated failed"});
+                        });
                     }
                 }).catch((err) => {
                     res.json({status: "3 ", message: "Internal server error" + err});
