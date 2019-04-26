@@ -2479,13 +2479,9 @@ client.connect((err, db) => {
             app.post('/api/singleUserNumber', (req, res) => {
                 var dataArray = dbo.collection(switlover).find({
                     _id: new ObjectId(req.body.id)
-                }).toArray();
-                dataArray.then((result) => {
+                }).toArray((err,result) => {
                     if (!isEmpty(result)) {
 
-                        var isRemovedByAdmin;
-                        var isRemovedByUser;
-                        var buttonAction;
                         var dataresult = result[0];
                         delete dataresult._id;
                         delete dataresult.Request_token;
@@ -2512,6 +2508,9 @@ client.connect((err, db) => {
 
 
                         var dataArray1 = [];
+                        var isRemovedByAdmin;
+                        var isRemovedByUser;
+                        var buttonAction;
 
                         for (var i = 0; i < dataresult['Contact_List'].length; i++) {
                             if (dataresult["Contact_List"][i]["isRemovedByAdmin"] == 0) {
@@ -2548,9 +2547,7 @@ client.connect((err, db) => {
                             status: "0"
                         });
                     }
-                }).catch((err) => {
-                    res.json({status: "3", message: "Internal server error" + err});
-                })
+                });
             })
             //--------------------------------------------------------------------------------------------------------------
 
