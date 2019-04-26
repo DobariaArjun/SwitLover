@@ -520,49 +520,115 @@ client.connect((err, db) => {
                                                         }
                                                     }).then((responce) => {
                                                     if (responce['result']['n'] == 1) {
-                                                        var ha = dbo.collection(match).find({
-                                                            currentUserID: new ObjectId(req.body.cid),
-                                                            'matchUser.matchUserID': new ObjectId(req.body.mid)
-                                                        }).toArray();
-                                                        ha.then((result1) => {
-                                                            if (!isEmpty(result1)) {
-                                                                console.log(result1)
-                                                                for (var h = 0; h < result1[0]["matchUser"].length; h++) {
-                                                                    if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
-                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
-                                                                            res.json({
-                                                                                status: "1",
-                                                                                type: "1",
-                                                                                message: "success",
-                                                                                user_data: result1
-                                                                            });
-                                                                        } else {
-                                                                            dbo.collection(match).updateOne({
-                                                                                    'currentUserID': new ObjectId(req.body.mid),
-                                                                                    'matchUser.matchUserID': new ObjectId(req.body.cid)
-                                                                                },
-                                                                                {
-                                                                                    $set: {
-                                                                                        'matchUser.$.matchUserPreferenace.is_Set': true,
-                                                                                        'matchUser.$.matchUserPreferenace.out_1': req.body.out_1,
-                                                                                        'matchUser.$.matchUserPreferenace.out_2': req.body.out_2,
-                                                                                        'matchUser.$.matchUserPreferenace.anonymas_chat': req.body.chat
+
+                                                        dbo.collection(match).updateOne({
+                                                                'currentUserID': new ObjectId(req.body.mid),
+                                                                'matchUser.matchUserID': new ObjectId(req.body.cid)
+                                                            },
+                                                            {
+                                                                $set: {
+                                                                    'matchUser.$.matchUserPreferenace.is_Set': true,
+                                                                    'matchUser.$.matchUserPreferenace.out_1': req.body.out_1,
+                                                                    'matchUser.$.matchUserPreferenace.out_2': req.body.out_2,
+                                                                    'matchUser.$.matchUserPreferenace.anonymas_chat': req.body.chat
+                                                                }
+                                                            }).then((re) => {
+                                                            if (re['result']['n'] == 1) {
+                                                                var ha = dbo.collection(match).find({
+                                                                    currentUserID: new ObjectId(req.body.cid),
+                                                                    'matchUser.matchUserID': new ObjectId(req.body.mid)
+                                                                }).toArray();
+                                                                ha.then((result1) => {
+                                                                        if (!isEmpty(result1)) {
+                                                                            for (var h = 0; h < result1[0]["matchUser"].length; h++) {
+                                                                                if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
+                                                                                    if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
+
+                                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            //Fire Notification
+                                                                                            console.log(result1[0]['matchUser'][h])
+                                                                                        }
+                                                                                        //1 out 1 - 1 out 2 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //1 out 1 - chat = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                        }
+                                                                                        //1 out 1 -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //1 out 2 - 1 out 1 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //1 out 2 - 1 out 2 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //1 out 2 - chat = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                        }
+                                                                                        //1 out 2 -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //chat - 1 out 1 = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //chat - 1 out 2 = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //chat - chat = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                        }
+                                                                                        //chat -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //chat & 1 out 2 - 1 out 2 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+                                                                                        //chat & 1 out 2 - chat = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                        }
+                                                                                        //chat & 1 out 2 -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                        }
+
+                                                                                        // res.json({
+                                                                                        //     status: "1",
+                                                                                        //     type: "1",
+                                                                                        //     message: "success"
+                                                                                        // });
+                                                                                    } else {
+
+                                                                                        res.json({
+                                                                                            status: "1",
+                                                                                            type: "0",
+                                                                                            message: "success"
+                                                                                        });
                                                                                     }
-                                                                                }).then((re) => {
-                                                                                if (re['result']['n'] == 1) {
-                                                                                    res.json({
-                                                                                        status: "1",
-                                                                                        type: "0",
-                                                                                        message: "success",
-                                                                                        user_data: result1
-                                                                                    });
                                                                                 }
-                                                                            })
+                                                                            }
                                                                         }
                                                                     }
-                                                                }
+                                                                )
                                                             }
-                                                        }).catch();
+                                                        })
                                                     } else {
                                                         res.json({status: "0", message: "Error : " + responce});
                                                     }
@@ -1021,6 +1087,46 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
+            //Update / insert device token
+            app.post('/api/deviceToken', (req, res) => {
+                    var Auth_Token = req.header('Auth_Token');
+                    if (!Auth_Token || Auth_Token == null) {
+                        res.json({status: "6", message: "Auth token missing"});
+                    } else {
+                        if (!req.body || req.body == null) {
+                            res.json({status: "4", message: "Parameter missing or Invalid"});
+                        } else {
+                            var ha = dbo.collection(switlover).find({
+                                Auth_Token: Auth_Token
+                            }).toArray();
+                            ha.then((result) => {
+                                if (!isEmpty(result)) {
+                                    if (result[0]['is_Block'] == 0) {
+                                        dbo.collection(switlover).updateOne({
+                                                Auth_Token: Auth_Token
+                                            },
+                                            {
+                                                $set: {
+                                                    Device_Token: req.body.token,
+                                                    updatedAt: new Date()
+                                                }
+                                            }).then((update) => {
+                                            if (update['result']['n'] == 1) {
+                                                res.json({status: "1", message: "success"});
+                                            } else {
+                                                res.json({status: "0", message: "error update"});
+                                            }
+                                        })
+                                    }
+                                }
+                            }).catch()
+                        }
+                    }
+                }
+            )
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
             //Login User
             app.post('/api/CheckLogin', (req, res) => {
                 var Request_token = req.header('Request_token');
@@ -1095,6 +1201,7 @@ client.connect((err, db) => {
                                 var myObj = {
                                     Request_token: Request_token,
                                     Auth_Token: token.toString(),
+                                    Device_Token: "",
                                     Username: [],
                                     Phone_Number: [req.body],
                                     Email: {EmailAddress: "", Verified: "false"},
@@ -1818,9 +1925,15 @@ client.connect((err, db) => {
                                                                         }
                                                                     }).then((data) => {
                                                                     if (data['result']['n'] == 1) {
-                                                                        res.json({status: "1", message: "Profile updated successfully"});
+                                                                        res.json({
+                                                                            status: "1",
+                                                                            message: "Profile updated successfully"
+                                                                        });
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             } else {
@@ -1830,7 +1943,10 @@ client.connect((err, db) => {
                                                                     },
                                                                     {
                                                                         $set: {
-                                                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                            Email: {
+                                                                                EmailAddress: req.body.Email_Address,
+                                                                                Verified: 'false'
+                                                                            },
                                                                             Username: UsernameArray,
                                                                             Phone_Number: jsonObject,
                                                                             updatedAt: new Date()
@@ -1844,11 +1960,17 @@ client.connect((err, db) => {
                                                                                     message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                                 });
                                                                             } else {
-                                                                                res.json({status: "3", message: "Mail sending faild"});
+                                                                                res.json({
+                                                                                    status: "3",
+                                                                                    message: "Mail sending faild"
+                                                                                });
                                                                             }
                                                                         })
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             }
@@ -1865,9 +1987,15 @@ client.connect((err, db) => {
                                                                         }
                                                                     }).then((data) => {
                                                                     if (data['result']['n'] == 1) {
-                                                                        res.json({status: "1", message: "Profile updated successfully"});
+                                                                        res.json({
+                                                                            status: "1",
+                                                                            message: "Profile updated successfully"
+                                                                        });
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             } else {
@@ -1877,7 +2005,10 @@ client.connect((err, db) => {
                                                                     },
                                                                     {
                                                                         $set: {
-                                                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                            Email: {
+                                                                                EmailAddress: req.body.Email_Address,
+                                                                                Verified: 'false'
+                                                                            },
                                                                             Username: UsernameArray,
                                                                             updatedAt: new Date()
                                                                         }
@@ -1890,11 +2021,17 @@ client.connect((err, db) => {
                                                                                     message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                                 });
                                                                             } else {
-                                                                                res.json({status: "3", message: "Mail sending faild"});
+                                                                                res.json({
+                                                                                    status: "3",
+                                                                                    message: "Mail sending faild"
+                                                                                });
                                                                             }
                                                                         })
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             }
@@ -1911,9 +2048,15 @@ client.connect((err, db) => {
                                                                     }
                                                                 }).then((data) => {
                                                                 if (data['result']['n'] == 1) {
-                                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "Profile updated successfully"
+                                                                    });
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         } else if (req.body.Email_Address != null && req.body.Email_Address && !isEmpty(jsonObject)) {
@@ -1929,9 +2072,15 @@ client.connect((err, db) => {
                                                                         }
                                                                     }).then((data) => {
                                                                     if (data['result']['n'] == 1) {
-                                                                        res.json({status: "1", message: "Profile updated successfully"});
+                                                                        res.json({
+                                                                            status: "1",
+                                                                            message: "Profile updated successfully"
+                                                                        });
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             } else {
@@ -1941,7 +2090,10 @@ client.connect((err, db) => {
                                                                     },
                                                                     {
                                                                         $set: {
-                                                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                            Email: {
+                                                                                EmailAddress: req.body.Email_Address,
+                                                                                Verified: 'false'
+                                                                            },
                                                                             Phone_Number: jsonObject,
                                                                             updatedAt: new Date()
                                                                         }
@@ -1954,11 +2106,17 @@ client.connect((err, db) => {
                                                                                     message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                                 });
                                                                             } else {
-                                                                                res.json({status: "3", message: "Mail sending faild"});
+                                                                                res.json({
+                                                                                    status: "3",
+                                                                                    message: "Mail sending faild"
+                                                                                });
                                                                             }
                                                                         })
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             }
@@ -1973,9 +2131,15 @@ client.connect((err, db) => {
                                                                 }).then((data) => {
 
                                                                 if (data['result']['n'] == 1) {
-                                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "Profile updated successfully"
+                                                                    });
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             }).catch((error) => {
                                                                 res.json({status: "0", message: "Profile not found"});
@@ -1993,9 +2157,15 @@ client.connect((err, db) => {
                                                                         }
                                                                     }).then((data) => {
                                                                     if (data['result']['n'] == 1) {
-                                                                        res.json({status: "1", message: "Profile updated successfully"});
+                                                                        res.json({
+                                                                            status: "1",
+                                                                            message: "Profile updated successfully"
+                                                                        });
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             } else {
@@ -2005,7 +2175,10 @@ client.connect((err, db) => {
                                                                     },
                                                                     {
                                                                         $set: {
-                                                                            Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                            Email: {
+                                                                                EmailAddress: req.body.Email_Address,
+                                                                                Verified: 'false'
+                                                                            },
                                                                             updatedAt: new Date()
                                                                         }
                                                                     }).then((data) => {
@@ -2017,11 +2190,17 @@ client.connect((err, db) => {
                                                                                     message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                                 });
                                                                             } else {
-                                                                                res.json({status: "3", message: "Mail sending faild"});
+                                                                                res.json({
+                                                                                    status: "3",
+                                                                                    message: "Mail sending faild"
+                                                                                });
                                                                             }
                                                                         })
                                                                     } else {
-                                                                        res.json({status: "3", message: "Profile updation field"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "Profile updation field"
+                                                                        });
                                                                     }
                                                                 });
                                                             }
@@ -2045,26 +2224,33 @@ client.connect((err, db) => {
                                                                                 message: "Profile updated successfully"
                                                                             });
                                                                         } else {
-                                                                            res.json({status: "7", message: "You have been blocked by Admin"});
+                                                                            res.json({
+                                                                                status: "7",
+                                                                                message: "You have been blocked by Admin"
+                                                                            });
                                                                         }
                                                                     }).catch((finalerr) => {
-                                                                        res.json({status: "3", message: "1Internal server error"});
+                                                                        res.json({
+                                                                            status: "3",
+                                                                            message: "1Internal server error"
+                                                                        });
                                                                     })
                                                                 } else {
-                                                                    res.json({status: "3", message: "2Internal server error"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "2Internal server error"
+                                                                    });
                                                                 }
                                                             }).catch((catcherr) => {
                                                                 res.json({status: "3", message: "3Internal Server error"});
                                                             });
                                                         }
-                                                    }
-                                                    else{
+                                                    } else {
                                                         res.json({status: "0", message: "Username must be unique"});
                                                     }
                                                 }
                                             })
-                                        }
-                                        else{
+                                        } else {
                                             if (req.body.number || req.body.number != null) {
                                                 var arrayContact = req.body.number;
                                                 var jsonObject = JSON.parse(arrayContact);
@@ -2084,7 +2270,10 @@ client.connect((err, db) => {
                                                             }
                                                         }).then((data) => {
                                                         if (data['result']['n'] == 1) {
-                                                            res.json({status: "1", message: "Profile updated successfully"});
+                                                            res.json({
+                                                                status: "1",
+                                                                message: "Profile updated successfully"
+                                                            });
                                                         } else {
                                                             res.json({status: "3", message: "Profile updation field"});
                                                         }
@@ -2096,7 +2285,10 @@ client.connect((err, db) => {
                                                         },
                                                         {
                                                             $set: {
-                                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                Email: {
+                                                                    EmailAddress: req.body.Email_Address,
+                                                                    Verified: 'false'
+                                                                },
                                                                 Username: UsernameArray,
                                                                 Phone_Number: jsonObject,
                                                                 updatedAt: new Date()
@@ -2131,7 +2323,10 @@ client.connect((err, db) => {
                                                             }
                                                         }).then((data) => {
                                                         if (data['result']['n'] == 1) {
-                                                            res.json({status: "1", message: "Profile updated successfully"});
+                                                            res.json({
+                                                                status: "1",
+                                                                message: "Profile updated successfully"
+                                                            });
                                                         } else {
                                                             res.json({status: "3", message: "Profile updation field"});
                                                         }
@@ -2143,7 +2338,10 @@ client.connect((err, db) => {
                                                         },
                                                         {
                                                             $set: {
-                                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                Email: {
+                                                                    EmailAddress: req.body.Email_Address,
+                                                                    Verified: 'false'
+                                                                },
                                                                 Username: UsernameArray,
                                                                 updatedAt: new Date()
                                                             }
@@ -2195,7 +2393,10 @@ client.connect((err, db) => {
                                                             }
                                                         }).then((data) => {
                                                         if (data['result']['n'] == 1) {
-                                                            res.json({status: "1", message: "Profile updated successfully"});
+                                                            res.json({
+                                                                status: "1",
+                                                                message: "Profile updated successfully"
+                                                            });
                                                         } else {
                                                             res.json({status: "3", message: "Profile updation field"});
                                                         }
@@ -2207,7 +2408,10 @@ client.connect((err, db) => {
                                                         },
                                                         {
                                                             $set: {
-                                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                Email: {
+                                                                    EmailAddress: req.body.Email_Address,
+                                                                    Verified: 'false'
+                                                                },
                                                                 Phone_Number: jsonObject,
                                                                 updatedAt: new Date()
                                                             }
@@ -2259,7 +2463,10 @@ client.connect((err, db) => {
                                                             }
                                                         }).then((data) => {
                                                         if (data['result']['n'] == 1) {
-                                                            res.json({status: "1", message: "Profile updated successfully"});
+                                                            res.json({
+                                                                status: "1",
+                                                                message: "Profile updated successfully"
+                                                            });
                                                         } else {
                                                             res.json({status: "3", message: "Profile updation field"});
                                                         }
@@ -2271,7 +2478,10 @@ client.connect((err, db) => {
                                                         },
                                                         {
                                                             $set: {
-                                                                Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                Email: {
+                                                                    EmailAddress: req.body.Email_Address,
+                                                                    Verified: 'false'
+                                                                },
                                                                 updatedAt: new Date()
                                                             }
                                                         }).then((data) => {
@@ -2311,7 +2521,10 @@ client.connect((err, db) => {
                                                                     message: "Profile updated successfully"
                                                                 });
                                                             } else {
-                                                                res.json({status: "7", message: "You have been blocked by Admin"});
+                                                                res.json({
+                                                                    status: "7",
+                                                                    message: "You have been blocked by Admin"
+                                                                });
                                                             }
                                                         }).catch((finalerr) => {
                                                             res.json({status: "3", message: "1Internal server error"});
@@ -2324,8 +2537,7 @@ client.connect((err, db) => {
                                                 });
                                             }
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         newUsername = req.body.Username;
                                         dbo.collection(switlover).find({}).toArray((err1, result1) => {
                                             if (err1) res.json({status: "0", message: "Error : " + err1});
@@ -2361,9 +2573,15 @@ client.connect((err, db) => {
                                                                     }
                                                                 }).then((data) => {
                                                                 if (data['result']['n'] == 1) {
-                                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "Profile updated successfully"
+                                                                    });
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         } else {
@@ -2373,7 +2591,10 @@ client.connect((err, db) => {
                                                                 },
                                                                 {
                                                                     $set: {
-                                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                        Email: {
+                                                                            EmailAddress: req.body.Email_Address,
+                                                                            Verified: 'false'
+                                                                        },
                                                                         Username: UsernameArray,
                                                                         Phone_Number: jsonObject,
                                                                         updatedAt: new Date()
@@ -2387,11 +2608,17 @@ client.connect((err, db) => {
                                                                                 message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                             });
                                                                         } else {
-                                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                                            res.json({
+                                                                                status: "3",
+                                                                                message: "Mail sending faild"
+                                                                            });
                                                                         }
                                                                     })
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         }
@@ -2408,9 +2635,15 @@ client.connect((err, db) => {
                                                                     }
                                                                 }).then((data) => {
                                                                 if (data['result']['n'] == 1) {
-                                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "Profile updated successfully"
+                                                                    });
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         } else {
@@ -2420,7 +2653,10 @@ client.connect((err, db) => {
                                                                 },
                                                                 {
                                                                     $set: {
-                                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                        Email: {
+                                                                            EmailAddress: req.body.Email_Address,
+                                                                            Verified: 'false'
+                                                                        },
                                                                         Username: UsernameArray,
                                                                         updatedAt: new Date()
                                                                     }
@@ -2433,11 +2669,17 @@ client.connect((err, db) => {
                                                                                 message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                             });
                                                                         } else {
-                                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                                            res.json({
+                                                                                status: "3",
+                                                                                message: "Mail sending faild"
+                                                                            });
                                                                         }
                                                                     })
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         }
@@ -2454,7 +2696,10 @@ client.connect((err, db) => {
                                                                 }
                                                             }).then((data) => {
                                                             if (data['result']['n'] == 1) {
-                                                                res.json({status: "1", message: "Profile updated successfully"});
+                                                                res.json({
+                                                                    status: "1",
+                                                                    message: "Profile updated successfully"
+                                                                });
                                                             } else {
                                                                 res.json({status: "3", message: "Profile updation field"});
                                                             }
@@ -2472,9 +2717,15 @@ client.connect((err, db) => {
                                                                     }
                                                                 }).then((data) => {
                                                                 if (data['result']['n'] == 1) {
-                                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "Profile updated successfully"
+                                                                    });
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         } else {
@@ -2484,7 +2735,10 @@ client.connect((err, db) => {
                                                                 },
                                                                 {
                                                                     $set: {
-                                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                        Email: {
+                                                                            EmailAddress: req.body.Email_Address,
+                                                                            Verified: 'false'
+                                                                        },
                                                                         Phone_Number: jsonObject,
                                                                         updatedAt: new Date()
                                                                     }
@@ -2497,11 +2751,17 @@ client.connect((err, db) => {
                                                                                 message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                             });
                                                                         } else {
-                                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                                            res.json({
+                                                                                status: "3",
+                                                                                message: "Mail sending faild"
+                                                                            });
                                                                         }
                                                                     })
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         }
@@ -2516,7 +2776,10 @@ client.connect((err, db) => {
                                                             }).then((data) => {
 
                                                             if (data['result']['n'] == 1) {
-                                                                res.json({status: "1", message: "Profile updated successfully"});
+                                                                res.json({
+                                                                    status: "1",
+                                                                    message: "Profile updated successfully"
+                                                                });
                                                             } else {
                                                                 res.json({status: "3", message: "Profile updation field"});
                                                             }
@@ -2536,9 +2799,15 @@ client.connect((err, db) => {
                                                                     }
                                                                 }).then((data) => {
                                                                 if (data['result']['n'] == 1) {
-                                                                    res.json({status: "1", message: "Profile updated successfully"});
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "Profile updated successfully"
+                                                                    });
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         } else {
@@ -2548,7 +2817,10 @@ client.connect((err, db) => {
                                                                 },
                                                                 {
                                                                     $set: {
-                                                                        Email: {EmailAddress: req.body.Email_Address, Verified: 'false'},
+                                                                        Email: {
+                                                                            EmailAddress: req.body.Email_Address,
+                                                                            Verified: 'false'
+                                                                        },
                                                                         updatedAt: new Date()
                                                                     }
                                                                 }).then((data) => {
@@ -2560,11 +2832,17 @@ client.connect((err, db) => {
                                                                                 message: "Please check your inbox for the verification mail send from the SwitLover"
                                                                             });
                                                                         } else {
-                                                                            res.json({status: "3", message: "Mail sending faild"});
+                                                                            res.json({
+                                                                                status: "3",
+                                                                                message: "Mail sending faild"
+                                                                            });
                                                                         }
                                                                     })
                                                                 } else {
-                                                                    res.json({status: "3", message: "Profile updation field"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "Profile updation field"
+                                                                    });
                                                                 }
                                                             });
                                                         }
@@ -2588,10 +2866,16 @@ client.connect((err, db) => {
                                                                             message: "Profile updated successfully"
                                                                         });
                                                                     } else {
-                                                                        res.json({status: "7", message: "You have been blocked by Admin"});
+                                                                        res.json({
+                                                                            status: "7",
+                                                                            message: "You have been blocked by Admin"
+                                                                        });
                                                                     }
                                                                 }).catch((finalerr) => {
-                                                                    res.json({status: "3", message: "1Internal server error"});
+                                                                    res.json({
+                                                                        status: "3",
+                                                                        message: "1Internal server error"
+                                                                    });
                                                                 })
                                                             } else {
                                                                 res.json({status: "3", message: "2Internal server error"});
@@ -2600,8 +2884,7 @@ client.connect((err, db) => {
                                                             res.json({status: "3", message: "3Internal Server error"});
                                                         });
                                                     }
-                                                }
-                                                else{
+                                                } else {
                                                     res.json({status: "0", message: "Username must be unique"});
                                                 }
                                             }
