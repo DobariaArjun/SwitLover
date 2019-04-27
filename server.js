@@ -726,7 +726,7 @@ client.connect((err, db) => {
                             if (result[0]["is_Deleted"] == 1) {
                                 dbo.collection(switlover).updateOne(
                                     {Auth_Token: Auth_Token},
-                                    {$set: {is_Deleted: 0, updatedAt: new Date()}}
+                                    {$set: {is_Deleted: 0, Delete_Reason: "", updatedAt: new Date()}}
                                 ).then((updateresult) => {
                                     if (updateresult['result']['n'] == 1) {
                                         var updateData = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
