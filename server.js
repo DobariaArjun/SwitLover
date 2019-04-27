@@ -755,7 +755,7 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
-                    if (!req.body.reason || req.body.reason != null) {
+                    if (!req.body.reason || req.body.reason == null) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
                         var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
