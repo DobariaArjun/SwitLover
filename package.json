@@ -26,6 +26,7 @@
     "express": "^4.16.4",
     "is-empty": "^1.2.0",
     "mongodb": "^3.2.3",
+    "node-gcm": "^1.0.2",
     "nodemailer": "^5.1.1",
     "nodemon": "^1.18.11",
     "promise": "^8.0.3",

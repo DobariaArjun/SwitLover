@@ -4,8 +4,8 @@ const express = require('express');
 const promise = require('promise');
 const isEmpty = require('is-empty');
 const randtoken = require('rand-token');
+const gcm = require('node-gcm');
 const request = require('request');
-// const sendOtp = new SendOtp('220558AWw8c1QK8F5b22554d');
 const app = express();
 const ObjectId = require('mongodb').ObjectID;
 
@@ -28,11 +28,76 @@ var smtpTransport = nodemailer.createTransport({
     }
 });
 
-function paginate(array, page_size, page_number) {
-    return array.slice(page_number * page_size, (page_number + 1) * page_size);
+var sender = new gcm.Sender('AAAAYn8uzkk:APA91bGVhFl37fO7QVzi5beLWw-jF3xopQkrX3jZOUkbeeLxgI7accY-G2-VuC-70V2fNfGZSHZnFam0UtKi8FViX6_K3JfugNBxamKDZeSAecV65Or8UUI9wZieADuIdtMJRtT7ah6I');
+
+function sendNotification(title, body, device_token1) {
+    var message = new gcm.Message({
+        priority: 'high',
+        data: {key1: "Value1"},
+        notification: {
+            title: title,
+            body: body
+        }
+    });
+    var regTokens = [device_token1];
+    sender.send(message, {registrationTokens: regTokens}, function (err, response) {
+        if (err) console.error(err);
+        else console.log(response);
+    });
 }
 
+var N1_Title = "User liked";
+var N2_Title = "User matched";
+var N3_Title = "Preference match update";
+var N4_Title = "Match opportunity";
+var N5_Title = "Power of Time";
+var N6_Title = "Power of Match";
+var N7_Title = "Match discoverd";
+
+var notification_body;
+
+function N1(var1, token, title) {
+    notification_body = var1 + " tagged you. Look among your contacts"
+    sendNotification(title, notification_body, token)
+}
+
+function N2(var1, var2, var3, token, title) {
+    notification_body = var1 + " matches with " + var2 + " and " + var3 + "."
+    sendNotification(title, notification_body, token)
+}
+
+function N3(token, title) {
+    // notification_body = var1 + " updated match preferences."
+    notification_body = "Your match updated match preferences."
+    sendNotification(title, notification_body, token)
+}
+
+function N4(var1, var2, token, title) {
+    notification_body = var1 + " new matches can be unlocked by tagging " + var2 + " more."
+    sendNotification(title, notification_body, token)
+}
+
+function N5(var1, var2, token, title) {
+    notification_body = "You have" + var1 + " left to change your mind before " + var2 + " discover about your match."
+    sendNotification(title, notification_body, token)
+}
+
+function N6(var1, token, title) {
+    notification_body = "You can active your Power of Match to tag back " + var1 + " people that tagged you."
+    sendNotification(title, notification_body, token)
+}
+
+function N7(var1, var2, token, title) {
+    notification_body = "Congratulation, " + var1 + " using the username " + var2 + " is now a Match."
+    sendNotification(title, notification_body, token)
+}
+
+
 var rand, mailOptions, host, link;
+var tempNumberArray = [];
+var isMatch = false;
+
+// Math.floor(Math.random() * ) + 61
 
 //--------------------------------------------------------------------------------------------------------------
 //COLLECTIONS
@@ -40,8 +105,6 @@ var counter = "counters";
 var switlover = "switlover";
 var notification = "notification";
 var match = "match";
-var tempNumberArray = [];
-var isMatch = false;
 //--------------------------------------------------------------------------------------------------------------
 
 
@@ -55,6 +118,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Testing API
             app.get('/', (req, res) => {
+                // sendNotification("hello_Titile", "Body-body", "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_")
                 res.json({status: "1", message: "Server is running..."});
             });
             //--------------------------------------------------------------------------------------------------------------
@@ -233,6 +297,247 @@ client.connect((err, db) => {
                         }).catch((err) => {
                             res.json({status: "3", message: "Internal server error"});
                         })
+                    }
+                }
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Login User
+            app.post('/api/CheckLogin', (req, res) => {
+                var Request_token = req.header('Request_token');
+                if (!Request_token || Request_token == null) {
+                    res.json({status: "5", message: "Request token missing"});
+                } else {
+                    if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
+                        && !req.body.Location || req.body.Location == null && !req.body.Verified || req.body.Verified == null) {
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
+                    } else {
+                        var token = randtoken.generate(64);
+                        var dataArray = dbo.collection(switlover).find({
+                            'Phone_Number.Contry_Code': req.body.Contry_Code,
+                            'Phone_Number.Number': req.body.Number,
+                            'Phone_Number.Location': req.body.Location,
+                        }).toArray();
+                        dataArray.then((result) => {
+                            if (!isEmpty(result)) {
+                                if (result[0]["is_Block"] == 0) {
+                                    //User Exist
+                                    dbo.collection(switlover).updateOne({
+                                        'Phone_Number.Contry_Code': req.body.Contry_Code,
+                                        'Phone_Number.Number': req.body.Number,
+                                        'Phone_Number.Location': req.body.Location,
+                                    }, {
+                                        $set: {Request_token: Request_token, updatedAt: new Date()}
+                                    }).then((dataresult) => {
+                                        if (dataresult['result']['n'] == 1) {
+                                            var dataArray = dbo.collection(switlover).find({
+                                                Request_token: Request_token,
+                                            }).toArray();
+                                            dataArray.then((finalresult) => {
+                                                if (finalresult[0]["is_Block"] == 0) {
+                                                    delete finalresult[0].Contact_List;
+                                                    delete finalresult[0].is_Block;
+                                                    delete finalresult[0].is_Deleted;
+                                                    delete finalresult[0].Contact_Not_Recognized;
+                                                    delete finalresult[0].Add_New_Number_From_App;
+                                                    delete finalresult[0].Contact_Remove_Ratio;
+                                                    delete finalresult[0].Like;
+                                                    delete finalresult[0].Match_Ratio;
+                                                    delete finalresult[0].PowerID;
+                                                    delete finalresult[0].Not_In_App_Purchase;
+                                                    delete finalresult[0].language;
+                                                    delete finalresult[0].Device;
+                                                    delete finalresult[0].createdAt;
+                                                    delete finalresult[0].updatedAt;
+                                                    delete finalresult[0].deletedAt;
+                                                    delete finalresult[0].is_Online;
+                                                    delete finalresult[0].Delete_Reason;
+                                                    res.json({
+                                                        status: "1",
+                                                        message: "User is available",
+                                                        user_data: finalresult
+                                                    });
+                                                } else {
+                                                    res.json({status: "7", message: "You have been blocked by Admin"})
+                                                }
+                                            }).catch((finalerr) => {
+                                                res.json({status: "3", message: "Internal server error"});
+                                            })
+                                        } else {
+                                            res.json({status: "3", message: "Internal server error"});
+                                        }
+                                    }).catch((catcherr) => {
+                                        res.json({status: "3", message: "Internal Server error"});
+                                    })
+                                } else {
+                                    res.json({status: "7", message: "You have been blocked by Admin"});
+                                }
+                            } else {
+                                var myObj = {
+                                    Request_token: Request_token,
+                                    Auth_Token: token.toString(),
+                                    Device_Token: "",
+                                    Username: [],
+                                    Phone_Number: [req.body],
+                                    Email: {EmailAddress: "", Verified: "false"},
+                                    Profile_Pic: "",
+                                    Contact_List: [],
+                                    Contact_Not_Recognized: 0,
+                                    Add_New_Number_From_App: 0,
+                                    Contact_Remove_Ratio: 0,
+                                    Like: [],
+                                    Match_Ratio: {
+                                        Two_Out_2_Ratio: 0,
+                                        One_Out_1_Ratio: 0,
+                                        Anonymous_Chat_Ratio: 0,
+                                    },
+                                    Not_In_App_Purchase: 0,
+                                    PowerID: {Power_Of_Match: 0, Power_Of_Time: 0, Golden_Power: 0},
+                                    Delete_Reason: "",
+                                    language: "en",
+                                    Device: 0,
+                                    is_Deleted: 0,
+                                    is_Online: 0,
+                                    is_Block: 0,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    deletedAt: ""
+                                };
+                                dbo.collection(switlover).insertOne(myObj, (err, result) => {
+                                    if (err)
+                                        res.json({status: "3", message: "Error while inserting records"});
+                                    else {
+                                        var dataArray = dbo.collection(switlover).find({
+                                            'Phone_Number.Contry_Code': req.body.Contry_Code,
+                                            'Phone_Number.Number': req.body.Number,
+                                            'Phone_Number.Location': req.body.Location,
+                                        }).toArray();
+                                        dataArray.then((dataresult) => {
+                                            if (!isEmpty(dataresult)) {
+                                                if (dataresult[0]["is_Block"] == 0) {
+                                                    var dataNotification = dbo.collection(notification).find({userID: new ObjectId(dataresult[0]["_id"])}).toArray();
+                                                    dataNotification.then((result) => {
+                                                        if (isEmpty(result)) {
+                                                            var myObj = {
+                                                                userID: new ObjectId(dataresult[0]["_id"]),
+                                                                matcheek: {
+                                                                    play_sound_for_every_notification: "1",
+                                                                    play_sound_for_every_message: "1",
+                                                                    likes: "1",
+                                                                    matches: "1",
+                                                                    messages: "1",
+                                                                    power_of_time: "1",
+                                                                    promotions: "1"
+                                                                },
+                                                                phone: {
+                                                                    play_sound_for_every_notification: "1",
+                                                                    play_sound_for_every_message: "1",
+                                                                    likes: "1",
+                                                                    matches: "1",
+                                                                    messages: "1",
+                                                                    power_of_time: "1",
+                                                                    promotions: "1"
+                                                                },
+                                                                email: {
+                                                                    frequency: {
+                                                                        every_notification: "0",
+                                                                        twice_a_day: "0",
+                                                                        once_a_day: "1",
+                                                                        once_a_week: "0",
+                                                                        once_a_month: "0"
+                                                                    },
+                                                                    newsletter: "1",
+                                                                    promotions: "1",
+                                                                    likes: "1",
+                                                                    matches: "1",
+                                                                    messages: "1",
+                                                                    power_of_time: "1"
+                                                                }
+                                                            }
+                                                            dbo.collection(notification).insertOne(myObj, (err, resu) => {
+                                                                if (err)
+                                                                    res.json({status: "3", message: "Inserting faild"});
+                                                                else {
+                                                                    delete dataresult[0].Contact_List;
+                                                                    delete dataresult[0].is_Block;
+                                                                    delete dataresult[0].is_Deleted;
+                                                                    delete dataresult[0].Contact_Not_Recognized;
+                                                                    delete dataresult[0].Add_New_Number_From_App;
+                                                                    delete dataresult[0].Contact_Remove_Ratio;
+                                                                    delete dataresult[0].Like;
+                                                                    delete dataresult[0].Match_Ratio;
+                                                                    delete dataresult[0].PowerID;
+                                                                    delete dataresult[0].Not_In_App_Purchase;
+                                                                    delete dataresult[0].language;
+                                                                    delete dataresult[0].Device;
+                                                                    delete dataresult[0].createdAt;
+                                                                    delete dataresult[0].updatedAt;
+                                                                    delete dataresult[0].deletedAt;
+                                                                    delete dataresult[0].is_Online;
+                                                                    res.json({
+                                                                        status: "1",
+                                                                        message: "success",
+                                                                        user_data: dataresult
+                                                                    });
+                                                                }
+                                                            });
+                                                        }
+                                                    }).catch((err) => {
+                                                        res.json({status: "3", message: "Internal Server error"});
+                                                    });
+                                                } else {
+                                                    res.json({status: "7", message: "You have been blocked by Admin"})
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }).catch((err) => {
+                            res.json({status: "3", message: "Internal server error"});
+                        });
+                    }
+
+                }
+
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Update / insert device token
+            app.post('/api/deviceToken', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    if (!req.body.token || req.body.token == null) {
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
+                    } else {
+                        var ha = dbo.collection(switlover).find({
+                            Auth_Token: Auth_Token
+                        }).toArray();
+                        ha.then((result) => {
+                            if (!isEmpty(result)) {
+                                if (result[0]['is_Block'] == 0) {
+                                    dbo.collection(switlover).updateOne({
+                                            Auth_Token: Auth_Token
+                                        },
+                                        {
+                                            $set: {
+                                                Device_Token: req.body.token,
+                                                updatedAt: new Date()
+                                            }
+                                        }).then((update) => {
+                                        if (update['result']['n'] == 1) {
+                                            res.json({status: "1", message: "success"});
+                                        } else {
+                                            res.json({status: "0", message: "error update"});
+                                        }
+                                    })
+                                }
+                            }
+                        }).catch()
                     }
                 }
             });
@@ -450,7 +755,7 @@ client.connect((err, db) => {
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
-                    if (!req.body.reason || !isEmpty(req.body.reason)) {
+                    if (!req.body.reason || req.body.reason != null) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
                         var dataArray = dbo.collection(switlover).find({Auth_Token: Auth_Token}).toArray();
@@ -487,8 +792,8 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //Match prefereances
-            app.post('/api/MatchPreference', (req, res) => {
+            //My Like
+            app.post('/api/LikesUnlikes', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -496,155 +801,51 @@ client.connect((err, db) => {
                     if (!req.body || isEmpty(req.body)) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-                        var mid = new ObjectId(req.body.mid);
-                        var ah = dbo.collection(match).find({
-                            currentUserID: new ObjectId(req.body.cid),
-                            'matchUser.matchUserID': new ObjectId(req.body.mid)
+                        var final_number = req.body.code + "-" + req.body.number;
+                        var isLiked1 = false;
+                        var numberArray = [];
+                        var dataArray = dbo.collection(switlover).find({
+                            Auth_Token: Auth_Token
                         }).toArray();
-                        ah.then((result) => {
-                            if (!isEmpty(result)) {
-                                for (var a = 0; a < result[0]["matchUser"].length; a++) {
-                                    if ((mid).equals(result[0]["matchUser"][a]["matchUserID"])) {
-                                        if (result[0]['matchUser'][a]['isUsed'] == true) {
-                                            if (result[0]['matchUser'][a]['currentUserPreferenace']['is_Set'] == false || result[0]['matchUser'][a]['matchUserPreferenace']['is_Set'] == false) {
-                                                dbo.collection(match).updateOne({
-                                                        currentUserID: new ObjectId(req.body.cid),
-                                                        'matchUser.matchUserID': new ObjectId(req.body.mid)
-                                                    },
-                                                    {
-                                                        $set: {
-                                                            'matchUser.$.currentUserPreferenace.is_Set': true,
-                                                            'matchUser.$.currentUserPreferenace.out_1': req.body.out_1,
-                                                            'matchUser.$.currentUserPreferenace.out_2': req.body.out_2,
-                                                            'matchUser.$.currentUserPreferenace.anonymas_chat': req.body.chat
-                                                        }
-                                                    }).then((responce) => {
-                                                    if (responce['result']['n'] == 1) {
-
-                                                        dbo.collection(match).updateOne({
-                                                                'currentUserID': new ObjectId(req.body.mid),
-                                                                'matchUser.matchUserID': new ObjectId(req.body.cid)
-                                                            },
-                                                            {
-                                                                $set: {
-                                                                    'matchUser.$.matchUserPreferenace.is_Set': true,
-                                                                    'matchUser.$.matchUserPreferenace.out_1': req.body.out_1,
-                                                                    'matchUser.$.matchUserPreferenace.out_2': req.body.out_2,
-                                                                    'matchUser.$.matchUserPreferenace.anonymas_chat': req.body.chat
-                                                                }
-                                                            }).then((re) => {
-                                                            if (re['result']['n'] == 1) {
-                                                                var ha = dbo.collection(match).find({
-                                                                    currentUserID: new ObjectId(req.body.cid),
-                                                                    'matchUser.matchUserID': new ObjectId(req.body.mid)
-                                                                }).toArray();
-                                                                ha.then((result1) => {
-                                                                        if (!isEmpty(result1)) {
-                                                                            for (var h = 0; h < result1[0]["matchUser"].length; h++) {
-                                                                                if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
-                                                                                    if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
-
-                                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            //Fire Notification
-                                                                                            console.log(result1[0]['matchUser'][h])
-                                                                                        }
-                                                                                        //1 out 1 - 1 out 2 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //1 out 1 - chat = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                        }
-                                                                                        //1 out 1 -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //1 out 2 - 1 out 1 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //1 out 2 - 1 out 2 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //1 out 2 - chat = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                        }
-                                                                                        //1 out 2 -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //chat - 1 out 1 = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //chat - 1 out 2 = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //chat - chat = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                        }
-                                                                                        //chat -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //chat & 1 out 2 - 1 out 2 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-                                                                                        //chat & 1 out 2 - chat = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                        }
-                                                                                        //chat & 1 out 2 -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                        }
-
-                                                                                        // res.json({
-                                                                                        //     status: "1",
-                                                                                        //     type: "1",
-                                                                                        //     message: "success"
-                                                                                        // });
-                                                                                    } else {
-
-                                                                                        res.json({
-                                                                                            status: "1",
-                                                                                            type: "0",
-                                                                                            message: "success"
-                                                                                        });
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                )
-                                                            }
-                                                        })
-                                                    } else {
-                                                        res.json({status: "0", message: "Error : " + responce});
-                                                    }
-                                                }).catch((e) => {
-                                                    res.json({status: "0", message: "Error" + e});
-                                                })
-                                            }
+                        dataArray.then((dataresult) => {
+                            let existingLikes;
+                            if (dataresult[0]['is_Block'] == 0) {
+                                existingLikes = dataresult[0]['Like'];
+                                if (!isEmpty(existingLikes)) {
+                                    for (var j = 0; j < existingLikes.length; j++) {
+                                        var numbe = existingLikes[j].split("-")[1];
+                                        if (numbe == req.body.number) {
+                                            isLiked1 = true;
+                                        } else {
+                                            numberArray.push(existingLikes[j])
                                         }
                                     }
+                                    if (!isLiked1) {
+                                        numberArray.push(final_number);
+                                    }
+                                } else {
+                                    numberArray.push(final_number);
                                 }
+                                dbo.collection(switlover).updateOne({
+                                        Auth_Token: Auth_Token,
+                                    },
+                                    {
+                                        $set: {Like: numberArray}
+                                    }).then((resultdata) => {
+                                    if (resultdata['result']['n'] == 1) {
+                                        res.json({status: "1", message: "success"});
+                                    } else {
+                                        res.json({status: "3", message: "Internal server error"})
+                                    }
+                                }).catch((errdata) => {
+                                    res.json({status: "3", message: "Internal server error"})
+                                })
                             } else {
-                                res.json({status: "0", message: "No user found with this ID"});
+                                res.json({status: "7", message: "You have been blocked by Admin"})
                             }
-                        }).catch((er) => {
-                            res.json({status: "0", message: "Error" + er});
-                        });
+                        }).catch((dataerror) => {
+
+                        })
                     }
                 }
             });
@@ -964,8 +1165,8 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
-            //My Like
-            app.post('/api/LikesUnlikes', (req, res) => {
+            //Match prefereances
+            app.post('/api/MatchPreference', (req, res) => {
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -973,62 +1174,225 @@ client.connect((err, db) => {
                     if (!req.body || isEmpty(req.body)) {
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-                        var number;
-                        var final_number;
-                        if ((req.body.number).includes(req.body.code)) {
-                            number = req.body.number;
-                        } else {
-                            number = req.body.code + "" + req.body.number;
-                            final_number = req.body.code + "-" + req.body.number;
-                        }
-
-                        var isLiked1 = false;
-                        var numberArray = [];
-                        var dataArray = dbo.collection(switlover).find({
-                            Auth_Token: Auth_Token
+                        var mid = new ObjectId(req.body.mid);
+                        var ah = dbo.collection(match).find({
+                            currentUserID: new ObjectId(req.body.cid),
+                            'matchUser.matchUserID': new ObjectId(req.body.mid)
                         }).toArray();
-                        dataArray.then((dataresult) => {
-                            let existingLikes;
-                            if (dataresult[0]['is_Block'] == 0) {
-                                existingLikes = dataresult[0]['Like'];
-                                if (!isEmpty(existingLikes)) {
-                                    for (var j = 0; j < existingLikes.length; j++) {
-                                        var numbe = existingLikes[j].split("-")[1];
-                                        if (numbe == req.body.number) {
-                                            isLiked1 = true;
-                                        } else {
-                                            numberArray.push(existingLikes[j])
+                        ah.then((result) => {
+                            if (!isEmpty(result)) {
+                                for (var a = 0; a < result[0]["matchUser"].length; a++) {
+                                    if ((mid).equals(result[0]["matchUser"][a]["matchUserID"])) {
+                                        if (result[0]['matchUser'][a]['isUsed'] == true) {
+                                            if (result[0]['matchUser'][a]['currentUserPreferenace']['is_Set'] == false || result[0]['matchUser'][a]['matchUserPreferenace']['is_Set'] == false) {
+                                                dbo.collection(match).updateOne({
+                                                        currentUserID: new ObjectId(req.body.cid),
+                                                        'matchUser.matchUserID': new ObjectId(req.body.mid)
+                                                    },
+                                                    {
+                                                        $set: {
+                                                            'matchUser.$.currentUserPreferenace.is_Set': true,
+                                                            'matchUser.$.currentUserPreferenace.out_1': req.body.out_1,
+                                                            'matchUser.$.currentUserPreferenace.out_2': req.body.out_2,
+                                                            'matchUser.$.currentUserPreferenace.anonymas_chat': req.body.chat
+                                                        }
+                                                    }).then((responce) => {
+                                                    if (responce['result']['n'] == 1) {
+
+                                                        dbo.collection(match).updateOne({
+                                                                'currentUserID': new ObjectId(req.body.mid),
+                                                                'matchUser.matchUserID': new ObjectId(req.body.cid)
+                                                            },
+                                                            {
+                                                                $set: {
+                                                                    'matchUser.$.matchUserPreferenace.is_Set': true,
+                                                                    'matchUser.$.matchUserPreferenace.out_1': req.body.out_1,
+                                                                    'matchUser.$.matchUserPreferenace.out_2': req.body.out_2,
+                                                                    'matchUser.$.matchUserPreferenace.anonymas_chat': req.body.chat
+                                                                }
+                                                            }).then((re) => {
+                                                            if (re['result']['n'] == 1) {
+                                                                setInterval( function () {
+                                                                    var ah = dbo.collection(switlover).find({
+                                                                        _id: new ObjectId(req.body.cid)
+                                                                    }).toArray();
+                                                                    ah.then((result25) => {
+                                                                        // N3(result25[0]['Device_Token'],N3_Title)
+                                                                        N3("c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK",N3_Title)
+                                                                    })
+                                                                    var ah = dbo.collection(switlover).find({
+                                                                        _id: new ObjectId(req.body.mid)
+                                                                    }).toArray();
+                                                                    ah.then((result26) => {
+                                                                        // N3(result26[0]['Device_Token'],N3_Title)
+                                                                        N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_",N3_Title)
+                                                                    })
+                                                                }, 3000)
+                                                                setInterval(function () {
+                                                                    var ha = dbo.collection(match).find({
+                                                                        currentUserID: new ObjectId(req.body.cid),
+                                                                        'matchUser.matchUserID': new ObjectId(req.body.mid)
+                                                                    }).toArray();
+                                                                    ha.then((result1) => {
+                                                                            if (!isEmpty(result1)) {
+                                                                                for (var h = 0; h < result1[0]["matchUser"].length; h++) {
+                                                                                    if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
+                                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
+
+                                                                                            if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                                //Fire Notification
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result2) => {
+                                                                                                    if (!isEmpty(result2)) {
+                                                                                                        if (result2[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.mid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result3) => {
+                                                                                                                if (!isEmpty(result3)) {
+                                                                                                                    if (result3[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title)
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result4) => {
+                                                                                                    if (!isEmpty(result4)) {
+                                                                                                        if (result4[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.cid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result5) => {
+                                                                                                                if (!isEmpty(result5)) {
+                                                                                                                    if (result5[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title)
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                            }
+                                                                                            //1 out 1 - 1 out 2 = 1 out 2
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //1 out 1 - chat = chat
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                            }
+                                                                                            //1 out 1 -  = x
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //1 out 2 - 1 out 1 = 1 out 2
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //1 out 2 - 1 out 2 = 1 out 2
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //1 out 2 - chat = x
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                            }
+                                                                                            //1 out 2 -  = x
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //chat - 1 out 1 = chat
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //chat - 1 out 2 = x
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //chat - chat = chat
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                            }
+                                                                                            //chat -  = x
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //chat & 1 out 2 - 1 out 2 = 1 out 2
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+                                                                                            //chat & 1 out 2 - chat = chat
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+
+                                                                                            }
+                                                                                            //chat & 1 out 2 -  = x
+                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+
+                                                                                            }
+
+                                                                                            // res.json({
+                                                                                            //     status: "1",
+                                                                                            //     type: "1",
+                                                                                            //     message: "success"
+                                                                                            // });
+                                                                                        } else {
+
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                type: "0",
+                                                                                                message: "success"
+                                                                                            });
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    )
+                                                                }, 10000)
+                                                            }
+                                                        })
+                                                    } else {
+                                                        res.json({status: "0", message: "Error : " + responce});
+                                                    }
+                                                }).catch((e) => {
+                                                    res.json({status: "0", message: "Error" + e});
+                                                })
+                                            }
                                         }
                                     }
-                                    if (!isLiked1) {
-                                        numberArray.push(final_number);
-                                    }
-                                } else {
-                                    numberArray.push(final_number);
                                 }
-                                dbo.collection(switlover).updateOne({
-                                        Auth_Token: Auth_Token,
-                                    },
-                                    {
-                                        $set: {Like: numberArray}
-                                    }).then((resultdata) => {
-                                    if (resultdata['result']['n'] == 1) {
-                                        res.json({status: "1", message: "success"});
-                                    } else {
-                                        res.json({status: "3", message: "Internal server error"})
-                                    }
-                                }).catch((errdata) => {
-                                    res.json({status: "3", message: "Internal server error"})
-                                })
                             } else {
-                                res.json({status: "7", message: "You have been blocked by Admin"})
+                                res.json({status: "0", message: "No user found with this ID"});
                             }
-                        }).catch((dataerror) => {
-
-                        })
+                        }).catch((er) => {
+                            res.json({status: "0", message: "Error" + er});
+                        });
                     }
                 }
-            });
+            }); //pending
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -1083,248 +1447,6 @@ client.connect((err, db) => {
                         res.json({status: "3", message: "Internal server error" + err});
                     })
                 }
-            });
-            //--------------------------------------------------------------------------------------------------------------
-
-            //--------------------------------------------------------------------------------------------------------------
-            //Update / insert device token
-            app.post('/api/deviceToken', (req, res) => {
-                    var Auth_Token = req.header('Auth_Token');
-                    if (!Auth_Token || Auth_Token == null) {
-                        res.json({status: "6", message: "Auth token missing"});
-                    } else {
-                        if (!req.body || req.body == null) {
-                            res.json({status: "4", message: "Parameter missing or Invalid"});
-                        } else {
-                            var ha = dbo.collection(switlover).find({
-                                Auth_Token: Auth_Token
-                            }).toArray();
-                            ha.then((result) => {
-                                if (!isEmpty(result)) {
-                                    if (result[0]['is_Block'] == 0) {
-                                        dbo.collection(switlover).updateOne({
-                                                Auth_Token: Auth_Token
-                                            },
-                                            {
-                                                $set: {
-                                                    Device_Token: req.body.token,
-                                                    updatedAt: new Date()
-                                                }
-                                            }).then((update) => {
-                                            if (update['result']['n'] == 1) {
-                                                res.json({status: "1", message: "success"});
-                                            } else {
-                                                res.json({status: "0", message: "error update"});
-                                            }
-                                        })
-                                    }
-                                }
-                            }).catch()
-                        }
-                    }
-                }
-            )
-            //--------------------------------------------------------------------------------------------------------------
-
-            //--------------------------------------------------------------------------------------------------------------
-            //Login User
-            app.post('/api/CheckLogin', (req, res) => {
-                var Request_token = req.header('Request_token');
-                if (!Request_token || Request_token == null) {
-                    res.json({status: "5", message: "Request token missing"});
-                } else {
-                    if (!req.body.Contry_Code || req.body.Contry_Code == null && !req.body.Number || req.body.Number == null
-                        && !req.body.Location || req.body.Location == null && !req.body.Verified || req.body.Verified == null) {
-                        res.json({status: "4", message: "Parameter missing or Invalid"});
-                    } else {
-                        var token = randtoken.generate(64);
-                        var dataArray = dbo.collection(switlover).find({
-                            'Phone_Number.Contry_Code': req.body.Contry_Code,
-                            'Phone_Number.Number': req.body.Number,
-                            'Phone_Number.Location': req.body.Location,
-                        }).toArray();
-                        dataArray.then((result) => {
-                            if (!isEmpty(result)) {
-                                if (result[0]["is_Block"] == 0) {
-                                    //User Exist
-                                    dbo.collection(switlover).updateOne({
-                                        'Phone_Number.Contry_Code': req.body.Contry_Code,
-                                        'Phone_Number.Number': req.body.Number,
-                                        'Phone_Number.Location': req.body.Location,
-                                    }, {
-                                        $set: {Request_token: Request_token, updatedAt: new Date()}
-                                    }).then((dataresult) => {
-                                        if (dataresult['result']['n'] == 1) {
-                                            var dataArray = dbo.collection(switlover).find({
-                                                Request_token: Request_token,
-                                            }).toArray();
-                                            dataArray.then((finalresult) => {
-                                                if (finalresult[0]["is_Block"] == 0) {
-                                                    delete finalresult[0].Contact_List;
-                                                    delete finalresult[0].is_Block;
-                                                    delete finalresult[0].is_Deleted;
-                                                    delete finalresult[0].Contact_Not_Recognized;
-                                                    delete finalresult[0].Add_New_Number_From_App;
-                                                    delete finalresult[0].Contact_Remove_Ratio;
-                                                    delete finalresult[0].Like;
-                                                    delete finalresult[0].Match_Ratio;
-                                                    delete finalresult[0].PowerID;
-                                                    delete finalresult[0].Not_In_App_Purchase;
-                                                    delete finalresult[0].language;
-                                                    delete finalresult[0].Device;
-                                                    delete finalresult[0].createdAt;
-                                                    delete finalresult[0].updatedAt;
-                                                    delete finalresult[0].deletedAt;
-                                                    delete finalresult[0].is_Online;
-                                                    delete finalresult[0].Delete_Reason;
-                                                    res.json({
-                                                        status: "1",
-                                                        message: "User is available",
-                                                        user_data: finalresult
-                                                    });
-                                                } else {
-                                                    res.json({status: "7", message: "You have been blocked by Admin"})
-                                                }
-                                            }).catch((finalerr) => {
-                                                res.json({status: "3", message: "Internal server error"});
-                                            })
-                                        } else {
-                                            res.json({status: "3", message: "Internal server error"});
-                                        }
-                                    }).catch((catcherr) => {
-                                        res.json({status: "3", message: "Internal Server error"});
-                                    })
-                                } else {
-                                    res.json({status: "7", message: "You have been blocked by Admin"});
-                                }
-                            } else {
-                                var myObj = {
-                                    Request_token: Request_token,
-                                    Auth_Token: token.toString(),
-                                    Device_Token: "",
-                                    Username: [],
-                                    Phone_Number: [req.body],
-                                    Email: {EmailAddress: "", Verified: "false"},
-                                    Profile_Pic: "",
-                                    Contact_List: [],
-                                    Contact_Not_Recognized: 0,
-                                    Add_New_Number_From_App: 0,
-                                    Contact_Remove_Ratio: 0,
-                                    Like: [],
-                                    Match_Ratio: {
-                                        Two_Out_2_Ratio: 0,
-                                        One_Out_1_Ratio: 0,
-                                        Anonymous_Chat_Ratio: 0,
-                                    },
-                                    Not_In_App_Purchase: 0,
-                                    PowerID: {Power_Of_Match: 0, Power_Of_Time: 0, Golden_Power: 0},
-                                    Delete_Reason: "",
-                                    language: "en",
-                                    Device: 0,
-                                    is_Deleted: 0,
-                                    is_Online: 0,
-                                    is_Block: 0,
-                                    createdAt: new Date(),
-                                    updatedAt: new Date(),
-                                    deletedAt: ""
-                                };
-                                dbo.collection(switlover).insertOne(myObj, (err, result) => {
-                                    if (err)
-                                        res.json({status: "3", message: "Error while inserting records"});
-                                    else {
-                                        var dataArray = dbo.collection(switlover).find({
-                                            'Phone_Number.Contry_Code': req.body.Contry_Code,
-                                            'Phone_Number.Number': req.body.Number,
-                                            'Phone_Number.Location': req.body.Location,
-                                        }).toArray();
-                                        dataArray.then((dataresult) => {
-                                            if (!isEmpty(dataresult)) {
-                                                if (dataresult[0]["is_Block"] == 0) {
-                                                    var dataNotification = dbo.collection(notification).find({userID: new ObjectId(dataresult[0]["_id"])}).toArray();
-                                                    dataNotification.then((result) => {
-                                                        if (isEmpty(result)) {
-                                                            var myObj = {
-                                                                userID: new ObjectId(dataresult[0]["_id"]),
-                                                                matcheek: {
-                                                                    play_sound_for_every_notification: "1",
-                                                                    play_sound_for_every_message: "1",
-                                                                    likes: "1",
-                                                                    matches: "1",
-                                                                    messages: "1",
-                                                                    power_of_time: "1",
-                                                                    promotions: "1"
-                                                                },
-                                                                phone: {
-                                                                    play_sound_for_every_notification: "1",
-                                                                    play_sound_for_every_message: "1",
-                                                                    likes: "1",
-                                                                    matches: "1",
-                                                                    messages: "1",
-                                                                    power_of_time: "1",
-                                                                    promotions: "1"
-                                                                },
-                                                                email: {
-                                                                    frequency: {
-                                                                        every_notification: "0",
-                                                                        twice_a_day: "0",
-                                                                        once_a_day: "1",
-                                                                        once_a_week: "0",
-                                                                        once_a_month: "0"
-                                                                    },
-                                                                    newsletter: "1",
-                                                                    promotions: "1",
-                                                                    likes: "1",
-                                                                    matches: "1",
-                                                                    messages: "1",
-                                                                    power_of_time: "1"
-                                                                }
-                                                            }
-                                                            dbo.collection(notification).insertOne(myObj, (err, resu) => {
-                                                                if (err)
-                                                                    res.json({status: "3", message: "Inserting faild"});
-                                                                else {
-                                                                    delete dataresult[0].Contact_List;
-                                                                    delete dataresult[0].is_Block;
-                                                                    delete dataresult[0].is_Deleted;
-                                                                    delete dataresult[0].Contact_Not_Recognized;
-                                                                    delete dataresult[0].Add_New_Number_From_App;
-                                                                    delete dataresult[0].Contact_Remove_Ratio;
-                                                                    delete dataresult[0].Like;
-                                                                    delete dataresult[0].Match_Ratio;
-                                                                    delete dataresult[0].PowerID;
-                                                                    delete dataresult[0].Not_In_App_Purchase;
-                                                                    delete dataresult[0].language;
-                                                                    delete dataresult[0].Device;
-                                                                    delete dataresult[0].createdAt;
-                                                                    delete dataresult[0].updatedAt;
-                                                                    delete dataresult[0].deletedAt;
-                                                                    delete dataresult[0].is_Online;
-                                                                    res.json({
-                                                                        status: "1",
-                                                                        message: "success",
-                                                                        user_data: dataresult
-                                                                    });
-                                                                }
-                                                            });
-                                                        }
-                                                    }).catch((err) => {
-                                                        res.json({status: "3", message: "Internal Server error"});
-                                                    });
-                                                } else {
-                                                    res.json({status: "7", message: "You have been blocked by Admin"})
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        }).catch((err) => {
-                            res.json({status: "3", message: "Internal server error"});
-                        });
-                    }
-
-                }
-
             });
             //--------------------------------------------------------------------------------------------------------------
 
@@ -1596,7 +1718,7 @@ client.connect((err, db) => {
                     }).catch((err) => {
                     })
                 }
-            })
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
