@@ -30,10 +30,10 @@ var smtpTransport = nodemailer.createTransport({
 
 var sender = new gcm.Sender('AAAAYn8uzkk:APA91bGVhFl37fO7QVzi5beLWw-jF3xopQkrX3jZOUkbeeLxgI7accY-G2-VuC-70V2fNfGZSHZnFam0UtKi8FViX6_K3JfugNBxamKDZeSAecV65Or8UUI9wZieADuIdtMJRtT7ah6I');
 
-function sendNotification(title, body, device_token1) {
+function sendNotification(title, body, device_token1, matchUser, currentUser) {
     var message = new gcm.Message({
         priority: 'high',
-        data: {key1: "Value1"},
+        data: {match_user: matchUser},
         notification: {
             title: title,
             body: body
@@ -56,40 +56,40 @@ var N7_Title = "Match discoverd";
 
 var notification_body;
 
-function N1(var1, token, title) {
+function N1(var1, token, title, matchUser) {
     notification_body = var1 + " tagged you. Look among your contacts"
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
-function N2(var1, var2, var3, token, title) {
+function N2(var1, var2, var3, token, title, matchUser) {
     notification_body = var1 + " matches with " + var2 + " and " + var3 + "."
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
-function N3(token, title) {
+function N3(token, title, matchUser) {
     // notification_body = var1 + " updated match preferences."
     notification_body = "Your match updated match preferences."
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
-function N4(var1, var2, token, title) {
+function N4(var1, var2, token, title, matchUser) {
     notification_body = var1 + " new matches can be unlocked by tagging " + var2 + " more."
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
-function N5(var1, var2, token, title) {
+function N5(var1, var2, token, title, matchUser) {
     notification_body = "You have" + var1 + " left to change your mind before " + var2 + " discover about your match."
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
-function N6(var1, token, title) {
+function N6(var1, token, title, matchUser) {
     notification_body = "You can active your Power of Match to tag back " + var1 + " people that tagged you."
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
-function N7(var1, var2, token, title) {
+function N7(var1, var2, token, title, matchUser) {
     notification_body = "Congratulation, " + var1 + " using the username " + var2 + " is now a Match."
-    sendNotification(title, notification_body, token)
+    sendNotification(title, notification_body, token, matchUser)
 }
 
 
@@ -97,7 +97,7 @@ var rand, mailOptions, host, link;
 var tempNumberArray = [];
 var isMatch = false;
 
-// Math.floor(Math.random() * ) + 61
+// Math.floor(Math.random() * 21) + 61
 
 //--------------------------------------------------------------------------------------------------------------
 //COLLECTIONS
@@ -118,7 +118,8 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Testing API
             app.get('/', (req, res) => {
-                // sendNotification("hello_Titile", "Body-body", "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_")
+                sendNotification("hello_Titile", "Body-body", "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK")
+                sendNotification("hello_Titile", "Body-body", "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_")
                 res.json({status: "1", message: "Server is running..."});
             });
             //--------------------------------------------------------------------------------------------------------------
@@ -249,7 +250,32 @@ client.connect((err, db) => {
                                     });
                                     return;
                                 }
-                                if (result[0]['is_Deleted'] == 1) {
+                                else if (result[0]['is_Block'] == 1 && result[0]['is_Deleted'] == 1) {
+                                    var dataresult = result[0];
+                                    delete dataresult.Contact_List;
+                                    delete dataresult.Contact_Not_Recognized;
+                                    delete dataresult.Add_New_Number_From_App;
+                                    delete dataresult.Contact_Remove_Ratio;
+                                    delete dataresult.Like;
+                                    delete dataresult.Match_Ratio;
+                                    delete dataresult.PowerID;
+                                    delete dataresult.Not_In_App_Purchase;
+                                    delete dataresult.language;
+                                    delete dataresult.Device;
+                                    delete dataresult.createdAt;
+                                    delete dataresult.updatedAt;
+                                    delete dataresult.deletedAt;
+                                    delete dataresult.is_Online;
+                                    delete dataresult.is_Blocked;
+                                    res.json({
+                                        status: "7",
+                                        type: "2",
+                                        message: "Sorry you are deleted from this app. If you not do this then please contact to support team.",
+                                        user_data: dataresult
+                                    });
+                                    return;
+                                }
+                                else if (result[0]['is_Deleted'] == 1) {
                                     var dataresult = result[0];
                                     delete dataresult.Contact_List;
                                     delete dataresult.Contact_Not_Recognized;
@@ -894,7 +920,8 @@ client.connect((err, db) => {
                                                                         currentUserPreferenace: Current_User_Preferance,
                                                                         matchUserPreferenace: Match_User_Preferance,
                                                                         number: result[0]['Phone_Number'],
-                                                                        isUsed: false
+                                                                        isUsed: false,
+                                                                        isAvailable: true
                                                                     }
                                                                     myArray.push(myObj)
                                                                 }
@@ -949,7 +976,8 @@ client.connect((err, db) => {
                                                                             currentUserPreferenace: Current_User_Preferance1,
                                                                             matchUserPreferenace: Match_User_Preferance1,
                                                                             number: arr[h]["number"],
-                                                                            isUsed: true
+                                                                            isUsed: true,
+                                                                            isAvailable: result1[0]["matchUser"][a]["isAvailable"]
                                                                         })
                                                                         arr.splice(h, 1);
                                                                     }
@@ -976,7 +1004,8 @@ client.connect((err, db) => {
 
                                                         var myObj = {
                                                             currentUserID: AllUserArray[0]['_id'],
-                                                            matchUser: arr
+                                                            matchUser: arr,
+                                                            isAvailable: true
                                                         }
                                                         dbo.collection(match).insertOne(myObj).then((result) => {
                                                             res.json({status: "1", message: "success"});
@@ -987,7 +1016,8 @@ client.connect((err, db) => {
                                             } else {
                                                 var myObj = {
                                                     currentUserID: AllUserArray[0]['_id'],
-                                                    matchUser: arr
+                                                    matchUser: arr,
+                                                    isAvailable: true
                                                 }
                                                 dbo.collection(match).insertOne(myObj).then((result) => {
                                                     res.json({status: "1", message: "success"});
@@ -1023,7 +1053,7 @@ client.connect((err, db) => {
                             if (!isEmpty(result)) {
                                 var myArray = [];
                                 for (var i = 0; i < result[0]["matchUser"].length; i++) {
-                                    if (result[0]["matchUser"][i]["isUsed"] == false) {
+                                    if (result[0]["matchUser"][i]["isUsed"] == false && result[0]["matchUser"][i]["isAvailable"] == true) {
                                         myArray.push(result[0]["matchUser"][i])
                                     }
                                 }
@@ -1043,79 +1073,74 @@ client.connect((err, db) => {
                                                     if (err3) res.json({status: "0", message: "Error"});
                                                     if (!isEmpty(result3)) {
                                                         if (result3[0]["is_Block"] == 0) {
-                                                            var randomNumbers = randomNumber(result3[0]['Like'], result[0]);
+                                                            var randomNumbers;
+                                                            randomNumbers = randomNumber(result3[0]['Like'], result[0]);
                                                             if (!isEmpty(randomNumbers)) {
-
-                                                                var numb0 = randomNumbers[0].split("-")[1]
-                                                                var numb1 = randomNumbers[1].split("-")[1]
-                                                                dbo.collection(switlover).find({"Phone_Number.Number": numb0}).toArray((err2, result2) => {
-                                                                    if (err2) res.json({status: "0", message: "Error"});
-                                                                    if (!isEmpty(result2)) {
-                                                                        var myObj = {
-                                                                            id: "",
-                                                                            name: result2[0]['Username'][result2[0]['Username'].length - 1],
-                                                                            profile_pic: result2[0]['Profile_Pic'],
-                                                                            isMatch: false
-                                                                        }
-                                                                        arrTempMatch.push(myObj)
-                                                                    } else {
-                                                                        var myObj = {
-                                                                            id: "",
-                                                                            name: numb0,
-                                                                            profile_pic: "",
-                                                                            isMatch: false
-                                                                        }
-                                                                        arrTempMatch.push(myObj)
-                                                                    }
-                                                                })
-
-                                                                dbo.collection(switlover).find({"Phone_Number.Number": numb1}).toArray((err4, result4) => {
-                                                                    if (err4) res.json({status: "0", message: "Error"});
-                                                                    if (!isEmpty(result4)) {
-                                                                        var myObj = {
-                                                                            id: "",
-                                                                            name: result4[0]['Username'][result4[0]['Username'].length - 1],
-                                                                            profile_pic: result4[0]['Profile_Pic'],
-                                                                            isMatch: false
-                                                                        }
-                                                                        arrTempMatch.push(myObj)
-                                                                    } else {
-                                                                        var myObj = {
-                                                                            id: "",
-                                                                            name: numb1,
-                                                                            profile_pic: "",
-                                                                            isMatch: false
-                                                                        }
-                                                                        arrTempMatch.push(myObj)
-                                                                    }
-                                                                })
-
-                                                                setTimeout(function () {
-                                                                    dbo.collection(match).find({
-                                                                        currentUserID: new ObjectId(req.body.userID),
-                                                                        'matchUser.matchUserID': new ObjectId(myArray[0]["matchUserID"])
-                                                                    }).toArray((err9, result9) => {
-                                                                        if (err9) res.json({status: "0", message: "Error"});
-                                                                        if (!isEmpty(result9)) {
-                                                                            console.log(result9)
-                                                                            dbo.collection(match).updateOne({
-                                                                                    currentUserID: new ObjectId(req.body.userID),
-                                                                                    'matchUser.matchUserID': new ObjectId(myArray[0]["matchUserID"])
-                                                                                },
-                                                                                {
-                                                                                    $set: {'matchUser.$.isUsed': true}
-                                                                                }).then((re) => {
-                                                                                if (re['result']['n'] == 1) {
-                                                                                    res.json({
-                                                                                        status: "1",
-                                                                                        message: "Success",
-                                                                                        user_data: arrTempMatch
-                                                                                    });
-                                                                                }
-                                                                            })
+                                                                if (randomNumbers.length > 1) {
+                                                                    var numb0 = randomNumbers[0].split("-")[1]
+                                                                    var numb1 = randomNumbers[1].split("-")[1]
+                                                                    dbo.collection(switlover).find({"Phone_Number.Number": numb0}).toArray((err2, result2) => {
+                                                                        if (err2) res.json({status: "0", message: "Error"});
+                                                                        if (!isEmpty(result2)) {
+                                                                            var myObj = {
+                                                                                id: "",
+                                                                                name: result2[0]['Username'][result2[0]['Username'].length - 1],
+                                                                                profile_pic: result2[0]['Profile_Pic'],
+                                                                                isMatch: false
+                                                                            }
+                                                                            arrTempMatch.push(myObj)
+                                                                        } else {
+                                                                            var myObj = {
+                                                                                id: "",
+                                                                                name: numb0,
+                                                                                profile_pic: "",
+                                                                                isMatch: false
+                                                                            }
+                                                                            arrTempMatch.push(myObj)
                                                                         }
                                                                     })
-                                                                }, 7000);
+
+                                                                    dbo.collection(switlover).find({"Phone_Number.Number": numb1}).toArray((err4, result4) => {
+                                                                        if (err4) res.json({status: "0", message: "Error"});
+                                                                        if (!isEmpty(result4)) {
+                                                                            var myObj = {
+                                                                                id: "",
+                                                                                name: result4[0]['Username'][result4[0]['Username'].length - 1],
+                                                                                profile_pic: result4[0]['Profile_Pic'],
+                                                                                isMatch: false
+                                                                            }
+                                                                            arrTempMatch.push(myObj)
+                                                                        } else {
+                                                                            var myObj = {
+                                                                                id: "",
+                                                                                name: numb1,
+                                                                                profile_pic: "",
+                                                                                isMatch: false
+                                                                            }
+                                                                            arrTempMatch.push(myObj)
+                                                                        }
+                                                                    })
+
+                                                                    setTimeout(function () {
+                                                                        var counterForUser = 0;
+                                                                        var isUser;
+                                                                        do {
+                                                                            console.log(counterForUser);
+                                                                            isUser = checkUserisAvailable(req.body.userID, myArray[counterForUser]);
+                                                                            counterForUser++;
+                                                                        } while (isUser)
+
+                                                                        if (isUser) {
+                                                                            res.json({
+                                                                                status: "1",
+                                                                                message: "Success",
+                                                                                user_data: arrTempMatch
+                                                                            });
+                                                                        }
+                                                                    }, 10000);
+                                                                } else {
+                                                                    randomNumbers = randomNumber(result3[0]['Like'], result[0]);
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -1162,6 +1187,59 @@ client.connect((err, db) => {
                 return tempNumberArray
             }
 
+            function checkUserisAvailable(userID, myArray) {
+                dbo.collection(match).find({
+                    currentUserID: new ObjectId(userID),
+                    'matchUser.matchUserID': new ObjectId(myArray["matchUserID"])
+                }).toArray((err9, result9) => {
+                    if (err9) {
+                    }
+                    if (!isEmpty(result9)) {
+                        if (result9[0]['isAvailable'] == true && myArray["isAvailable"] == true) {
+                            dbo.collection(match).updateOne({
+                                    currentUserID: new ObjectId(userID),
+                                    'matchUser.matchUserID': new ObjectId(myArray["matchUserID"])
+                                },
+                                {
+                                    $set: {
+                                        'matchUser.$.isUsed': true,
+                                        'matchUser.$.isAvailable': false,
+                                        isAvailable: false
+                                    }
+                                }).then((re) => {
+                                if (re['result']['n'] == 1) {
+                                    dbo.collection(match).updateOne({
+                                            currentUserID: new ObjectId(myArray["matchUserID"]),
+                                        },
+                                        {
+                                            $set: {
+                                                isAvailable: false
+                                            }
+                                        }).then((resu) => {
+                                        if (resu['result']['n'] == 1) {
+                                            dbo.collection(match).updateMany({
+                                                    'matchUser.matchUserID': new ObjectId(userID)
+                                                },
+                                                {
+                                                    $set: {
+                                                        'matchUser.$.isAvailable': false
+                                                    }
+                                                }).then((resul) => {
+                                                if (resul['result']['n'] >= 1) {
+                                                    return true;
+                                                }
+                                            }).catch()
+                                        }
+                                    }).catch()
+                                }
+                            })
+                        } else {
+                            return false;
+                        }
+                    }
+                })
+            }
+
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -1172,6 +1250,9 @@ client.connect((err, db) => {
                     res.json({status: "6", message: "Auth token missing"});
                 } else {
                     if (!req.body || isEmpty(req.body)) {
+                        if (!req.body.match || isEmpty(req.body.match)) {
+                            res.json({status: "4", message: "Match parameter missing or Invalid"});
+                        }
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
                         var mid = new ObjectId(req.body.mid);
@@ -1182,6 +1263,7 @@ client.connect((err, db) => {
                         ah.then((result) => {
                             if (!isEmpty(result)) {
                                 for (var a = 0; a < result[0]["matchUser"].length; a++) {
+                                    console.log("From here1")
                                     if ((mid).equals(result[0]["matchUser"][a]["matchUserID"])) {
                                         if (result[0]['matchUser'][a]['isUsed'] == true) {
                                             if (result[0]['matchUser'][a]['currentUserPreferenace']['is_Set'] == false || result[0]['matchUser'][a]['matchUserPreferenace']['is_Set'] == false) {
@@ -1212,166 +1294,488 @@ client.connect((err, db) => {
                                                                 }
                                                             }).then((re) => {
                                                             if (re['result']['n'] == 1) {
-                                                                setInterval( function () {
-                                                                    var ah = dbo.collection(switlover).find({
-                                                                        _id: new ObjectId(req.body.cid)
-                                                                    }).toArray();
-                                                                    ah.then((result25) => {
-                                                                        // N3(result25[0]['Device_Token'],N3_Title)
-                                                                        N3("c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK",N3_Title)
-                                                                    })
-                                                                    var ah = dbo.collection(switlover).find({
-                                                                        _id: new ObjectId(req.body.mid)
-                                                                    }).toArray();
-                                                                    ah.then((result26) => {
-                                                                        // N3(result26[0]['Device_Token'],N3_Title)
-                                                                        N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_",N3_Title)
-                                                                    })
-                                                                }, 3000)
-                                                                setInterval(function () {
-                                                                    var ha = dbo.collection(match).find({
-                                                                        currentUserID: new ObjectId(req.body.cid),
-                                                                        'matchUser.matchUserID': new ObjectId(req.body.mid)
-                                                                    }).toArray();
-                                                                    ha.then((result1) => {
-                                                                            if (!isEmpty(result1)) {
-                                                                                for (var h = 0; h < result1[0]["matchUser"].length; h++) {
-                                                                                    if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
-                                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
 
-                                                                                            if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                                //Fire Notification
-                                                                                                var ah = dbo.collection(switlover).find({
-                                                                                                    _id: new ObjectId(req.body.cid)
-                                                                                                }).toArray();
-                                                                                                ah.then((result2) => {
-                                                                                                    if (!isEmpty(result2)) {
-                                                                                                        if (result2[0]['is_Block'] == 0) {
-                                                                                                            var hah = dbo.collection(switlover).find({
-                                                                                                                _id: new ObjectId(req.body.mid)
-                                                                                                            }).toArray();
-                                                                                                            hah.then((result3) => {
-                                                                                                                if (!isEmpty(result3)) {
-                                                                                                                    if (result3[0]['is_Block'] == 0) {
-                                                                                                                        for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
-                                                                                                                            for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
-                                                                                                                                if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                    N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title)
-                                                                                                                                }
+                                                                var ah = dbo.collection(switlover).find({
+                                                                    _id: new ObjectId(req.body.mid)
+                                                                }).toArray();
+                                                                ah.then((result26) => {
+                                                                    // N3(result26[0]['Device_Token'],N3_Title)
+                                                                    N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N3_Title, "", "")
+                                                                })
+
+                                                                var ha = dbo.collection(match).find({
+                                                                    currentUserID: new ObjectId(req.body.cid),
+                                                                    'matchUser.matchUserID': new ObjectId(req.body.mid)
+                                                                }).toArray();
+                                                                ha.then((result1) => {
+                                                                    if (!isEmpty(result1)) {
+                                                                        var interval = setInterval(function () {
+                                                                            for (var h = 0; h < result1[0]["matchUser"].length; h++) {
+                                                                                if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
+                                                                                    if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
+                                                                                        //1 out 1 - 1 out 1 = Normal chat
+                                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                            //Fire Notification
+                                                                                            var ah = dbo.collection(switlover).find({
+                                                                                                _id: new ObjectId(req.body.cid)
+                                                                                            }).toArray();
+                                                                                            ah.then((result2) => {
+                                                                                                if (!isEmpty(result2)) {
+                                                                                                    if (result2[0]['is_Block'] == 0) {
+                                                                                                        var hah = dbo.collection(switlover).find({
+                                                                                                            _id: new ObjectId(req.body.mid)
+                                                                                                        }).toArray();
+                                                                                                        hah.then((result3) => {
+                                                                                                            if (!isEmpty(result3)) {
+                                                                                                                if (result3[0]['is_Block'] == 0) {
+                                                                                                                    for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                        for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                            if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
                                                                                                                             }
                                                                                                                         }
                                                                                                                     }
                                                                                                                 }
-                                                                                                            })
-                                                                                                        }
+                                                                                                            }
+                                                                                                        })
                                                                                                     }
-                                                                                                })
-                                                                                                var ah = dbo.collection(switlover).find({
-                                                                                                    _id: new ObjectId(req.body.mid)
-                                                                                                }).toArray();
-                                                                                                ah.then((result4) => {
-                                                                                                    if (!isEmpty(result4)) {
-                                                                                                        if (result4[0]['is_Block'] == 0) {
-                                                                                                            var hah = dbo.collection(switlover).find({
-                                                                                                                _id: new ObjectId(req.body.cid)
-                                                                                                            }).toArray();
-                                                                                                            hah.then((result5) => {
-                                                                                                                if (!isEmpty(result5)) {
-                                                                                                                    if (result5[0]['is_Block'] == 0) {
-                                                                                                                        for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
-                                                                                                                            for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
-                                                                                                                                if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                    N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title)
-                                                                                                                                }
+                                                                                                }
+                                                                                            })
+                                                                                            var ah = dbo.collection(switlover).find({
+                                                                                                _id: new ObjectId(req.body.mid)
+                                                                                            }).toArray();
+                                                                                            ah.then((result4) => {
+                                                                                                if (!isEmpty(result4)) {
+                                                                                                    if (result4[0]['is_Block'] == 0) {
+                                                                                                        var hah = dbo.collection(switlover).find({
+                                                                                                            _id: new ObjectId(req.body.cid)
+                                                                                                        }).toArray();
+                                                                                                        hah.then((result5) => {
+                                                                                                            if (!isEmpty(result5)) {
+                                                                                                                if (result5[0]['is_Block'] == 0) {
+                                                                                                                    for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                        for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                            if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
                                                                                                                             }
                                                                                                                         }
                                                                                                                     }
                                                                                                                 }
-                                                                                                            })
-                                                                                                        }
+                                                                                                            }
+                                                                                                        })
                                                                                                     }
-                                                                                                })
-                                                                                            }
-                                                                                            //1 out 1 - 1 out 2 = 1 out 2
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //1 out 1 - chat = chat
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                            }
-                                                                                            //1 out 1 -  = x
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //1 out 2 - 1 out 1 = 1 out 2
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //1 out 2 - 1 out 2 = 1 out 2
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //1 out 2 - chat = x
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                            }
-                                                                                            //1 out 2 -  = x
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //chat - 1 out 1 = chat
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //chat - 1 out 2 = x
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //chat - chat = chat
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                            }
-                                                                                            //chat -  = x
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //chat & 1 out 2 - 1 out 2 = 1 out 2
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-                                                                                            //chat & 1 out 2 - chat = chat
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-
-                                                                                            }
-                                                                                            //chat & 1 out 2 -  = x
-                                                                                            else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-
-                                                                                            }
-
-                                                                                            // res.json({
-                                                                                            //     status: "1",
-                                                                                            //     type: "1",
-                                                                                            //     message: "success"
-                                                                                            // });
-                                                                                        } else {
-
+                                                                                                }
+                                                                                            })
                                                                                             res.json({
                                                                                                 status: "1",
-                                                                                                type: "0",
-                                                                                                message: "success"
+                                                                                                message: "success",
+                                                                                                notification_type: 7
                                                                                             });
                                                                                         }
+                                                                                        //1 out 1 - 1 out 2 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            matchArray.pop()
+                                                                                            if (matchArray.length > 1) {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 1,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                if (matchArray[0]["isMatch"] == true) {
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.cid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result2) => {
+                                                                                                        if (!isEmpty(result2)) {
+                                                                                                            if (result2[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result3) => {
+                                                                                                                    if (!isEmpty(result3)) {
+                                                                                                                        if (result3[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.mid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result4) => {
+                                                                                                        if (!isEmpty(result4)) {
+                                                                                                            if (result4[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result5) => {
+                                                                                                                    if (!isEmpty(result5)) {
+                                                                                                                        if (result5[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 7
+                                                                                                    });
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        //1 out 1 - chat = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 0,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        //1 out 1 -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 2,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        //1 out 2 - 1 out 1 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 || result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            matchArray.pop()
+                                                                                            if (matchArray.length > 1) {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 1,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                if (matchArray[0]["isMatch"] == true) {
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.cid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result2) => {
+                                                                                                        if (!isEmpty(result2)) {
+                                                                                                            if (result2[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result3) => {
+                                                                                                                    if (!isEmpty(result3)) {
+                                                                                                                        if (result3[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.mid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result4) => {
+                                                                                                        if (!isEmpty(result4)) {
+                                                                                                            if (result4[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result5) => {
+                                                                                                                    if (!isEmpty(result5)) {
+                                                                                                                        if (result5[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 7
+                                                                                                    });
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        //1 out 2 - chat = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 2,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        //1 out 2 -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 2,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        //chat - 1 out 1 = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 0,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        //chat - 1 out 2 = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 2,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        //chat - chat = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 0,
+                                                                                                match: matchArray
+                                                                                            });
+
+                                                                                        }
+                                                                                        //chat -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 0,
+                                                                                                match: matchArray
+                                                                                            });
+
+                                                                                        }
+                                                                                        //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            matchArray.pop()
+                                                                                            if (matchArray.length > 1) {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 3,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                if (matchArray[0]["isMatch"] == true) {
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.cid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result2) => {
+                                                                                                        if (!isEmpty(result2)) {
+                                                                                                            if (result2[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result3) => {
+                                                                                                                    if (!isEmpty(result3)) {
+                                                                                                                        if (result3[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.mid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result4) => {
+                                                                                                        if (!isEmpty(result4)) {
+                                                                                                            if (result4[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result5) => {
+                                                                                                                    if (!isEmpty(result5)) {
+                                                                                                                        if (result5[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 7
+                                                                                                    });
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        //chat & 1 out 2 - 1 out 2 = 1 out 2
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            matchArray.pop()
+                                                                                            if (matchArray.length > 1) {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 1,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                if (matchArray[0]["isMatch"] == true) {
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.cid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result2) => {
+                                                                                                        if (!isEmpty(result2)) {
+                                                                                                            if (result2[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result3) => {
+                                                                                                                    if (!isEmpty(result3)) {
+                                                                                                                        if (result3[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    var ah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.mid)
+                                                                                                    }).toArray();
+                                                                                                    ah.then((result4) => {
+                                                                                                        if (!isEmpty(result4)) {
+                                                                                                            if (result4[0]['is_Block'] == 0) {
+                                                                                                                var hah = dbo.collection(switlover).find({
+                                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                                }).toArray();
+                                                                                                                hah.then((result5) => {
+                                                                                                                    if (!isEmpty(result5)) {
+                                                                                                                        if (result5[0]['is_Block'] == 0) {
+                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            }
+                                                                                                        }
+                                                                                                    })
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 7
+                                                                                                    });
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        //chat & 1 out 2 - chat = chat
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 0,
+                                                                                                match: matchArray
+                                                                                            });
+
+                                                                                        }
+                                                                                        //chat & 1 out 2 -  = x
+                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                            var matchArray = req.body.match;
+                                                                                            res.json({
+                                                                                                status: "1",
+                                                                                                message: "success",
+                                                                                                notification_type: 2,
+                                                                                                match: matchArray
+                                                                                            });
+                                                                                        }
+                                                                                        clearInterval(interval)
+
+                                                                                    } else {
+                                                                                        res.json({
+                                                                                            status: "1",
+                                                                                            type: "0",
+                                                                                            message: "success"
+                                                                                        });
+                                                                                        clearInterval(interval)
+                                                                                        break;
                                                                                     }
                                                                                 }
                                                                             }
-                                                                        }
-                                                                    )
-                                                                }, 10000)
+                                                                        }, 3000)
+                                                                    }
+                                                                })
+
                                                             }
                                                         })
                                                     } else {
@@ -1392,7 +1796,7 @@ client.connect((err, db) => {
                         });
                     }
                 }
-            }); //pending
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -2368,7 +2772,7 @@ client.connect((err, db) => {
                                                             });
                                                         }
                                                     } else {
-                                                        res.json({status: "0", message: "Username must be unique"});
+                                                        res.json({status: "0", message: "Username already exist"});
                                                     }
                                                 }
                                             })
@@ -3007,7 +3411,7 @@ client.connect((err, db) => {
                                                         });
                                                     }
                                                 } else {
-                                                    res.json({status: "0", message: "Username must be unique"});
+                                                    res.json({status: "0", message: "Username already exist"});
                                                 }
                                             }
                                         })
@@ -3390,7 +3794,7 @@ client.connect((err, db) => {
                         res.json({status: "3", message: "Internal server error"});
                     })
                 }
-            })
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //**************************************************************************************************************
@@ -3412,7 +3816,7 @@ client.connect((err, db) => {
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
-            })
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -3437,7 +3841,7 @@ client.connect((err, db) => {
                 }).catch((err) => {
                     res.json({status: "3", message: "Internal server error"});
                 })
-            })
+            });
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -3782,7 +4186,7 @@ client.connect((err, db) => {
                                     _id: new ObjectId(req.body.id)
                                 },
                                 {
-                                    $set: {is_Deleted: 1, updatedAt: new Date()}
+                                    $set: {is_Deleted: 1, is_Block: 1, updatedAt: new Date()}
                                 }
                             ).then((result) => {
                                 if (result['result']['n'] == 1) {
@@ -3800,7 +4204,7 @@ client.connect((err, db) => {
                                     _id: new ObjectId(req.body.id)
                                 },
                                 {
-                                    $set: {is_Deleted: 0, updatedAt: new Date()}
+                                    $set: {is_Deleted: 0, is_Block: 0, updatedAt: new Date()}
                                 }
                             ).then((result) => {
                                 if (result['result']['n'] == 1) {
