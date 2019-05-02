@@ -118,7 +118,6 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Testing API
             app.get('/', (req, res) => {
-                sendNotification("hello_Titile", "Body-body", "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK")
                 sendNotification("hello_Titile", "Body-body", "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_")
                 res.json({status: "1", message: "Server is running..."});
             });
@@ -4331,7 +4330,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Set Notification Settings
             app.post('/api/SetNotificationadmin', (req, res) => {
-
+                console.log(req.body)
                 var dataNotification = dbo.collection(notification).find({userID: new ObjectId(req.body.data["userID"])}).toArray();
                 dataNotification.then((result) => {
                     if (isEmpty(result)) {
