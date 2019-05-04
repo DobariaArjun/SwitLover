@@ -28,7 +28,7 @@ var smtpTransport = nodemailer.createTransport({
     }
 });
 
-var sender = new gcm.Sender('AAAAYn8uzkk:APA91bGVhFl37fO7QVzi5beLWw-jF3xopQkrX3jZOUkbeeLxgI7accY-G2-VuC-70V2fNfGZSHZnFam0UtKi8FViX6_K3JfugNBxamKDZeSAecV65Or8UUI9wZieADuIdtMJRtT7ah6I');
+var sender = new gcm.Sender('AAAA7vn5O1I:APA91bHDisPau4quviRkkmVbvfPnlJox3FprpoPKLD71HXMT-jVajjj5_-pGt2-_E4Ky2ncccEc6_iZHRgrmcRS2o2fng2pyEBUv_OVqeQtTDQyDBEYvf3U0wLKH0nnZaM490ss9ezC3');
 
 function sendNotification(title, body, device_token1, matchUser, currentUser) {
     var message = new gcm.Message({
@@ -1298,8 +1298,8 @@ client.connect((err, db) => {
                                                                     _id: new ObjectId(req.body.mid)
                                                                 }).toArray();
                                                                 ah.then((result26) => {
-                                                                    // N3(result26[0]['Device_Token'],N3_Title)
-                                                                    N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N3_Title, "", "")
+                                                                    N3(result26[0]['Device_Token'],N3_Title)
+                                                                    // N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N3_Title, "", "")
                                                                 })
 
                                                                 var ha = dbo.collection(match).find({
@@ -1330,7 +1330,7 @@ client.connect((err, db) => {
                                                                                                                     for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
                                                                                                                         for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
                                                                                                                             if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
                                                                                                                             }
                                                                                                                         }
                                                                                                                     }
@@ -1355,7 +1355,7 @@ client.connect((err, db) => {
                                                                                                                     for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
                                                                                                                         for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
                                                                                                                             if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
                                                                                                                             }
                                                                                                                         }
                                                                                                                     }
@@ -1399,7 +1399,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1424,7 +1424,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1490,7 +1490,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1515,7 +1515,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1623,7 +1623,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1648,7 +1648,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1694,7 +1694,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], "c6hHKKSvYq0:APA91bFg30CVhG_v4PPAbI5B8LSKa8gNRKvN61ZOvBRQ8nYgqtV6C2iecCgw_uDvwcCizcFv2g6o9inxk_2DptQSRuJCKgFWg59WuqPB3QIla9j_wv-xTiCtkQSUSUX9ZNurTkiBE5ZK", N7_Title, result3[0]['_id'])
+                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
@@ -1719,7 +1719,7 @@ client.connect((err, db) => {
                                                                                                                             for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
                                                                                                                                 for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
                                                                                                                                     if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], "cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N7_Title, result5[0]['_id'])
+                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
