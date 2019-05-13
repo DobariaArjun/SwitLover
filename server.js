@@ -105,6 +105,7 @@ var counter = "counters";
 var switlover = "switlover";
 var notification = "notification";
 var match = "match";
+var temp_match = "temp_match";
 //--------------------------------------------------------------------------------------------------------------
 
 
@@ -886,7 +887,7 @@ client.connect((err, db) => {
                         if (AllUserArray[0]["is_Block"] == 0) {
                             var myNumber = AllUserArray[0]['Phone_Number'];
                             var likeByMeArray = AllUserArray[0]['Like'];
-                            if (!isEmpty(likeByMeArray)) {
+                            if (likeByMeArray.length > 20) {
                                 for (var i = 0; i < likeByMeArray.length; i++) {
                                     var num = likeByMeArray[i].split("-")[1]
                                     dbo.collection(switlover).find({'Phone_Number.Number': num}).toArray((err, result) => {
@@ -989,10 +990,18 @@ client.connect((err, db) => {
                                                         ).then((resu) => {
                                                             if (resu['result']['n'] == 1) {
                                                                 //success
-                                                                res.json({status: "1", message: "success", isAvailable: "1"});
+                                                                res.json({
+                                                                    status: "1",
+                                                                    message: "success",
+                                                                    isAvailable: "1"
+                                                                });
                                                             } else {
                                                                 //already up to date
-                                                                res.json({status: "1", message: "Already up-to date", isAvailable: "1"});
+                                                                res.json({
+                                                                    status: "1",
+                                                                    message: "Already up-to date",
+                                                                    isAvailable: "1"
+                                                                });
                                                             }
                                                         }).catch((err) => {
 
@@ -1026,6 +1035,11 @@ client.connect((err, db) => {
                                         res.json({status: "0", message: "No match found"});
                                     }
                                 }, 5000);
+                            } else {
+                                res.json({
+                                    status: "7",
+                                    message: "You don't have the sufficent likes to get your match...!!!"
+                                })
                             }
                         }
                     }
@@ -1255,6 +1269,40 @@ client.connect((err, db) => {
                         }
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
+                        var myObj = {
+                            currentU: req.body.cid,
+                            matchA: req.body.match
+                        }
+                        dbo.collection(temp_match).find({
+                            currentU: req.body.cid
+                        }).toArray((e, r) => {
+                            if (e) {
+                                //error in find
+                            }
+                            if (!isEmpty(r)) {
+                                dbo.collection(temp_match).updateOne({
+                                    currentU: req.body.cid
+                                }, {
+                                    $set: {
+                                        matchA: req.body.match
+                                    }
+                                }).then((r1) => {
+                                    if (r1['result']['n'] == 1) {
+                                        //Updated successfully
+                                    } else {
+                                        //already uptodate
+                                    }
+                                }).catch();
+                            } else {
+                                dbo.collection(temp_match).insertOne(myObj, (ee, rr) => {
+                                    if (ee) {
+                                        //Error while inserting
+                                    } else {
+                                        //insert successfully
+                                    }
+                                })
+                            }
+                        })
                         var mid = new ObjectId(req.body.mid);
                         var ah = dbo.collection(match).find({
                             currentUserID: new ObjectId(req.body.cid),
@@ -1263,7 +1311,6 @@ client.connect((err, db) => {
                         ah.then((result) => {
                             if (!isEmpty(result)) {
                                 for (var a = 0; a < result[0]["matchUser"].length; a++) {
-                                    console.log("From here1")
                                     if ((mid).equals(result[0]["matchUser"][a]["matchUserID"])) {
                                         if (result[0]['matchUser'][a]['isUsed'] == true) {
                                             if (result[0]['matchUser'][a]['currentUserPreferenace']['is_Set'] == false || result[0]['matchUser'][a]['matchUserPreferenace']['is_Set'] == false) {
@@ -1309,470 +1356,750 @@ client.connect((err, db) => {
                                                                 }).toArray();
                                                                 ha.then((result1) => {
                                                                     if (!isEmpty(result1)) {
-                                                                        var interval = setInterval(function () {
-                                                                            for (var h = 0; h < result1[0]["matchUser"].length; h++) {
-                                                                                if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
-                                                                                    if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
-                                                                                        //1 out 1 - 1 out 1 = Normal chat
-                                                                                        if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                            //Fire Notification
-                                                                                            var ah = dbo.collection(switlover).find({
-                                                                                                _id: new ObjectId(req.body.cid)
-                                                                                            }).toArray();
-                                                                                            ah.then((result2) => {
-                                                                                                if (!isEmpty(result2)) {
-                                                                                                    if (result2[0]['is_Block'] == 0) {
-                                                                                                        var hah = dbo.collection(switlover).find({
-                                                                                                            _id: new ObjectId(req.body.mid)
-                                                                                                        }).toArray();
-                                                                                                        hah.then((result3) => {
-                                                                                                            if (!isEmpty(result3)) {
-                                                                                                                if (result3[0]['is_Block'] == 0) {
-                                                                                                                    for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
-                                                                                                                        for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
-                                                                                                                            if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
-                                                                                                                            }
+                                                                        for (var h = 0; h < result1[0]["matchUser"].length; h++) {
+                                                                            if ((mid).equals(result1[0]["matchUser"][h]["matchUserID"])) {
+                                                                                if (result1[0]['matchUser'][h]['currentUserPreferenace']['is_Set'] == true && result1[0]['matchUser'][h]['matchUserPreferenace']['is_Set'] == true) {
+                                                                                    //1 out 1 - 1 out 1 = Normal chat
+                                                                                    if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                        //Fire Notification
+                                                                                        var ah = dbo.collection(switlover).find({
+                                                                                            _id: new ObjectId(req.body.cid)
+                                                                                        }).toArray();
+                                                                                        ah.then((result2) => {
+                                                                                            if (!isEmpty(result2)) {
+                                                                                                if (result2[0]['is_Block'] == 0) {
+                                                                                                    var hah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.mid)
+                                                                                                    }).toArray();
+                                                                                                    hah.then((result3) => {
+                                                                                                        if (!isEmpty(result3)) {
+                                                                                                            if (result3[0]['is_Block'] == 0) {
+                                                                                                                for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                    for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                        if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                            N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
                                                                                                                         }
                                                                                                                     }
                                                                                                                 }
                                                                                                             }
-                                                                                                        })
-                                                                                                    }
+                                                                                                        }
+                                                                                                    })
                                                                                                 }
-                                                                                            })
-                                                                                            var ah = dbo.collection(switlover).find({
-                                                                                                _id: new ObjectId(req.body.mid)
-                                                                                            }).toArray();
-                                                                                            ah.then((result4) => {
-                                                                                                if (!isEmpty(result4)) {
-                                                                                                    if (result4[0]['is_Block'] == 0) {
-                                                                                                        var hah = dbo.collection(switlover).find({
-                                                                                                            _id: new ObjectId(req.body.cid)
-                                                                                                        }).toArray();
-                                                                                                        hah.then((result5) => {
-                                                                                                            if (!isEmpty(result5)) {
-                                                                                                                if (result5[0]['is_Block'] == 0) {
-                                                                                                                    for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
-                                                                                                                        for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
-                                                                                                                            if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
-                                                                                                                            }
+                                                                                            }
+                                                                                        })
+                                                                                        var ah = dbo.collection(switlover).find({
+                                                                                            _id: new ObjectId(req.body.mid)
+                                                                                        }).toArray();
+                                                                                        ah.then((result4) => {
+                                                                                            if (!isEmpty(result4)) {
+                                                                                                if (result4[0]['is_Block'] == 0) {
+                                                                                                    var hah = dbo.collection(switlover).find({
+                                                                                                        _id: new ObjectId(req.body.cid)
+                                                                                                    }).toArray();
+                                                                                                    hah.then((result5) => {
+                                                                                                        if (!isEmpty(result5)) {
+                                                                                                            if (result5[0]['is_Block'] == 0) {
+                                                                                                                for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                    for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                        if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                            N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
                                                                                                                         }
                                                                                                                     }
                                                                                                                 }
                                                                                                             }
-                                                                                                        })
-                                                                                                    }
-                                                                                                }
-                                                                                            })
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 7
-                                                                                            });
-                                                                                        }
-                                                                                        //1 out 1 - 1 out 2 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            matchArray.pop()
-                                                                                            if (matchArray.length > 1) {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 1,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                if (matchArray[0]["isMatch"] == true) {
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.cid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result2) => {
-                                                                                                        if (!isEmpty(result2)) {
-                                                                                                            if (result2[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.mid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result3) => {
-                                                                                                                    if (!isEmpty(result3)) {
-                                                                                                                        if (result3[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
                                                                                                         }
                                                                                                     })
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.mid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result4) => {
-                                                                                                        if (!isEmpty(result4)) {
-                                                                                                            if (result4[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.cid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result5) => {
-                                                                                                                    if (!isEmpty(result5)) {
-                                                                                                                        if (result5[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "success",
-                                                                                                        notification_type: 7
-                                                                                                    });
                                                                                                 }
                                                                                             }
-                                                                                        }
-                                                                                        //1 out 1 - chat = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 0,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        //1 out 1 -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 2,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        //1 out 2 - 1 out 1 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 || result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            matchArray.pop()
-                                                                                            if (matchArray.length > 1) {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 1,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                if (matchArray[0]["isMatch"] == true) {
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.cid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result2) => {
-                                                                                                        if (!isEmpty(result2)) {
-                                                                                                            if (result2[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.mid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result3) => {
-                                                                                                                    if (!isEmpty(result3)) {
-                                                                                                                        if (result3[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.mid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result4) => {
-                                                                                                        if (!isEmpty(result4)) {
-                                                                                                            if (result4[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.cid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result5) => {
-                                                                                                                    if (!isEmpty(result5)) {
-                                                                                                                        if (result5[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "success",
-                                                                                                        notification_type: 7
-                                                                                                    });
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                        //1 out 2 - chat = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 2,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        //1 out 2 -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 2,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        //chat - 1 out 1 = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 0,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        //chat - 1 out 2 = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 2,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        //chat - chat = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 0,
-                                                                                                match: matchArray
-                                                                                            });
-
-                                                                                        }
-                                                                                        //chat -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 0,
-                                                                                                match: matchArray
-                                                                                            });
-
-                                                                                        }
-                                                                                        //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            matchArray.pop()
-                                                                                            if (matchArray.length > 1) {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 3,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                if (matchArray[0]["isMatch"] == true) {
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.cid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result2) => {
-                                                                                                        if (!isEmpty(result2)) {
-                                                                                                            if (result2[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.mid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result3) => {
-                                                                                                                    if (!isEmpty(result3)) {
-                                                                                                                        if (result3[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.mid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result4) => {
-                                                                                                        if (!isEmpty(result4)) {
-                                                                                                            if (result4[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.cid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result5) => {
-                                                                                                                    if (!isEmpty(result5)) {
-                                                                                                                        if (result5[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "success",
-                                                                                                        notification_type: 7
-                                                                                                    });
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                        //chat & 1 out 2 - 1 out 2 = 1 out 2
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            matchArray.pop()
-                                                                                            if (matchArray.length > 1) {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 1,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                if (matchArray[0]["isMatch"] == true) {
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.cid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result2) => {
-                                                                                                        if (!isEmpty(result2)) {
-                                                                                                            if (result2[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.mid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result3) => {
-                                                                                                                    if (!isEmpty(result3)) {
-                                                                                                                        if (result3[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    var ah = dbo.collection(switlover).find({
-                                                                                                        _id: new ObjectId(req.body.mid)
-                                                                                                    }).toArray();
-                                                                                                    ah.then((result4) => {
-                                                                                                        if (!isEmpty(result4)) {
-                                                                                                            if (result4[0]['is_Block'] == 0) {
-                                                                                                                var hah = dbo.collection(switlover).find({
-                                                                                                                    _id: new ObjectId(req.body.cid)
-                                                                                                                }).toArray();
-                                                                                                                hah.then((result5) => {
-                                                                                                                    if (!isEmpty(result5)) {
-                                                                                                                        if (result5[0]['is_Block'] == 0) {
-                                                                                                                            for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
-                                                                                                                                for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
-                                                                                                                                    if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
-                                                                                                                                        N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                })
-                                                                                                            }
-                                                                                                        }
-                                                                                                    })
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "success",
-                                                                                                        notification_type: 7
-                                                                                                    });
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                        //chat & 1 out 2 - chat = chat
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 0,
-                                                                                                match: matchArray
-                                                                                            });
-
-                                                                                        }
-                                                                                        //chat & 1 out 2 -  = x
-                                                                                        else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                            var matchArray = req.body.match;
-                                                                                            res.json({
-                                                                                                status: "1",
-                                                                                                message: "success",
-                                                                                                notification_type: 2,
-                                                                                                match: matchArray
-                                                                                            });
-                                                                                        }
-                                                                                        clearInterval(interval)
-
-                                                                                    } else {
+                                                                                        })
                                                                                         res.json({
                                                                                             status: "1",
-                                                                                            type: "0",
-                                                                                            message: "success"
+                                                                                            message: "success",
+                                                                                            notification_type: 7
                                                                                         });
-                                                                                        clearInterval(interval)
-                                                                                        break;
                                                                                     }
+                                                                                    //1 out 1 - 1 out 2 = 1 out 2
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+                                                                                        matchArray.pop()
+                                                                                        if (matchArray.length > 1) {
+
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 1,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 1,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            if (matchArray[0]["isMatch"] == true) {
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result2) => {
+                                                                                                    if (!isEmpty(result2)) {
+                                                                                                        if (result2[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.mid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result3) => {
+                                                                                                                if (!isEmpty(result3)) {
+                                                                                                                    if (result3[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result4) => {
+                                                                                                    if (!isEmpty(result4)) {
+                                                                                                        if (result4[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.cid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result5) => {
+                                                                                                                if (!isEmpty(result5)) {
+                                                                                                                    if (result5[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 7
+                                                                                                });
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    //1 out 1 - chat = chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    //1 out 1 -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    //1 out 2 - 1 out 1 = 1 out 2
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 || result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1) {
+                                                                                        var matchArray = req.body.match;
+                                                                                        matchArray.pop()
+                                                                                        if (matchArray.length > 1) {
+
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 1,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 1,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            if (matchArray[0]["isMatch"] == true) {
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result2) => {
+                                                                                                    if (!isEmpty(result2)) {
+                                                                                                        if (result2[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.mid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result3) => {
+                                                                                                                if (!isEmpty(result3)) {
+                                                                                                                    if (result3[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result4) => {
+                                                                                                    if (!isEmpty(result4)) {
+                                                                                                        if (result4[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.cid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result5) => {
+                                                                                                                if (!isEmpty(result5)) {
+                                                                                                                    if (result5[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 7
+                                                                                                });
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    //1 out 2 - chat = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    //1 out 2 -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    //chat - 1 out 1 = chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    //chat - 1 out 2 = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    //chat - chat = chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+
+                                                                                    }
+                                                                                    //chat -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+
+                                                                                    }
+                                                                                    //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                        var matchArray = req.body.match;
+                                                                                        matchArray.pop()
+                                                                                        if (matchArray.length > 1) {
+
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 3,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 3,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            if (matchArray[0]["isMatch"] == true) {
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result2) => {
+                                                                                                    if (!isEmpty(result2)) {
+                                                                                                        if (result2[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.mid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result3) => {
+                                                                                                                if (!isEmpty(result3)) {
+                                                                                                                    if (result3[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result4) => {
+                                                                                                    if (!isEmpty(result4)) {
+                                                                                                        if (result4[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.cid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result5) => {
+                                                                                                                if (!isEmpty(result5)) {
+                                                                                                                    if (result5[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 7
+                                                                                                });
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    //chat & 1 out 2 - 1 out 2 = 1 out 2
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+                                                                                        matchArray.pop()
+                                                                                        if (matchArray.length > 1) {
+
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 1,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 1,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            if (matchArray[0]["isMatch"] == true) {
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.cid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result2) => {
+                                                                                                    if (!isEmpty(result2)) {
+                                                                                                        if (result2[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.mid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result3) => {
+                                                                                                                if (!isEmpty(result3)) {
+                                                                                                                    if (result3[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result3[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result2[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result2[0]['Contact_List'][g]['number'] == result3[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result2[0]['Contact_List'][g]['name'], result2[0]['Username'][(result2[0]['Username'].length) - 1], result2[0]['Device_Token'], N7_Title, result3[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                var ah = dbo.collection(switlover).find({
+                                                                                                    _id: new ObjectId(req.body.mid)
+                                                                                                }).toArray();
+                                                                                                ah.then((result4) => {
+                                                                                                    if (!isEmpty(result4)) {
+                                                                                                        if (result4[0]['is_Block'] == 0) {
+                                                                                                            var hah = dbo.collection(switlover).find({
+                                                                                                                _id: new ObjectId(req.body.cid)
+                                                                                                            }).toArray();
+                                                                                                            hah.then((result5) => {
+                                                                                                                if (!isEmpty(result5)) {
+                                                                                                                    if (result5[0]['is_Block'] == 0) {
+                                                                                                                        for (var i = 0; i < result5[0]['Phone_Number'].length; i++) {
+                                                                                                                            for (var g = 0; g < result4[0]['Contact_List'].length; g++) {
+                                                                                                                                if (result4[0]['Contact_List'][g]['number'] == result5[0]['Phone_Number'][i]['Number']) {
+                                                                                                                                    N7(result4[0]['Contact_List'][g]['name'], result4[0]['Username'][(result4[0]['Username'].length) - 1], result4[0]['Device_Token'], N7_Title, result5[0]['_id'])
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            })
+                                                                                                        }
+                                                                                                    }
+                                                                                                })
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 7
+                                                                                                });
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    //chat & 1 out 2 - chat = chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 0,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+
+                                                                                    }
+                                                                                    //chat & 1 out 2 -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        dbo.collection(temp_match).updateOne({
+                                                                                            currentU: req.body.cid
+                                                                                        }, {
+                                                                                            $set: {
+                                                                                                matchA: matchArray
+                                                                                            }
+                                                                                        }).then((r1) => {
+                                                                                            if (r1['result']['n'] == 1) {
+                                                                                                //Updated successfully
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "success",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                            } else {
+                                                                                                res.json({
+                                                                                                    status: "1",
+                                                                                                    message: "updated or fail to update",
+                                                                                                    notification_type: 2,
+                                                                                                    match: matchArray
+                                                                                                });
+                                                                                                //already uptodate
+                                                                                            }
+                                                                                        }).catch();
+                                                                                    }
+                                                                                    // clearInterval(interval)
+                                                                                } else {
+                                                                                    res.json({
+                                                                                        status: "1",
+                                                                                        type: "0",
+                                                                                        message: "success"
+                                                                                    });
+                                                                                    // clearInterval(interval)
+                                                                                    break;
                                                                                 }
                                                                             }
-                                                                        }, 3000)
+                                                                        }
+                                                                        // var interval = setInterval(function () {
+                                                                        //
+                                                                        // }, 3000)
                                                                     }
                                                                 })
 
