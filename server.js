@@ -989,10 +989,10 @@ client.connect((err, db) => {
                                                         ).then((resu) => {
                                                             if (resu['result']['n'] == 1) {
                                                                 //success
-                                                                res.json({status: "1", message: "success"});
+                                                                res.json({status: "1", message: "success", isAvailable: "1"});
                                                             } else {
                                                                 //already up to date
-                                                                res.json({status: "1", message: "Already up-to date"});
+                                                                res.json({status: "1", message: "Already up-to date", isAvailable: "1"});
                                                             }
                                                         }).catch((err) => {
 
@@ -1005,7 +1005,7 @@ client.connect((err, db) => {
                                                             isAvailable: true
                                                         }
                                                         dbo.collection(match).insertOne(myObj).then((result) => {
-                                                            res.json({status: "1", message: "success"});
+                                                            res.json({status: "1", message: "success", isAvailable: "1"});
                                                         }).catch((err) => {
                                                         })
                                                     }
@@ -1017,7 +1017,7 @@ client.connect((err, db) => {
                                                     isAvailable: true
                                                 }
                                                 dbo.collection(match).insertOne(myObj).then((result) => {
-                                                    res.json({status: "1", message: "success"});
+                                                    res.json({status: "1", message: "success", isAvailable: "1"});
                                                 }).catch((err) => {
                                                 })
                                             }
