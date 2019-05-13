@@ -888,6 +888,7 @@ client.connect((err, db) => {
                             var myNumber = AllUserArray[0]['Phone_Number'];
                             var likeByMeArray = AllUserArray[0]['Like'];
                             if (likeByMeArray.length > 20) {
+                            // if (!isEmpty(likeByMeArray)) {
                                 for (var i = 0; i < likeByMeArray.length; i++) {
                                     var num = likeByMeArray[i].split("-")[1]
                                     dbo.collection(switlover).find({'Phone_Number.Number': num}).toArray((err, result) => {
@@ -1153,49 +1154,64 @@ client.connect((err, db) => {
                                                                                             }
                                                                                         }).then((re) => {
                                                                                         if (re['result']['n'] == 1) {
-                                                                                            dbo.collection(match).find({
-                                                                                                currentUserID: new ObjectId(myArray[0]["matchUserID"])
-                                                                                            }).toArray((er, re) => {
-                                                                                                if (er) res.json({
-                                                                                                    status: "0",
-                                                                                                    message: "error : " + er
-                                                                                                })
-                                                                                                if (!isEmpty(re)) {
-                                                                                                    dbo.collection(match).updateOne({
-                                                                                                            currentUserID: new ObjectId(myArray[0]["matchUserID"])
-                                                                                                        },
-                                                                                                        {
-                                                                                                            $set: {
-                                                                                                                isAvailable: false
-                                                                                                            }
-                                                                                                        }).then((resu) => {
-                                                                                                        if (resu['result']['n'] == 1) {
-                                                                                                            dbo.collection(match).updateMany({
-                                                                                                                    'matchUser.matchUserID': new ObjectId(userID)
+
+                                                                                            dbo.collection(match).updateOne({
+                                                                                                    currentUserID: new ObjectId(myArray[0]["matchUserID"]),
+                                                                                                    'matchUser.matchUserID': new ObjectId(req.body.userID)
+                                                                                                },
+                                                                                                {
+                                                                                                    $set: {
+                                                                                                        'matchUser.$.isUsed': true,
+                                                                                                        'matchUser.$.isAvailable': false,
+                                                                                                        isAvailable: false
+                                                                                                    }
+                                                                                                }).then((rr) => {
+                                                                                                if (rr['result']['n'] == 1) {
+                                                                                                    dbo.collection(match).find({
+                                                                                                        currentUserID: new ObjectId(myArray[0]["matchUserID"])
+                                                                                                    }).toArray((er, re) => {
+                                                                                                        if (er) res.json({
+                                                                                                            status: "0",
+                                                                                                            message: "error : " + er
+                                                                                                        })
+                                                                                                        if (!isEmpty(re)) {
+                                                                                                            dbo.collection(match).updateOne({
+                                                                                                                    currentUserID: new ObjectId(myArray[0]["matchUserID"])
                                                                                                                 },
                                                                                                                 {
                                                                                                                     $set: {
-                                                                                                                        'matchUser.$.isAvailable': false
+                                                                                                                        isAvailable: false
                                                                                                                     }
-                                                                                                                }).then((resul) => {
-                                                                                                                if (resul['result']['n'] >= 1) {
-                                                                                                                    res.json({
-                                                                                                                        status: "1",
-                                                                                                                        message: "Success",
-                                                                                                                        user_data: arrTempMatch
-                                                                                                                    });
+                                                                                                                }).then((resu) => {
+                                                                                                                if (resu['result']['n'] == 1) {
+                                                                                                                    dbo.collection(match).updateMany({
+                                                                                                                            'matchUser.matchUserID': new ObjectId(req.body.userID)
+                                                                                                                        },
+                                                                                                                        {
+                                                                                                                            $set: {
+                                                                                                                                'matchUser.$.isAvailable': false
+                                                                                                                            }
+                                                                                                                        }).then((resul) => {
+                                                                                                                        if (resul['result']['n'] >= 1) {
+                                                                                                                            res.json({
+                                                                                                                                status: "1",
+                                                                                                                                message: "Success",
+                                                                                                                                user_data: arrTempMatch
+                                                                                                                            });
+                                                                                                                        }
+                                                                                                                    }).catch()
                                                                                                                 }
                                                                                                             }).catch()
+                                                                                                        } else {
+                                                                                                            res.json({
+                                                                                                                status: "1",
+                                                                                                                message: "Success",
+                                                                                                                user_data: arrTempMatch
+                                                                                                            });
                                                                                                         }
-                                                                                                    }).catch()
-                                                                                                } else {
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "Success",
-                                                                                                        user_data: arrTempMatch
-                                                                                                    });
+                                                                                                    })
                                                                                                 }
-                                                                                            })
+                                                                                            });
                                                                                         }
                                                                                     })
                                                                                 } else {
@@ -1346,7 +1362,7 @@ client.connect((err, db) => {
                                                                     _id: new ObjectId(req.body.mid)
                                                                 }).toArray();
                                                                 ah.then((result26) => {
-                                                                    N3(result26[0]['Device_Token'], N3_Title)
+                                                                    // N3(result26[0]['Device_Token'], N3_Title)
                                                                     // N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N3_Title, "", "")
                                                                 })
 
