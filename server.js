@@ -1189,7 +1189,7 @@ client.connect((err, db) => {
                                                                                 }
                                                                             }
                                                                         })
-                                                                    }, 10000);
+                                                                    }, 5000);
 
                                                                 } else {
                                                                     randomNumbers = randomNumber(result3[0]['Like'], result[0]);
