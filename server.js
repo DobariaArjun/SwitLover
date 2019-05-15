@@ -367,6 +367,7 @@ client.connect((err, db) => {
                                                     delete finalresult[0].Add_New_Number_From_App;
                                                     delete finalresult[0].Contact_Remove_Ratio;
                                                     delete finalresult[0].Like;
+                                                    delete finalresult[0].UnLikes;
                                                     delete finalresult[0].Match_Ratio;
                                                     delete finalresult[0].PowerID;
                                                     delete finalresult[0].Not_In_App_Purchase;
@@ -411,6 +412,7 @@ client.connect((err, db) => {
                                     Add_New_Number_From_App: 0,
                                     Contact_Remove_Ratio: 0,
                                     Like: [],
+                                    UnLikes: [],
                                     Match_Ratio: {
                                         Two_Out_2_Ratio: 0,
                                         One_Out_1_Ratio: 0,
@@ -876,6 +878,81 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
+            //Match Unlike
+            app.post('/api/matchUnlike', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    if (!req.body || isEmpty(req.body)) {
+                        res.json({status: "4", message: "Parameter missing or Invalid"});
+                    } else {
+                        var myUnlikesArray = [];
+                        var matchArray = req.body.match;
+                        if (!isEmpty(matchArray)) {
+                            for (var i = 0; i < matchArray.length; i++) {
+                                for (var j = 0; j < matchArray[i]['number'].length; j++) {
+                                    myUnlikesArray.push(matchArray[i]['number'][j])
+                                }
+                            }
+                            dbo.collection(switlover).find({
+                                _id: new ObjectId(req.body.userID)
+                            }).toArray((error, result) => {
+                                if (error)
+                                    res.json({status: "0", message: "Error : " + error})
+                                if (!isEmpty(result)) {
+                                    if (result[0]["is_Block"] == 0) {
+                                        var isEnter = false;
+                                        var finalMyLikes = [];
+                                        var myLikesArray = result[0]['Like']
+                                        for (var f = 0; f < myLikesArray.length; f++) {
+                                            var number = myLikesArray[f].split("-")[1];
+                                            for (var g = 0; g < myUnlikesArray.length; g++) {
+                                                if (myUnlikesArray[g] != number) {
+                                                    isEnter = true;
+                                                } else {
+                                                    isEnter = false;
+                                                    break;
+                                                }
+                                            }
+                                            if (isEnter) {
+                                                finalMyLikes.push(myLikesArray[f])
+                                            }
+                                        }
+                                        dbo.collection(switlover).updateOne({
+                                            _id: new ObjectId(req.body.userID)
+                                        }, {
+                                            Like: finalMyLikes
+                                        }).then((rr) => {
+                                            if (rr['result']['n'] == 1) {
+                                                dbo.collection(switlover).updateOne({
+                                                    _id: new ObjectId(req.body.userID)
+                                                }, {
+                                                    $set: {
+                                                        UnLikes: myUnlikesArray
+                                                    }
+                                                }).then((re) => {
+                                                    if (re['result']['n'] == 1) {
+                                                        res.json({
+                                                            status: "7",
+                                                            message: "Now you are not able to like this 3 user's for next 3 months."
+                                                        })
+                                                    } else {
+                                                        res.json({status: "0", message: "error in updating"})
+                                                    }
+                                                }).catch();
+                                            }
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+            });
+            //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
             //Match Logic
             app.post('/api/match', (req, res) => {
                 var myArray = [];
@@ -887,8 +964,8 @@ client.connect((err, db) => {
                         if (AllUserArray[0]["is_Block"] == 0) {
                             var myNumber = AllUserArray[0]['Phone_Number'];
                             var likeByMeArray = AllUserArray[0]['Like'];
-                            if (likeByMeArray.length > 20) {
-                            // if (!isEmpty(likeByMeArray)) {
+                            if (likeByMeArray.length > 3) {
+                                // if (!isEmpty(likeByMeArray)) {
                                 for (var i = 0; i < likeByMeArray.length; i++) {
                                     var num = likeByMeArray[i].split("-")[1]
                                     dbo.collection(switlover).find({'Phone_Number.Number': num}).toArray((err, result) => {
@@ -958,24 +1035,22 @@ client.connect((err, db) => {
                                                             for (var a = 0; a < result1[0]["matchUser"].length; a++) {
                                                                 if (arr[h]["matchUserID"].equals(result1[0]["matchUser"][a]["matchUserID"])) {
                                                                     if (arr[h]["isUsed"] != result1[0]["matchUser"][a]["isUsed"]) {
-                                                                        var Current_User_Preferance1 = {
-                                                                            out_1: 0,
-                                                                            out_2: 0,
-                                                                            anonymas_chat: 0,
-                                                                            is_Set: false
-                                                                        }
-                                                                        var Match_User_Preferance1 = {
-                                                                            out_1: 0,
-                                                                            out_2: 0,
-                                                                            anonymas_chat: 0,
-                                                                            is_Set: false
-                                                                        }
                                                                         arr.push({
                                                                             matchUserID: arr[h]["matchUserID"],
-                                                                            currentUserPreferenace: Current_User_Preferance1,
-                                                                            matchUserPreferenace: Match_User_Preferance1,
+                                                                            currentUserPreferenace: result1[0]["matchUser"][a]["currentUserPreferenace"],
+                                                                            matchUserPreferenace: result1[0]["matchUser"][a]["matchUserPreferenace"],
                                                                             number: arr[h]["number"],
                                                                             isUsed: true,
+                                                                            isAvailable: result1[0]["matchUser"][a]["isAvailable"]
+                                                                        })
+                                                                        arr.splice(h, 1);
+                                                                    } else {
+                                                                        arr.push({
+                                                                            matchUserID: arr[h]["matchUserID"],
+                                                                            currentUserPreferenace: result1[0]["matchUser"][a]["currentUserPreferenace"],
+                                                                            matchUserPreferenace: result1[0]["matchUser"][a]["matchUserPreferenace"],
+                                                                            number: arr[h]["number"],
+                                                                            isUsed: false,
                                                                             isAvailable: result1[0]["matchUser"][a]["isAvailable"]
                                                                         })
                                                                         arr.splice(h, 1);
@@ -1078,6 +1153,7 @@ client.connect((err, db) => {
                                                     id: result1[0]['_id'],
                                                     name: result1[0]['Username'][result1[0]['Username'].length - 1],
                                                     profile_pic: result1[0]['Profile_Pic'],
+                                                    number: result1[0]['Phone_Number'],
                                                     isMatch: true
                                                 }
                                                 arrTempMatch.push(matchObj);
@@ -1098,6 +1174,7 @@ client.connect((err, db) => {
                                                                                 id: "",
                                                                                 name: result2[0]['Username'][result2[0]['Username'].length - 1],
                                                                                 profile_pic: result2[0]['Profile_Pic'],
+                                                                                number: [numb0],
                                                                                 isMatch: false
                                                                             }
                                                                             arrTempMatch.push(myObj)
@@ -1105,6 +1182,7 @@ client.connect((err, db) => {
                                                                             var myObj = {
                                                                                 id: "",
                                                                                 name: numb0,
+                                                                                number: [numb0],
                                                                                 profile_pic: "",
                                                                                 isMatch: false
                                                                             }
@@ -1119,6 +1197,7 @@ client.connect((err, db) => {
                                                                                 id: "",
                                                                                 name: result4[0]['Username'][result4[0]['Username'].length - 1],
                                                                                 profile_pic: result4[0]['Profile_Pic'],
+                                                                                number: [numb1],
                                                                                 isMatch: false
                                                                             }
                                                                             arrTempMatch.push(myObj)
@@ -1127,6 +1206,7 @@ client.connect((err, db) => {
                                                                                 id: "",
                                                                                 name: numb1,
                                                                                 profile_pic: "",
+                                                                                number: [numb1],
                                                                                 isMatch: false
                                                                             }
                                                                             arrTempMatch.push(myObj)
@@ -1243,33 +1323,36 @@ client.connect((err, db) => {
             });
 
             function randomNumber(array, arr1) {
-                var item = array[Math.floor(Math.random() * array.length)];
-                var num = item.split("-")[1]
-                for (var k = 0; k < arr1["matchUser"].length; k++) {
-                    for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
-                        if (num == arr1["matchUser"][k]["number"][l]['Number']) {
-                            isMatch = true
-                            randomNumber(array, arr1)
-                        } else {
-                            isMatch = false
+                shuffle(array);
+                // var item = array[Math.floor(Math.random() * array.length)];
+                for (var m = 0; m < 2; m++) {
+                    var item = array[m];
+                    var num = item.split("-")[1]
+                    for (var k = 0; k < arr1["matchUser"].length; k++) {
+                        for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
+                            if (num == arr1["matchUser"][k]["number"][l]['Number']) {
+                                isMatch = true
+                                randomNumber(array, arr1)
+                            } else {
+                                isMatch = false
+                            }
                         }
                     }
                 }
                 if (!isMatch) {
-                    if (isEmpty(tempNumberArray)) {
-                        tempNumberArray.push(item);
-                        randomNumber(array, arr1);
-                    } else {
-                        if (tempNumberArray[0] != item) {
-                            tempNumberArray.push(item);
-                        } else {
-                            randomNumber(array, arr1);
-                        }
-                    }
+                    // if (isEmpty(tempNumberArray)) {
+                    tempNumberArray.push(item);
+                    // randomNumber(array, arr1);
+                    // } else {
+                    //     if (tempNumberArray[0] != item) {
+                    //         tempNumberArray.push(item);
+                    //     } else {
+                    //         randomNumber(array, arr1);
+                    //     }
+                    // }
                 }
                 return tempNumberArray
             }
-
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -1285,40 +1368,82 @@ client.connect((err, db) => {
                         }
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-                        var myObj = {
-                            currentU: req.body.cid,
-                            matchA: req.body.match
+                        var mArray = req.body.match;
+                        var isCID = false;
+                        if ((new ObjectId(mArray[0]['id'])).equals(new ObjectId(req.body.cid))) {
+                            isCID = true;
+                            var myObj = {
+                                currentU: req.body.mid,
+                                matchA: req.body.match
+                            }
+                            dbo.collection(temp_match).find({
+                                currentU: req.body.mid
+                            }).toArray((e, r) => {
+                                if (e) {
+                                    //error in find
+                                }
+                                if (!isEmpty(r)) {
+                                    dbo.collection(temp_match).updateOne({
+                                        currentU: req.body.mid
+                                    }, {
+                                        $set: {
+                                            matchA: req.body.match
+                                        }
+                                    }).then((r1) => {
+                                        if (r1['result']['n'] == 1) {
+                                            //Updated successfully
+                                        } else {
+                                            //already uptodate
+                                        }
+                                    }).catch();
+                                } else {
+                                    dbo.collection(temp_match).insertOne(myObj, (ee, rr) => {
+                                        if (ee) {
+                                            //Error while inserting
+                                        } else {
+                                            //insert successfully
+                                        }
+                                    })
+                                }
+                            })
+                        } else {
+                            isCID = false;
+                            var myObj = {
+                                currentU: req.body.cid,
+                                matchA: req.body.match
+                            }
+                            dbo.collection(temp_match).find({
+                                currentU: req.body.cid
+                            }).toArray((e, r) => {
+                                if (e) {
+                                    //error in find
+                                }
+                                if (!isEmpty(r)) {
+                                    dbo.collection(temp_match).updateOne({
+                                        currentU: req.body.cid
+                                    }, {
+                                        $set: {
+                                            matchA: req.body.match
+                                        }
+                                    }).then((r1) => {
+                                        if (r1['result']['n'] == 1) {
+                                            //Updated successfully
+                                        } else {
+                                            //already uptodate
+                                        }
+                                    }).catch();
+                                } else {
+                                    dbo.collection(temp_match).insertOne(myObj, (ee, rr) => {
+                                        if (ee) {
+                                            //Error while inserting
+                                        } else {
+                                            //insert successfully
+                                        }
+                                    })
+                                }
+                            })
                         }
-                        dbo.collection(temp_match).find({
-                            currentU: req.body.cid
-                        }).toArray((e, r) => {
-                            if (e) {
-                                //error in find
-                            }
-                            if (!isEmpty(r)) {
-                                dbo.collection(temp_match).updateOne({
-                                    currentU: req.body.cid
-                                }, {
-                                    $set: {
-                                        matchA: req.body.match
-                                    }
-                                }).then((r1) => {
-                                    if (r1['result']['n'] == 1) {
-                                        //Updated successfully
-                                    } else {
-                                        //already uptodate
-                                    }
-                                }).catch();
-                            } else {
-                                dbo.collection(temp_match).insertOne(myObj, (ee, rr) => {
-                                    if (ee) {
-                                        //Error while inserting
-                                    } else {
-                                        //insert successfully
-                                    }
-                                })
-                            }
-                        })
+
                         var mid = new ObjectId(req.body.mid);
                         var ah = dbo.collection(match).find({
                             currentUserID: new ObjectId(req.body.cid),
@@ -1439,32 +1564,60 @@ client.connect((err, db) => {
                                                                                         var matchArray = req.body.match;
                                                                                         matchArray.pop()
                                                                                         if (matchArray.length > 1) {
+                                                                                            if (isCID) {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.mid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            } else {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.cid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            }
 
-                                                                                            dbo.collection(temp_match).updateOne({
-                                                                                                currentU: req.body.cid
-                                                                                            }, {
-                                                                                                $set: {
-                                                                                                    matchA: matchArray
-                                                                                                }
-                                                                                            }).then((r1) => {
-                                                                                                if (r1['result']['n'] == 1) {
-                                                                                                    //Updated successfully
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "success",
-                                                                                                        notification_type: 1,
-                                                                                                        match: matchArray
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "updated or fail to update",
-                                                                                                        notification_type: 1,
-                                                                                                        match: matchArray
-                                                                                                    });
-                                                                                                    //already uptodate
-                                                                                                }
-                                                                                            }).catch();
                                                                                         } else {
                                                                                             if (matchArray[0]["isMatch"] == true) {
                                                                                                 var ah = dbo.collection(switlover).find({
@@ -1529,68 +1682,33 @@ client.connect((err, db) => {
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
                                                                                         var matchArray = req.body.match;
 
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-                                                                                    }
-                                                                                    //1 out 1 -  = x
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
-
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-                                                                                    }
-                                                                                    //1 out 2 - 1 out 1 = 1 out 2
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 || result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1) {
-                                                                                        var matchArray = req.body.match;
-                                                                                        matchArray.pop()
-                                                                                        if (matchArray.length > 1) {
-
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
                                                                                             dbo.collection(temp_match).updateOne({
                                                                                                 currentU: req.body.cid
                                                                                             }, {
@@ -1603,19 +1721,138 @@ client.connect((err, db) => {
                                                                                                     res.json({
                                                                                                         status: "1",
                                                                                                         message: "success",
-                                                                                                        notification_type: 1,
+                                                                                                        notification_type: 0,
                                                                                                         match: matchArray
                                                                                                     });
                                                                                                 } else {
                                                                                                     res.json({
                                                                                                         status: "1",
                                                                                                         message: "updated or fail to update",
-                                                                                                        notification_type: 1,
+                                                                                                        notification_type: 0,
                                                                                                         match: matchArray
                                                                                                     });
                                                                                                     //already uptodate
                                                                                                 }
                                                                                             }).catch();
+                                                                                        }
+                                                                                    }
+                                                                                    //1 out 1 -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
+                                                                                    }
+                                                                                    //1 out 2 - 1 out 1 = 1 out 2
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 || result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1) {
+                                                                                        var matchArray = req.body.match;
+                                                                                        matchArray.pop()
+                                                                                        if (matchArray.length > 1) {
+
+                                                                                            if (isCID) {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.mid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            } else {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.cid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            }
                                                                                         } else {
                                                                                             if (matchArray[0]["isMatch"] == true) {
                                                                                                 var ah = dbo.collection(switlover).find({
@@ -1680,190 +1917,33 @@ client.connect((err, db) => {
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
                                                                                         var matchArray = req.body.match;
 
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-                                                                                    }
-                                                                                    //1 out 2 -  = x
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
-
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-                                                                                    }
-                                                                                    //chat - 1 out 1 = chat
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                        var matchArray = req.body.match;
-
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-                                                                                    }
-                                                                                    //chat - 1 out 2 = x
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
-
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-                                                                                    }
-                                                                                    //chat - chat = chat
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                        var matchArray = req.body.match;
-
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-
-                                                                                    }
-                                                                                    //chat -  = x
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
-
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
-
-                                                                                    }
-                                                                                    //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
-                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                        var matchArray = req.body.match;
-                                                                                        matchArray.pop()
-                                                                                        if (matchArray.length > 1) {
-
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
                                                                                             dbo.collection(temp_match).updateOne({
                                                                                                 currentU: req.body.cid
                                                                                             }, {
@@ -1876,19 +1956,372 @@ client.connect((err, db) => {
                                                                                                     res.json({
                                                                                                         status: "1",
                                                                                                         message: "success",
-                                                                                                        notification_type: 3,
+                                                                                                        notification_type: 2,
                                                                                                         match: matchArray
                                                                                                     });
                                                                                                 } else {
                                                                                                     res.json({
                                                                                                         status: "1",
                                                                                                         message: "updated or fail to update",
-                                                                                                        notification_type: 3,
+                                                                                                        notification_type: 2,
                                                                                                         match: matchArray
                                                                                                     });
                                                                                                     //already uptodate
                                                                                                 }
                                                                                             }).catch();
+                                                                                        }
+                                                                                    }
+                                                                                    //1 out 2 -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
+                                                                                    }
+                                                                                    //chat - 1 out 1 = chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
+                                                                                    }
+                                                                                    //chat - 1 out 2 = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
+                                                                                    }
+                                                                                    //chat - chat = chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
+
+                                                                                    }
+                                                                                    //chat -  = x
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
+                                                                                        var matchArray = req.body.match;
+
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
+
+                                                                                    }
+                                                                                    //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
+                                                                                    else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
+                                                                                        var matchArray = req.body.match;
+                                                                                        matchArray.pop()
+                                                                                        if (matchArray.length > 1) {
+
+                                                                                            if (isCID) {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.mid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 3,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 3,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            } else {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.cid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 3,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 3,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            }
                                                                                         } else {
                                                                                             if (matchArray[0]["isMatch"] == true) {
                                                                                                 var ah = dbo.collection(switlover).find({
@@ -1955,31 +2388,59 @@ client.connect((err, db) => {
                                                                                         matchArray.pop()
                                                                                         if (matchArray.length > 1) {
 
-                                                                                            dbo.collection(temp_match).updateOne({
-                                                                                                currentU: req.body.cid
-                                                                                            }, {
-                                                                                                $set: {
-                                                                                                    matchA: matchArray
-                                                                                                }
-                                                                                            }).then((r1) => {
-                                                                                                if (r1['result']['n'] == 1) {
-                                                                                                    //Updated successfully
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "success",
-                                                                                                        notification_type: 1,
-                                                                                                        match: matchArray
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    res.json({
-                                                                                                        status: "1",
-                                                                                                        message: "updated or fail to update",
-                                                                                                        notification_type: 1,
-                                                                                                        match: matchArray
-                                                                                                    });
-                                                                                                    //already uptodate
-                                                                                                }
-                                                                                            }).catch();
+                                                                                            if (isCID) {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.mid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            } else {
+                                                                                                dbo.collection(temp_match).updateOne({
+                                                                                                    currentU: req.body.cid
+                                                                                                }, {
+                                                                                                    $set: {
+                                                                                                        matchA: matchArray
+                                                                                                    }
+                                                                                                }).then((r1) => {
+                                                                                                    if (r1['result']['n'] == 1) {
+                                                                                                        //Updated successfully
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "success",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        res.json({
+                                                                                                            status: "1",
+                                                                                                            message: "updated or fail to update",
+                                                                                                            notification_type: 1,
+                                                                                                            match: matchArray
+                                                                                                        });
+                                                                                                        //already uptodate
+                                                                                                    }
+                                                                                                }).catch();
+                                                                                            }
                                                                                         } else {
                                                                                             if (matchArray[0]["isMatch"] == true) {
                                                                                                 var ah = dbo.collection(switlover).find({
@@ -2044,62 +2505,118 @@ client.connect((err, db) => {
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
                                                                                         var matchArray = req.body.match;
 
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 0,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 0,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
 
                                                                                     }
                                                                                     //chat & 1 out 2 -  = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
                                                                                         var matchArray = req.body.match;
 
-                                                                                        dbo.collection(temp_match).updateOne({
-                                                                                            currentU: req.body.cid
-                                                                                        }, {
-                                                                                            $set: {
-                                                                                                matchA: matchArray
-                                                                                            }
-                                                                                        }).then((r1) => {
-                                                                                            if (r1['result']['n'] == 1) {
-                                                                                                //Updated successfully
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "success",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                            } else {
-                                                                                                res.json({
-                                                                                                    status: "1",
-                                                                                                    message: "updated or fail to update",
-                                                                                                    notification_type: 2,
-                                                                                                    match: matchArray
-                                                                                                });
-                                                                                                //already uptodate
-                                                                                            }
-                                                                                        }).catch();
+                                                                                        if (isCID) {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.mid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        } else {
+                                                                                            dbo.collection(temp_match).updateOne({
+                                                                                                currentU: req.body.cid
+                                                                                            }, {
+                                                                                                $set: {
+                                                                                                    matchA: matchArray
+                                                                                                }
+                                                                                            }).then((r1) => {
+                                                                                                if (r1['result']['n'] == 1) {
+                                                                                                    //Updated successfully
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "success",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    res.json({
+                                                                                                        status: "1",
+                                                                                                        message: "updated or fail to update",
+                                                                                                        notification_type: 2,
+                                                                                                        match: matchArray
+                                                                                                    });
+                                                                                                    //already uptodate
+                                                                                                }
+                                                                                            }).catch();
+                                                                                        }
                                                                                     }
                                                                                     // clearInterval(interval)
                                                                                 } else {
@@ -2141,6 +2658,28 @@ client.connect((err, db) => {
                 }
             });
             //--------------------------------------------------------------------------------------------------------------
+
+            //--------------------------------------------------------------------------------------------------------------
+            //Get old match
+            app.post('/api/getOldMatch', (req, res) => {
+                var Auth_Token = req.header('Auth_Token');
+                if (!Auth_Token || Auth_Token == null) {
+                    res.json({status: "6", message: "Auth token missing"});
+                } else {
+                    dbo.collection(temp_match).find({
+                        currentU: req.body.userID
+                    }).toArray((error, result) => {
+                        if (error) {
+                            res.json({status: "0", message: "error : " + error})
+                        }
+                        if (!isEmpty(result)) {
+                            res.josn({status: "1", message: "Success", user_data: result[0]["matchA"]});
+                        }
+                    })
+                }
+            })
+            //--------------------------------------------------------------------------------------------------------------
+
 
             //--------------------------------------------------------------------------------------------------------------
             //Contacts that like me
@@ -2309,19 +2848,26 @@ client.connect((err, db) => {
                                                             number: data[0]['Contact_List'][i]['number'],
                                                             isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
                                                             isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                            isLiked: 1
+                                                            isLiked: 1,
+                                                            isUnlike: 0
                                                         };
                                                         break;
                                                     } else {
-                                                        myObj = {
-                                                            name: data[0]['Contact_List'][i]['name'],
-                                                            image: data[0]['Contact_List'][i]['image'],
-                                                            code: data[0]['Contact_List'][i]['code'],
-                                                            number: data[0]['Contact_List'][i]['number'],
-                                                            isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
-                                                            isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                            isLiked: 0
-                                                        };
+                                                        var unLikesArray = data[0]["UnLikes"];
+                                                        for (var h = 0; h < unLikesArray.length; h++) {
+                                                            if (unLikesArray[h] == number) {
+                                                                myObj = {
+                                                                    name: data[0]['Contact_List'][i]['name'],
+                                                                    image: data[0]['Contact_List'][i]['image'],
+                                                                    code: data[0]['Contact_List'][i]['code'],
+                                                                    number: data[0]['Contact_List'][i]['number'],
+                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                                    isLiked: 0,
+                                                                    isUnlike: 1
+                                                                };
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
