@@ -2854,19 +2854,34 @@ client.connect((err, db) => {
                                                         break;
                                                     } else {
                                                         var unLikesArray = data[0]["UnLikes"];
-                                                        for (var h = 0; h < unLikesArray.length; h++) {
-                                                            if (unLikesArray[h] == number) {
-                                                                myObj = {
-                                                                    name: data[0]['Contact_List'][i]['name'],
-                                                                    image: data[0]['Contact_List'][i]['image'],
-                                                                    code: data[0]['Contact_List'][i]['code'],
-                                                                    number: data[0]['Contact_List'][i]['number'],
-                                                                    isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
-                                                                    isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                                    isLiked: 0,
-                                                                    isUnlike: 1
-                                                                };
+                                                        if(!isEmpty(unLikesArray))
+                                                        {
+                                                            for (var h = 0; h < unLikesArray.length; h++) {
+                                                                if (unLikesArray[h] == number) {
+                                                                    myObj = {
+                                                                        name: data[0]['Contact_List'][i]['name'],
+                                                                        image: data[0]['Contact_List'][i]['image'],
+                                                                        code: data[0]['Contact_List'][i]['code'],
+                                                                        number: data[0]['Contact_List'][i]['number'],
+                                                                        isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                        isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                                        isLiked: 0,
+                                                                        isUnlike: 1
+                                                                    };
+                                                                }
                                                             }
+                                                        }
+                                                        else{
+                                                            myObj = {
+                                                                name: data[0]['Contact_List'][i]['name'],
+                                                                image: data[0]['Contact_List'][i]['image'],
+                                                                code: data[0]['Contact_List'][i]['code'],
+                                                                number: data[0]['Contact_List'][i]['number'],
+                                                                isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
+                                                                isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
+                                                                isLiked: 0,
+                                                                isUnlike: 0
+                                                            };
                                                         }
                                                     }
                                                 }
@@ -2880,7 +2895,8 @@ client.connect((err, db) => {
                                                 number: data[0]['Contact_List'][i]['number'],
                                                 isRemovedByAdmin: data[0]['Contact_List'][i]['isRemovedByAdmin'],
                                                 isRemovedByUser: data[0]['Contact_List'][i]['isRemovedByUser'],
-                                                isLiked: 0
+                                                isLiked: 0,
+                                                isUnlike: 0
                                             };
                                             numberArray.push(myObj);
                                         }
