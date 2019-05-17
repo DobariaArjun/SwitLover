@@ -61,8 +61,10 @@ function N1(var1, token, title, matchUser) {
     sendNotification(title, notification_body, token, matchUser)
 }
 
-function N2(var1, var2, var3, token, title, matchUser) {
-    notification_body = var1 + " matches with " + var2 + " and " + var3 + "."
+// function N2(var1, var2, var3, token, title, matchUser) {
+function N2(token, title, matchUser) {
+    // notification_body = var1 + " matches with " + var2 + " and " + var3 + "."
+    notification_body = "You have a new Match."
     sendNotification(title, notification_body, token, matchUser)
 }
 
@@ -1218,6 +1220,9 @@ client.connect((err, db) => {
             //Get Match
             app.post('/api/getMatch', (req, res) => {
                 tempNumberArray = [];
+                var matchID;
+                var matchUsername;
+                var matchDeviceToken;
                 var arrTempMatch = [];
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
@@ -1240,6 +1245,9 @@ client.connect((err, db) => {
                                         if (err1) res.json({status: "0", message: "Error"});
                                         if (!isEmpty(result1)) {
                                             if (result1[0]['is_Block'] == 0) {
+                                                matchID = result1[0]['_id'];
+                                                matchDeviceToken = result1[0]['Device_Token'];
+                                                matchUsername = result1[0]['Username'][result1[0]['Username'].length - 1];
                                                 var matchObj = {
                                                     id: result1[0]['_id'],
                                                     name: result1[0]['Username'][result1[0]['Username'].length - 1],
@@ -1386,6 +1394,7 @@ client.connect((err, db) => {
                                                                                                                                     //Error while inserting
                                                                                                                                 } else {
                                                                                                                                     //insert successfully
+                                                                                                                                    N2(matchDeviceToken,N2_Title);
                                                                                                                                     res.json({
                                                                                                                                         status: "1",
                                                                                                                                         message: "Success",
