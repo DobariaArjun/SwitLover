@@ -95,6 +95,8 @@ function N7(var1, var2, token, title, matchUser) {
 
 var rand, mailOptions, host, link;
 var tempNumberArray = [];
+var tempUserIDArray = [];
+
 var isMatch = false;
 
 // Math.floor(Math.random() * 21) + 61
@@ -955,9 +957,67 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Match Logic
             app.post('/api/match', (req, res) => {
+
+                var userIDs = [];
+
+                dbo.collection(switlover).find({}).toArray((err, result) => {
+                    if (err) {
+                        res.json({status: "0", message: "Error : " + err})
+                    }
+                    if (!isEmpty(result)) {
+
+                        for (var i = 0; i < result.length; i++) {
+                            userIDs.push(result[i]["_id"]);
+                        }
+                        randomUserID(userIDs, req, res, (err, data) => {
+                            tempUserIDArray = [];
+                            res.json({status: "1", message: "success"})
+                        })
+
+                    } else {
+                        res.json({status: "0", message: "Result not found"})
+                    }
+                });
+            });
+
+            function randomUserID(array, req, res, callback) {
+
+                var isAvailable = false;
+                var item = array[Math.floor(Math.random() * array.length)];
+
+                if (isEmpty(tempUserIDArray)) {
+                    tempUserIDArray.push(item);
+                    //Call database query
+                    matchLogic(item, array, req, res)
+                } else {
+                    if (tempUserIDArray.length != array.length) {
+                        for (var i = 0; i < tempUserIDArray.length; i++) {
+                            if (!(tempUserIDArray[i]).equals(item)) {
+                                isAvailable = false;
+                            } else {
+                                isAvailable = true;
+                                break;
+                            }
+                        }
+                        if (isAvailable) {
+                            randomUserID(array, req, res);
+                        } else {
+                            tempUserIDArray.push(item);
+                            //Database Query
+                            matchLogic(item, array, req, res)
+                        }
+                    } else {
+                        console.log("true")
+                        callback(item);
+                        // return true;
+                    }
+                }
+            }
+
+            function matchLogic(userid, array, req, res) {
                 var myArray = [];
                 dbo.collection(switlover).find({
-                    _id: new ObjectId(req.body.userID)
+                    _id: new ObjectId(userid)
                 }).toArray((error, AllUserArray) => {
                     if (error) res.json({status: "0", message: "Error"});
                     if (!isEmpty(AllUserArray)) {
@@ -966,6 +1026,7 @@ client.connect((err, db) => {
                             var likeByMeArray = AllUserArray[0]['Like'];
                             if (likeByMeArray.length > 3) {
                                 // if (!isEmpty(likeByMeArray)) {
+                                var arrayCounter = 0;
                                 for (var i = 0; i < likeByMeArray.length; i++) {
                                     var num = likeByMeArray[i].split("-")[1]
                                     dbo.collection(switlover).find({'Phone_Number.Number': num}).toArray((err, result) => {
@@ -1006,121 +1067,151 @@ client.connect((err, db) => {
                                                     }
                                                 }
                                             }
+                                            arrayCounter = arrayCounter + 1;
+                                            if (arrayCounter == likeByMeArray.length) {
+                                                timeOutCall(myArray, AllUserArray, array, req, res);
+                                            }
                                         }
                                     })
                                 }
-                                setTimeout(function () {
-                                    if (!isEmpty(myArray)) {
-                                        var arr = myArray;
-                                        var tempAray = myArray
-                                        if (myArray.length > 1) {
-                                            for (var z = 0; z < tempAray.length; z++) {
-                                                for (var y = 0; y < myArray.length; y++) {
-                                                    if (z != y) {
-                                                        if (tempAray[z]['matchUserID'].equals(myArray[y]['matchUserID'])) {
-                                                            arr.splice(y, 1);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        dbo.collection(match).find({}).toArray((errresu, resul) => {
-                                            if (!isEmpty(resul)) {
-                                                dbo.collection(match).find({
-                                                    currentUserID: new ObjectId(AllUserArray[0]['_id'])
-                                                }).toArray((result1err, result1) => {
-                                                    if (!isEmpty(result1)) {
-                                                        for (var h = 0; h < arr.length; h++) {
-                                                            for (var a = 0; a < result1[0]["matchUser"].length; a++) {
-                                                                if (arr[h]["matchUserID"].equals(result1[0]["matchUser"][a]["matchUserID"])) {
-                                                                    if (arr[h]["isUsed"] != result1[0]["matchUser"][a]["isUsed"]) {
-                                                                        arr.push({
-                                                                            matchUserID: arr[h]["matchUserID"],
-                                                                            currentUserPreferenace: result1[0]["matchUser"][a]["currentUserPreferenace"],
-                                                                            matchUserPreferenace: result1[0]["matchUser"][a]["matchUserPreferenace"],
-                                                                            number: arr[h]["number"],
-                                                                            isUsed: true,
-                                                                            isAvailable: result1[0]["matchUser"][a]["isAvailable"]
-                                                                        })
-                                                                        arr.splice(h, 1);
-                                                                    } else {
-                                                                        arr.push({
-                                                                            matchUserID: arr[h]["matchUserID"],
-                                                                            currentUserPreferenace: result1[0]["matchUser"][a]["currentUserPreferenace"],
-                                                                            matchUserPreferenace: result1[0]["matchUser"][a]["matchUserPreferenace"],
-                                                                            number: arr[h]["number"],
-                                                                            isUsed: false,
-                                                                            isAvailable: result1[0]["matchUser"][a]["isAvailable"]
-                                                                        })
-                                                                        arr.splice(h, 1);
-                                                                    }
-
-                                                                }
-                                                            }
-                                                        }
-
-                                                        dbo.collection(match).updateOne(
-                                                            {currentUserID: new ObjectId(AllUserArray[0]['_id'])},
-                                                            {$set: {matchUser: arr}}
-                                                        ).then((resu) => {
-                                                            if (resu['result']['n'] == 1) {
-                                                                //success
-                                                                res.json({
-                                                                    status: "1",
-                                                                    message: "success",
-                                                                    isAvailable: "1"
-                                                                });
-                                                            } else {
-                                                                //already up to date
-                                                                res.json({
-                                                                    status: "1",
-                                                                    message: "Already up-to date",
-                                                                    isAvailable: "1"
-                                                                });
-                                                            }
-                                                        }).catch((err) => {
-
-                                                        });
-                                                    } else {
-
-                                                        var myObj = {
-                                                            currentUserID: AllUserArray[0]['_id'],
-                                                            matchUser: arr,
-                                                            isAvailable: true
-                                                        }
-                                                        dbo.collection(match).insertOne(myObj).then((result) => {
-                                                            res.json({status: "1", message: "success", isAvailable: "1"});
-                                                        }).catch((err) => {
-                                                        })
-                                                    }
-                                                });
-                                            } else {
-                                                var myObj = {
-                                                    currentUserID: AllUserArray[0]['_id'],
-                                                    matchUser: arr,
-                                                    isAvailable: true
-                                                }
-                                                dbo.collection(match).insertOne(myObj).then((result) => {
-                                                    res.json({status: "1", message: "success", isAvailable: "1"});
-                                                }).catch((err) => {
-                                                })
-                                            }
-                                        });
-                                    } else {
-                                        res.json({status: "0", message: "No match found"});
-                                    }
-                                }, 5000);
                             } else {
-                                res.json({
-                                    status: "7",
-                                    message: "You don't have the sufficent likes to get your match...!!!"
-                                })
+                                // res.json({
+                                //     status: "7",
+                                //     message: "You don't have the sufficent likes to get your match...!!!"
+                                // })
+                                randomUserID(array, req, res,(err, data) => {
+                                    tempUserIDArray = [];
+                                    res.json({status: "1", message: "success"})
+                                });
                             }
                         }
                     }
                 })
-            });
+            }
+
+            function timeOutCall(myArray, AllUserArray, array, req, res) {
+                if (!isEmpty(myArray)) {
+                    var arr = myArray;
+                    var tempAray = myArray
+                    if (myArray.length > 1) {
+                        for (var z = 0; z < tempAray.length; z++) {
+                            for (var y = 0; y < myArray.length; y++) {
+                                if (z != y) {
+                                    if (tempAray[z]['matchUserID'].equals(myArray[y]['matchUserID'])) {
+                                        arr.splice(y, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    dbo.collection(match).find({}).toArray((errresu, resul) => {
+                        if (!isEmpty(resul)) {
+                            dbo.collection(match).find({
+                                currentUserID: new ObjectId(AllUserArray[0]['_id'])
+                            }).toArray((result1err, result1) => {
+                                if (!isEmpty(result1)) {
+                                    for (var h = 0; h < arr.length; h++) {
+                                        for (var a = 0; a < result1[0]["matchUser"].length; a++) {
+                                            if (arr[h]["matchUserID"].equals(result1[0]["matchUser"][a]["matchUserID"])) {
+                                                if (arr[h]["isUsed"] != result1[0]["matchUser"][a]["isUsed"]) {
+                                                    arr.push({
+                                                        matchUserID: arr[h]["matchUserID"],
+                                                        currentUserPreferenace: result1[0]["matchUser"][a]["currentUserPreferenace"],
+                                                        matchUserPreferenace: result1[0]["matchUser"][a]["matchUserPreferenace"],
+                                                        number: arr[h]["number"],
+                                                        isUsed: true,
+                                                        isAvailable: result1[0]["matchUser"][a]["isAvailable"]
+                                                    })
+                                                    arr.splice(h, 1);
+                                                } else {
+                                                    arr.push({
+                                                        matchUserID: arr[h]["matchUserID"],
+                                                        currentUserPreferenace: result1[0]["matchUser"][a]["currentUserPreferenace"],
+                                                        matchUserPreferenace: result1[0]["matchUser"][a]["matchUserPreferenace"],
+                                                        number: arr[h]["number"],
+                                                        isUsed: false,
+                                                        isAvailable: result1[0]["matchUser"][a]["isAvailable"]
+                                                    })
+                                                    arr.splice(h, 1);
+                                                }
+
+                                            }
+                                        }
+                                    }
+
+                                    dbo.collection(match).updateOne(
+                                        {currentUserID: new ObjectId(AllUserArray[0]['_id'])},
+                                        {$set: {matchUser: arr}}
+                                    ).then((resu) => {
+                                        if (resu['result']['n'] == 1) {
+                                            //success
+                                            // res.json({
+                                            //     status: "1",
+                                            //     message: "success",
+                                            //     isAvailable: "1"
+                                            // });
+                                            randomUserID(array, req, res,(err, data) => {
+                                                tempUserIDArray = [];
+                                                res.json({status: "1", message: "success"})
+                                            });
+                                        } else {
+                                            //already up to date
+                                            // res.json({
+                                            //     status: "1",
+                                            //     message: "Already up-to date",
+                                            //     isAvailable: "1"
+                                            // });
+                                            randomUserID(array, req, res,(err, data) => {
+                                                tempUserIDArray = [];
+                                                res.json({status: "1", message: "success"})
+                                            });
+                                        }
+                                    }).catch((err) => {
+
+                                    });
+                                } else {
+
+                                    var myObj = {
+                                        currentUserID: AllUserArray[0]['_id'],
+                                        matchUser: arr,
+                                        isAvailable: true
+                                    }
+                                    dbo.collection(match).insertOne(myObj).then((result) => {
+                                        // res.json({status: "1", message: "success", isAvailable: "1"});
+                                        randomUserID(array, req, res,(err, data) => {
+                                            tempUserIDArray = [];
+                                            res.json({status: "1", message: "success"})
+                                        });
+                                    }).catch((err) => {
+                                    })
+                                }
+                            });
+                        } else {
+                            var myObj = {
+                                currentUserID: AllUserArray[0]['_id'],
+                                matchUser: arr,
+                                isAvailable: true
+                            }
+                            dbo.collection(match).insertOne(myObj).then((result) => {
+                                // res.json({status: "1", message: "success", isAvailable: "1"});
+                                randomUserID(array, req, res,(err, data) => {
+                                    tempUserIDArray = [];
+                                    res.json({status: "1", message: "success"})
+                                });
+                            }).catch((err) => {
+                            })
+                        }
+                    });
+                } else {
+                    // res.json({status: "0", message: "No match found"});
+                    randomUserID(array, req, res,(err, data) => {
+                        tempUserIDArray = [];
+                        res.json({status: "1", message: "success"})
+                    });
+                }
+            }
+
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -1323,55 +1414,37 @@ client.connect((err, db) => {
             });
 
             function randomNumber(array, arr1) {
-                let array1 = shuffle(array);
-                // var item = array[Math.floor(Math.random() * array.length)];
-                for (var m = 0; m < 2; m++) {
-                    var item = array1[m];
-                    var num = item.split("-")[1]
-                    for (var k = 0; k < arr1["matchUser"].length; k++) {
-                        for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
-                            if (num == arr1["matchUser"][k]["number"][l]['Number']) {
-                                isMatch = true
-                                randomNumber(array, arr1)
-                            } else {
-                                isMatch = false
-                            }
+                // let array1 = shuffle(array);
+                var item = array[Math.floor(Math.random() * array.length)];
+                // for (var m = 0; m < 2; m++) {
+                // var item = array1[m];
+                var num = item.split("-")[1]
+                for (var k = 0; k < arr1["matchUser"].length; k++) {
+                    for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
+                        if (num == arr1["matchUser"][k]["number"][l]['Number']) {
+                            isMatch = true
+                            randomNumber(array, arr1)
+                        } else {
+                            isMatch = false
                         }
                     }
                 }
+                // }
                 if (!isMatch) {
-                    // if (isEmpty(tempNumberArray)) {
-                    tempNumberArray.push(item);
-                    // randomNumber(array, arr1);
-                    // } else {
-                    //     if (tempNumberArray[0] != item) {
-                    //         tempNumberArray.push(item);
-                    //     } else {
-                    //         randomNumber(array, arr1);
-                    //     }
-                    // }
+                    if (isEmpty(tempNumberArray)) {
+                        tempNumberArray.push(item);
+                        randomNumber(array, arr1);
+                    } else {
+                        if (tempNumberArray[0] != item) {
+                            tempNumberArray.push(item);
+                        } else {
+                            randomNumber(array, arr1);
+                        }
+                    }
                 }
                 return tempNumberArray
             }
 
-            function shuffle(array) {
-                var currentIndex = array.length, temporaryValue, randomIndex;
-
-                // While there remain elements to shuffle...
-                while (0 !== currentIndex) {
-
-                    // Pick a remaining element...
-                    randomIndex = Math.floor(Math.random() * currentIndex);
-                    currentIndex -= 1;
-
-                    // And swap it with the current element.
-                    temporaryValue = array[currentIndex];
-                    array[currentIndex] = array[randomIndex];
-                    array[randomIndex] = temporaryValue;
-                }
-
-                return array;
-            }
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -2873,8 +2946,7 @@ client.connect((err, db) => {
                                                         break;
                                                     } else {
                                                         var unLikesArray = data[0]["UnLikes"];
-                                                        if(!isEmpty(unLikesArray))
-                                                        {
+                                                        if (!isEmpty(unLikesArray)) {
                                                             for (var h = 0; h < unLikesArray.length; h++) {
                                                                 if (unLikesArray[h] == number) {
                                                                     myObj = {
@@ -2889,8 +2961,7 @@ client.connect((err, db) => {
                                                                     };
                                                                 }
                                                             }
-                                                        }
-                                                        else{
+                                                        } else {
                                                             myObj = {
                                                                 name: data[0]['Contact_List'][i]['name'],
                                                                 image: data[0]['Contact_List'][i]['image'],
