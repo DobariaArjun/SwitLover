@@ -1323,10 +1323,10 @@ client.connect((err, db) => {
             });
 
             function randomNumber(array, arr1) {
-                shuffle(array);
+                let array1 = shuffle(array);
                 // var item = array[Math.floor(Math.random() * array.length)];
                 for (var m = 0; m < 2; m++) {
-                    var item = array[m];
+                    var item = array1[m];
                     var num = item.split("-")[1]
                     for (var k = 0; k < arr1["matchUser"].length; k++) {
                         for (var l = 0; l < arr1["matchUser"][k]["number"].length; l++) {
@@ -1352,6 +1352,25 @@ client.connect((err, db) => {
                     // }
                 }
                 return tempNumberArray
+            }
+
+            function shuffle(array) {
+                var currentIndex = array.length, temporaryValue, randomIndex;
+
+                // While there remain elements to shuffle...
+                while (0 !== currentIndex) {
+
+                    // Pick a remaining element...
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex -= 1;
+
+                    // And swap it with the current element.
+                    temporaryValue = array[currentIndex];
+                    array[currentIndex] = array[randomIndex];
+                    array[randomIndex] = temporaryValue;
+                }
+
+                return array;
             }
             //--------------------------------------------------------------------------------------------------------------
 
