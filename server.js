@@ -1211,7 +1211,6 @@ client.connect((err, db) => {
                     });
                 }
             }
-
             //--------------------------------------------------------------------------------------------------------------
 
             //--------------------------------------------------------------------------------------------------------------
@@ -1338,14 +1337,14 @@ client.connect((err, db) => {
                                                                                                     }
                                                                                                 }).then((rr) => {
                                                                                                 if (rr['result']['n'] == 1) {
-                                                                                                    dbo.collection(match).find({
-                                                                                                        currentUserID: new ObjectId(myArray[0]["matchUserID"])
-                                                                                                    }).toArray((er, re) => {
-                                                                                                        if (er) res.json({
-                                                                                                            status: "0",
-                                                                                                            message: "error : " + er
-                                                                                                        })
-                                                                                                        if (!isEmpty(re)) {
+                                                                                                    // dbo.collection(match).find({
+                                                                                                    //     currentUserID: new ObjectId(myArray[0]["matchUserID"])
+                                                                                                    // }).toArray((er, re) => {
+                                                                                                    //     if (er) res.json({
+                                                                                                    //         status: "0",
+                                                                                                    //         message: "error : " + er
+                                                                                                    //     })
+                                                                                                    //     if (!isEmpty(re)) {
                                                                                                             dbo.collection(match).updateOne({
                                                                                                                     currentUserID: new ObjectId(myArray[0]["matchUserID"])
                                                                                                                 },
@@ -1373,14 +1372,14 @@ client.connect((err, db) => {
                                                                                                                     }).catch()
                                                                                                                 }
                                                                                                             }).catch()
-                                                                                                        } else {
-                                                                                                            res.json({
-                                                                                                                status: "1",
-                                                                                                                message: "Success",
-                                                                                                                user_data: arrTempMatch
-                                                                                                            });
-                                                                                                        }
-                                                                                                    })
+                                                                                                    //     } else {
+                                                                                                    //         res.json({
+                                                                                                    //             status: "1",
+                                                                                                    //             message: "Success",
+                                                                                                    //             user_data: arrTempMatch
+                                                                                                    //         });
+                                                                                                    //     }
+                                                                                                    // })
                                                                                                 }
                                                                                             });
                                                                                         }
