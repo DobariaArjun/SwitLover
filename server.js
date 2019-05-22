@@ -1384,7 +1384,19 @@ client.connect((err, db) => {
                                                                                                                             }).then((r1) => {
                                                                                                                                 if (r1['result']['n'] == 1) {
                                                                                                                                     //Updated successfully
+                                                                                                                                    // N2(matchDeviceToken,N2_Title);
+                                                                                                                                    res.json({
+                                                                                                                                        status: "1",
+                                                                                                                                        message: "Success",
+                                                                                                                                        user_data: arrTempMatch
+                                                                                                                                    });
                                                                                                                                 } else {
+                                                                                                                                    // N2(matchDeviceToken,N2_Title);
+                                                                                                                                    res.json({
+                                                                                                                                        status: "1",
+                                                                                                                                        message: "Success",
+                                                                                                                                        user_data: arrTempMatch
+                                                                                                                                    });
                                                                                                                                     //already uptodate
                                                                                                                                 }
                                                                                                                             }).catch();
@@ -1417,7 +1429,7 @@ client.connect((err, db) => {
                                                                                 }
                                                                             }
                                                                         })
-                                                                    }, 5000);
+                                                                    }, 10000);
 
                                                                 } else {
                                                                     randomNumbers = randomNumber(result3[0]['Like'], result[0]);
