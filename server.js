@@ -1273,7 +1273,9 @@ client.connect((err, db) => {
                                                                                 id: "",
                                                                                 name: result2[0]['Username'][result2[0]['Username'].length - 1],
                                                                                 profile_pic: result2[0]['Profile_Pic'],
-                                                                                number: [numb0],
+                                                                                number: [{
+                                                                                    Number : numb0
+                                                                                }],
                                                                                 isMatch: false
                                                                             }
                                                                             arrTempMatch.push(myObj)
@@ -1281,7 +1283,9 @@ client.connect((err, db) => {
                                                                             var myObj = {
                                                                                 id: "",
                                                                                 name: numb0,
-                                                                                number: [numb0],
+                                                                                number: [{
+                                                                                    Number : numb0
+                                                                                }],
                                                                                 profile_pic: "",
                                                                                 isMatch: false
                                                                             }
@@ -1296,7 +1300,9 @@ client.connect((err, db) => {
                                                                                 id: "",
                                                                                 name: result4[0]['Username'][result4[0]['Username'].length - 1],
                                                                                 profile_pic: result4[0]['Profile_Pic'],
-                                                                                number: [numb1],
+                                                                                number: [{
+                                                                                    Number : numb1
+                                                                                }],
                                                                                 isMatch: false
                                                                             }
                                                                             arrTempMatch.push(myObj)
@@ -1305,7 +1311,9 @@ client.connect((err, db) => {
                                                                                 id: "",
                                                                                 name: numb1,
                                                                                 profile_pic: "",
-                                                                                number: [numb1],
+                                                                                number: [{
+                                                                                    Number : numb1
+                                                                                }],
                                                                                 isMatch: false
                                                                             }
                                                                             arrTempMatch.push(myObj)
