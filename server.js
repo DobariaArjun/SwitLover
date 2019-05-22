@@ -1497,6 +1497,7 @@ client.connect((err, db) => {
             //--------------------------------------------------------------------------------------------------------------
             //Match prefereances
             app.post('/api/MatchPreference', (req, res) => {
+                var jsonObj;
                 var Auth_Token = req.header('Auth_Token');
                 if (!Auth_Token || Auth_Token == null) {
                     res.json({status: "6", message: "Auth token missing"});
@@ -1507,13 +1508,18 @@ client.connect((err, db) => {
                         }
                         res.json({status: "4", message: "Parameter missing or Invalid"});
                     } else {
-                        var mArray = req.body.match;
+                        var stringdata = req.body.match;
+                        if (stringdata == "[]" || stringdata == "") {
+                            res.json({status: "4", message: "Match parameter missing or Invalid"});
+                        } else {
+                            jsonObj = JSON.parse(stringdata);
+                        }
                         var isCID = false;
-                        if ((new ObjectId(mArray[0]['id'])).equals(new ObjectId(req.body.cid))) {
+                        if ((new ObjectId(jsonObj[0]['id'])).equals(new ObjectId(req.body.cid))) {
                             isCID = true;
                             var myObj = {
                                 currentU: req.body.mid,
-                                matchA: req.body.match
+                                matchA: jsonObj
                             }
                             dbo.collection(temp_match).find({
                                 currentU: req.body.mid
@@ -1526,7 +1532,7 @@ client.connect((err, db) => {
                                         currentU: req.body.mid
                                     }, {
                                         $set: {
-                                            matchA: req.body.match
+                                            matchA: jsonObj
                                         }
                                     }).then((r1) => {
                                         if (r1['result']['n'] == 1) {
@@ -1549,7 +1555,7 @@ client.connect((err, db) => {
                             isCID = false;
                             var myObj = {
                                 currentU: req.body.cid,
-                                matchA: req.body.match
+                                matchA: jsonObj
                             }
                             dbo.collection(temp_match).find({
                                 currentU: req.body.cid
@@ -1562,7 +1568,7 @@ client.connect((err, db) => {
                                         currentU: req.body.cid
                                     }, {
                                         $set: {
-                                            matchA: req.body.match
+                                            matchA: jsonObj
                                         }
                                     }).then((r1) => {
                                         if (r1['result']['n'] == 1) {
@@ -1700,7 +1706,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //1 out 1 - 1 out 2 = 1 out 2
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
                                                                                         matchArray.pop()
                                                                                         if (matchArray.length > 1) {
                                                                                             if (isCID) {
@@ -1819,7 +1825,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //1 out 1 - chat = chat
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -1877,7 +1883,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //1 out 1 -  = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_1'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -1935,7 +1941,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //1 out 2 - 1 out 1 = 1 out 2
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1 || result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
                                                                                         matchArray.pop()
                                                                                         if (matchArray.length > 1) {
 
@@ -2054,7 +2060,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //1 out 2 - chat = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2112,7 +2118,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //1 out 2 -  = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2170,7 +2176,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat - 1 out 1 = chat
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2228,7 +2234,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat - 1 out 2 = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2286,7 +2292,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat - chat = chat
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2345,7 +2351,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat -  = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2404,7 +2410,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat & 1 out 2 - 1 out 1 = 1 out 2 & chat
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
                                                                                         matchArray.pop()
                                                                                         if (matchArray.length > 1) {
 
@@ -2523,7 +2529,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat & 1 out 2 - 1 out 2 = 1 out 2
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
                                                                                         matchArray.pop()
                                                                                         if (matchArray.length > 1) {
 
@@ -2642,7 +2648,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat & 1 out 2 - chat = chat
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 1) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2701,7 +2707,7 @@ client.connect((err, db) => {
                                                                                     }
                                                                                     //chat & 1 out 2 -  = x
                                                                                     else if (result1[0]['matchUser'][h]['currentUserPreferenace']['out_2'] == 1 && result1[0]['matchUser'][h]['currentUserPreferenace']['anonymas_chat'] == 1 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_1'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['out_2'] == 0 && result1[0]['matchUser'][h]['matchUserPreferenace']['anonymas_chat'] == 0) {
-                                                                                        var matchArray = req.body.match;
+                                                                                        var matchArray = jsonObj;
 
                                                                                         if (isCID) {
                                                                                             dbo.collection(temp_match).updateOne({
@@ -2812,7 +2818,7 @@ client.connect((err, db) => {
                             res.json({status: "0", message: "error : " + error})
                         }
                         if (!isEmpty(result)) {
-                            res.josn({status: "1", message: "Success", user_data: result[0]["matchA"]});
+                            res.json({status: "1", message: "Success", user_data: result});
                         }
                     })
                 }
