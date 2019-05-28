@@ -1220,7 +1220,7 @@ client.connect((err, db) => {
             //Get Match
             app.post('/api/getMatch', (req, res) => {
                 tempNumberArray = [];
-                var matchID;
+                var matchID = "";
                 var matchUsername;
                 var matchDeviceToken;
                 var arrTempMatch = [];
@@ -1245,11 +1245,11 @@ client.connect((err, db) => {
                                         if (err1) res.json({status: "0", message: "Error"});
                                         if (!isEmpty(result1)) {
                                             if (result1[0]['is_Block'] == 0) {
-                                                matchID = result1[0]['_id'];
+                                                matchID = result1[0]['_id'].toString();
                                                 matchDeviceToken = result1[0]['Device_Token'];
                                                 matchUsername = result1[0]['Username'][result1[0]['Username'].length - 1];
                                                 var matchObj = {
-                                                    id: result1[0]['_id'],
+                                                    id: matchID,
                                                     name: result1[0]['Username'][result1[0]['Username'].length - 1],
                                                     profile_pic: result1[0]['Profile_Pic'],
                                                     number: result1[0]['Phone_Number'],
@@ -2822,7 +2822,7 @@ client.connect((err, db) => {
                         }
                         else{
                             dbo.collection(temp_match).find({
-                                'matchA.id': new ObjectId( req.body.userID)
+                                'matchA.id': req.body.userID
                             }).toArray((error1, result1) => {
                                 if (error1) {
                                     res.json({status: "0", message: "error : " + error1})
