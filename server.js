@@ -2820,6 +2820,21 @@ client.connect((err, db) => {
                         if (!isEmpty(result)) {
                             res.json({status: "1", message: "Success", user_data: result});
                         }
+                        else{
+                            dbo.collection(temp_match).find({
+                                'matchA.id': new ObjectId( req.body.userID)
+                            }).toArray((error1, result1) => {
+                                if (error1) {
+                                    res.json({status: "0", message: "error : " + error1})
+                                }
+                                if (!isEmpty(result1)) {
+                                    res.json({status: "1", message: "Success", user_data: result1});
+                                }
+                                else{
+                                    res.json({status: "0", message: "make sure the userID is correct"});
+                                }
+                            })
+                        }
                     })
                 }
             })
