@@ -1632,8 +1632,13 @@ client.connect((err, db) => {
                                                                     _id: new ObjectId(req.body.mid)
                                                                 }).toArray();
                                                                 ah.then((result26) => {
-                                                                    // N3(result26[0]['Device_Token'], N3_Title)
-                                                                    // N3("cyDsx0BWezc:APA91bEdUaryAoV6-0NaN9a05J56nOXDIt1SDKOYPbdzziaUTeJsB8P0EMaJNnjjGKVaQBssLdp9MruVWviE3-7t0FE3ezttA5y3UGhYkjmbH_cPht225vEkIOrqMOMyLNMYLyLfNoW_", N3_Title, "", "")
+                                                                    if(!isEmpty(result26))
+                                                                    {
+                                                                        if(result26[0]["is_Block"] == 0)
+                                                                        {
+                                                                            N3(result26[0]['Device_Token'], N3_Title)
+                                                                        }
+                                                                    }
                                                                 })
 
                                                                 var ha = dbo.collection(match).find({
