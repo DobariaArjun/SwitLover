@@ -2905,7 +2905,7 @@ client.connect((err, db) => {
                                 delete dataresult.Contact_Remove_Ratio;
                                 delete dataresult.Like;
                                 delete dataresult.Match_Ratio;
-                                delete dataresult.PowerID;
+                                // delete dataresult.PowerID;
                                 delete dataresult.Not_In_App_Purchase;
                                 delete dataresult.language;
                                 delete dataresult.Device;
